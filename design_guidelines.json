@@ -1,0 +1,73 @@
+{
+  "project_name": "Metro Motors - Reselling Showroom Dashboard",
+  "app_type": "dashboard",
+  "theme": "dark navy and blue-gray with luxury gold accents",
+  "typography": {
+    "headings": "Plus Jakarta Sans, sans-serif",
+    "body": "Inter, sans-serif",
+    "weights": {
+      "light": "300",
+      "normal": "400",
+      "medium": "500",
+      "semibold": "600",
+      "bold": "700"
+    }
+  },
+  "colors": {
+    "primary": "#d4af37",
+    "primary_hover": "#e5c158",
+    "background_dark": "#0d1b2a",
+    "surface_dark": "#1b263b",
+    "border_dark": "#334155",
+    "text_dark": "#f8fafc",
+    "muted_dark": "#94a3b8",
+    "background_light": "#f1f5f9",
+    "surface_light": "#ffffff",
+    "border_light": "#cbd5e1",
+    "text_light": "#0f172a",
+    "muted_light": "#64748b",
+    "gold_accent": "#f59e0b",
+    "sidebar_light": "#e2e8f0",
+    "sidebar_dark": "#111827"
+  },
+  "components": [
+    "Sidebar (Dashboard, Deals, Bills, New Deal, Finances, Follow-ups, Settings)",
+    "Header with Light/Dark toggle, Owner Badge, User Profile, Logout",
+    "Dashboard Page with 6 metric cards, Successfully Sold section, and Bikes for Sale section",
+    "Deals Page with search bar, status/type filters, office use, vehicle status, and comprehensive table with actions",
+    "Bills Page (Customer Bills) with template bill preview modal, search, and table with View/Edit/Print actions",
+    "New Deal Multi-Step Modal/Tabs (Vehicle, Seller, Buyer, Witnesses, Payments) with photo capture/upload simulation",
+    "Finances Page with revenue cards, Monthly Revenue breakdown, and interactive trend charts",
+    "Follow-Ups Page with Today & Overdue / Upcoming sections and quick action drawer",
+    "Settings Page with Account, Active Sessions, and Showroom configuration tabs"
+  ],
+  "image_urls": [
+    {
+      "category": "Motorcycle Showcase",
+      "description": "Luxury sports bike for sale inventory showcase",
+      "url": "https://images.unsplash.com/photo-1609630875289-22852fa678ce?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjY2NzF8MHwxfHNlYXJjaHwxfHxtb3RvcmN5Y2xlJTIwcmVzYWxlJTIwaW52ZW50b3J5JTIwYmlrZXxlbnwwfHx8fDE3ODk1NTYxMzh8MA&ixlib=rb-4.1.0&q=85"
+    },
+    {
+      "category": "Dashboard Gauge",
+      "description": "Motorcycle dashboard speedometer and cockpit display",
+      "url": "https://images.unsplash.com/photo-1654128787839-1847c2303efc?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1ODh8MHwxfHNlYXJjaHwxfHxsdXh1cnklMjBtb3RvcmN5Y2xlJTIwc2hvd3Jvb20lMjBkYXNoYm9hcmR8ZW58MHx8fHwxNzg5NTU2MTM4fDA&ixlib=rb-4.1.0&q=85"
+    },
+    {
+      "category": "Vintage Bike",
+      "description": "Classic motorcycle parked outdoors at showroom",
+      "url": "https://images.pexels.com/photos/9269111/pexels-photo-9269111.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940"
+    }
+  ],
+  "accessibility": {
+    "contrast_ratio_min": "4.5:1",
+    "focus_states": "ring-2 ring-amber-400 outline-none",
+    "aria_support": "full aria labels on interactive elements and data-testid attributes"
+  },
+  "universal_guidelines_for_main_agent": [
+    "Use .js files (.jsx / .js) as requested by project setup",
+    "Ensure all interactive elements and key informational elements include robust data-testid attributes",
+    "Maintain crisp borders with gold accent highlights and rounded cards",
+    "Do not use transparent backgrounds on headers or sticky navbars",
+    "Provide seamless navigation between all 7 sidebar views with zero page crashes"
+  ]
+}
