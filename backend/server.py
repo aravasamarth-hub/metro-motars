@@ -237,6 +237,59 @@ class FinanceSummaryResponse(BaseModel):
     revenue_trend: List[Dict[str, Any]]
 
 
+SALE_TERMS = ("sale", "sell", "buyer", "revenue", "income")
+PURCHASE_TERMS = ("purchase", "buy", "seller", "intermediate")
+PAID_STATUSES = {"paid", "completed", "settled"}
+
+ONES = ["", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen"]
+TENS = ["", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"]
+
+
+def two_digit_words(value: int) -> str:
+    if value < 20:
+        return ONES[value]
+    return (TENS[value // 10] + (" " + ONES[value % 10] if value % 10 else "")).strip()
+
+
+def amount_in_words(amount: float) -> str:
+    rupees = int(round(float(amount or 0)))
+    if rupees == 0:
+        return "Zero Rupees Only"
+    parts: List[str] = []
+    for divisor, label in ((10000000, "Crore"), (100000, "Lakh"), (1000, "Thousand"), (100, "Hundred")):
+        chunk, rupees = divmod(rupees, divisor)
+        if chunk:
+            parts.append(f"{two_digit_words(chunk) if divisor >= 1000 else two_digit_words(chunk)} {label}")
+    if rupees:
+        parts.append(two_digit_words(rupees))
+    return " ".join(parts) + " Rupees Only"
+
+
+def matches(payment: Dict[str, Any], terms) -> bool:
+    return any(term in payment.get("payment_type", "").lower() for term in terms)
+
+
+def is_paid(payment: Dict[str, Any]) -> bool:
+    return payment.get("payment_status", "").lower() in PAID_STATUSES
+
+
+def deal_totals(payments: List[Dict[str, Any]]) -> Dict[str, float]:
+    totals = {"total_paid": 0.0, "pending_amount": 0.0, "spent": 0.0, "earned": 0.0, "commission": 0.0}
+    for payment in payments:
+        amount = float(payment.get("amount", 0) or 0)
+        if is_paid(payment):
+            totals["total_paid"] += amount
+            if matches(payment, PURCHASE_TERMS):
+                totals["spent"] += amount
+            if matches(payment, SALE_TERMS):
+                totals["earned"] += amount
+            if "commission" in payment.get("payment_type", "").lower():
+                totals["commission"] += amount
+        else:
+            totals["pending_amount"] += amount
+    return {key: round(value, 2) for key, value in totals.items()}
+
+
 COLLECTIONS = {
     "deals": db.deals,
     "vehicles": db.vehicles,
@@ -400,8 +453,13 @@ async def update_deal(deal_id: str, payload: DealUpdate):
 
 
 @api_router.delete("/deals/{deal_id}")
-async def delete_deal(deal_id: str):
+async def delete_deal(deal_id: str, cascade: bool = False):
     await require_entity("deals", "deal_id", deal_id)
+    if cascade:
+        for name in ("witnesses", "payments", "documents", "bills"):
+            await COLLECTIONS[name].delete_many({"deal_id": deal_id})
+        await db.deals.delete_one({"deal_id": deal_id})
+        return {"deleted": True, "deal_id": deal_id, "cascade": True}
     child_counts = await asyncio.gather(*(COLLECTIONS[name].count_documents({"deal_id": deal_id}) for name in ("witnesses", "payments", "documents", "bills")))
     if any(child_counts):
         raise HTTPException(status_code=409, detail="Delete related witnesses, payments, documents, and bills before deleting this deal")
@@ -463,6 +521,101 @@ async def generate_bill(deal_id: str, payload: BillGenerateRequest):
     document = {"bill_id": bill_id, "deal_id": deal_id, "bill_type": payload.bill_type, "bill_number": f"MM-{datetime.now(timezone.utc).strftime('%Y%m%d')}-{bill_id[-6:]}", "customer": customer, "vehicle": workspace["vehicle"]["vehicle_name"], "price": price, "document_reference": f"bill://{bill_id}", "created_date": now_iso(), "updated_date": now_iso()}
     await db.bills.insert_one(document.copy())
     return await find_one("bills", "bill_id", bill_id)
+
+
+async def build_deal_overview() -> List[Dict[str, Any]]:
+    deals, vehicles, sellers, buyers, payments = await asyncio.gather(
+        db.deals.find({}, {"_id": 0}).sort("created_date", -1).to_list(2000),
+        db.vehicles.find({}, {"_id": 0}).to_list(2000),
+        db.sellers.find({}, {"_id": 0}).to_list(2000),
+        db.buyers.find({}, {"_id": 0}).to_list(2000),
+        db.payments.find({}, {"_id": 0}).to_list(10000),
+    )
+    vehicle_map = {item["vehicle_id"]: item for item in vehicles}
+    seller_map = {item["seller_id"]: item for item in sellers}
+    buyer_map = {item["buyer_id"]: item for item in buyers}
+    payment_map: Dict[str, List[Dict[str, Any]]] = {}
+    for payment in payments:
+        payment_map.setdefault(payment.get("deal_id", ""), []).append(payment)
+    rows = []
+    for deal in deals:
+        vehicle = vehicle_map.get(deal.get("vehicle_id"), {})
+        seller = seller_map.get(deal.get("seller_id"), {})
+        buyer = buyer_map.get(deal.get("buyer_id"), {})
+        deal_payments = payment_map.get(deal["deal_id"], [])
+        rows.append({
+            "deal_id": deal["deal_id"],
+            "deal_type": deal.get("deal_type", ""),
+            "status": deal.get("status", ""),
+            "created_date": deal.get("created_date", ""),
+            "updated_date": deal.get("updated_date", ""),
+            "vehicle_name": vehicle.get("vehicle_name", ""),
+            "vehicle_number": vehicle.get("vehicle_number", ""),
+            "registration_number": vehicle.get("registration_number", ""),
+            "vehicle_status": vehicle.get("vehicle_status", ""),
+            "seller_name": seller.get("name", ""),
+            "seller_phone": seller.get("phone", ""),
+            "buyer_name": buyer.get("name", ""),
+            "buyer_phone": buyer.get("phone", ""),
+            "payment_count": len(deal_payments),
+            **deal_totals(deal_payments),
+        })
+    return rows
+
+
+@api_router.get("/overview/deals", response_model=List[RecordResponse])
+async def deals_overview():
+    return await build_deal_overview()
+
+
+@api_router.get("/overview/dashboard", response_model=Dict[str, Any])
+async def dashboard_overview():
+    rows = await build_deal_overview()
+    vehicles = await db.vehicles.find({}, {"_id": 0}).sort("created_date", -1).to_list(2000)
+    today = datetime.now(timezone.utc).date().isoformat()
+    available = [vehicle for vehicle in vehicles if vehicle.get("vehicle_status", "In Stock").lower() != "sold"]
+    sold_rows = [row for row in rows if row["status"].lower() in {"completed", "sold"} or row["vehicle_status"].lower() == "sold"]
+    return {
+        "todays_stock": len([vehicle for vehicle in vehicles if str(vehicle.get("created_date", "")).startswith(today)]),
+        "bikes_in_stock": len(available),
+        "total_deals": len(rows),
+        "new_deals": len([row for row in rows if row["status"].lower() in {"draft", "new"}]),
+        "deals_closed": len(sold_rows),
+        "net_finances": round(sum(row["earned"] for row in rows) - sum(row["spent"] for row in rows) + sum(row["commission"] for row in rows), 2),
+        "pending_dues": round(sum(row["pending_amount"] for row in rows), 2),
+        "recently_sold": sold_rows[:5],
+        "bikes_for_sale": available[:6],
+    }
+
+
+@api_router.get("/bills/{bill_id}/document", response_model=Dict[str, Any])
+async def bill_document(bill_id: str):
+    bill = await require_entity("bills", "bill_id", bill_id)
+    workspace = await get_workspace(bill["deal_id"])
+    vehicle = workspace["vehicle"]
+    seller = workspace.get("seller") or {}
+    buyer = workspace.get("buyer") or {}
+    totals = deal_totals(workspace["payments"])
+    buyer_facing = bill["bill_type"] == "Seller → Buyer"
+    if buyer_facing:
+        lines = [payment for payment in workspace["payments"] if matches(payment, SALE_TERMS) or payment.get("person") == buyer.get("name")]
+        parties = {"from": {"role": "Seller", **{key: seller.get(key, "") for key in ("name", "phone", "address", "id_details")}}, "to": {"role": "Buyer", **{key: buyer.get(key, "") for key in ("name", "phone", "address", "id_details")}}}
+    else:
+        lines = [payment for payment in workspace["payments"] if matches(payment, PURCHASE_TERMS) or payment.get("person") == seller.get("name")]
+        parties = {"from": {"role": "Seller", **{key: seller.get(key, "") for key in ("name", "phone", "address", "id_details")}}, "to": {"role": "Intermediate (Metro Motors)", "name": "Metro Motors", "phone": "", "address": "", "id_details": ""}}
+    total = round(float(bill.get("price", 0) or 0), 2)
+    document = {
+        "bill": {key: value for key, value in bill.items() if key != "document_reference"},
+        "deal": {"deal_id": workspace["deal"]["deal_id"], "deal_type": workspace["deal"].get("deal_type", ""), "status": workspace["deal"].get("status", "")},
+        "vehicle": vehicle,
+        "parties": parties,
+        "witnesses": [{key: witness.get(key, "") for key in ("name", "phone", "address", "id_details")} for witness in workspace["witnesses"]],
+        "payment_lines": [{"payment_date": line.get("payment_date", ""), "person": line.get("person", ""), "payment_type": line.get("payment_type", ""), "amount": float(line.get("amount", 0) or 0), "payment_status": line.get("payment_status", ""), "notes": line.get("notes", "")} for line in lines],
+        "total_amount": total,
+        "total_in_words": amount_in_words(total),
+        "confidential": None if buyer_facing else {"purchase_total": totals["spent"], "sale_total": totals["earned"], "commission": totals["commission"], "margin": round(totals["earned"] - totals["spent"], 2)},
+    }
+    return document
 
 
 @api_router.get("/finances/summary", response_model=FinanceSummaryResponse)
