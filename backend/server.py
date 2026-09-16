@@ -259,7 +259,7 @@ def amount_in_words(amount: float) -> str:
     for divisor, label in ((10000000, "Crore"), (100000, "Lakh"), (1000, "Thousand"), (100, "Hundred")):
         chunk, rupees = divmod(rupees, divisor)
         if chunk:
-            parts.append(f"{two_digit_words(chunk) if divisor >= 1000 else two_digit_words(chunk)} {label}")
+            parts.append(f"{two_digit_words(chunk)} {label}")
     if rupees:
         parts.append(two_digit_words(rupees))
     return " ".join(parts) + " Rupees Only"
@@ -271,6 +271,21 @@ def matches(payment: Dict[str, Any], terms) -> bool:
 
 def is_paid(payment: Dict[str, Any]) -> bool:
     return payment.get("payment_status", "").lower() in PAID_STATUSES
+
+
+def bill_payment_lines(payments: List[Dict[str, Any]], buyer_facing: bool, customer_name: str) -> List[Dict[str, Any]]:
+    """Buyer-facing bills only ever carry sale receipts, never purchase or commission records."""
+    selected = []
+    for payment in payments:
+        payment_type = (payment.get("payment_type") or "").lower()
+        if buyer_facing:
+            if "commission" in payment_type or "margin" in payment_type or "purchase" in payment_type:
+                continue
+            if matches(payment, SALE_TERMS) or payment.get("person") == customer_name:
+                selected.append(payment)
+        elif matches(payment, PURCHASE_TERMS) or payment.get("person") == customer_name:
+            selected.append(payment)
+    return selected
 
 
 def deal_totals(payments: List[Dict[str, Any]]) -> Dict[str, float]:
@@ -511,11 +526,9 @@ async def generate_bill(deal_id: str, payload: BillGenerateRequest):
     seller = workspace.get("seller") or {}
     if payload.bill_type == "Seller → Intermediate":
         customer = seller.get("name", "Seller")
-        relevant_terms = ("purchase", "buy", "seller", "intermediate")
     else:
         customer = buyer.get("name", "Buyer")
-        relevant_terms = ("sale", "sell", "buyer", "revenue", "income")
-    selected = [payment for payment in payments if any(term in payment.get("payment_type", "").lower() for term in relevant_terms) or payment.get("person") == customer]
+    selected = bill_payment_lines(payments, payload.bill_type == "Seller → Buyer", customer)
     price = round(sum(float(payment.get("amount", 0)) for payment in selected if payment.get("payment_status", "").lower() in {"paid", "completed", "settled"}), 2)
     bill_id = new_id("BILL")
     document = {"bill_id": bill_id, "deal_id": deal_id, "bill_type": payload.bill_type, "bill_number": f"MM-{datetime.now(timezone.utc).strftime('%Y%m%d')}-{bill_id[-6:]}", "customer": customer, "vehicle": workspace["vehicle"]["vehicle_name"], "price": price, "document_reference": f"bill://{bill_id}", "created_date": now_iso(), "updated_date": now_iso()}
@@ -576,7 +589,7 @@ async def dashboard_overview():
     available = [vehicle for vehicle in vehicles if vehicle.get("vehicle_status", "In Stock").lower() != "sold"]
     sold_rows = [row for row in rows if row["status"].lower() in {"completed", "sold"} or row["vehicle_status"].lower() == "sold"]
     return {
-        "todays_stock": len([vehicle for vehicle in vehicles if str(vehicle.get("created_date", "")).startswith(today)]),
+        "todays_stock": len([vehicle for vehicle in available if str(vehicle.get("created_date", "")).startswith(today)]),
         "bikes_in_stock": len(available),
         "total_deals": len(rows),
         "new_deals": len([row for row in rows if row["status"].lower() in {"draft", "new"}]),
@@ -598,10 +611,10 @@ async def bill_document(bill_id: str):
     totals = deal_totals(workspace["payments"])
     buyer_facing = bill["bill_type"] == "Seller → Buyer"
     if buyer_facing:
-        lines = [payment for payment in workspace["payments"] if matches(payment, SALE_TERMS) or payment.get("person") == buyer.get("name")]
+        lines = bill_payment_lines(workspace["payments"], True, buyer.get("name", ""))
         parties = {"from": {"role": "Seller", **{key: seller.get(key, "") for key in ("name", "phone", "address", "id_details")}}, "to": {"role": "Buyer", **{key: buyer.get(key, "") for key in ("name", "phone", "address", "id_details")}}}
     else:
-        lines = [payment for payment in workspace["payments"] if matches(payment, PURCHASE_TERMS) or payment.get("person") == seller.get("name")]
+        lines = bill_payment_lines(workspace["payments"], False, seller.get("name", ""))
         parties = {"from": {"role": "Seller", **{key: seller.get(key, "") for key in ("name", "phone", "address", "id_details")}}, "to": {"role": "Intermediate (Metro Motors)", "name": "Metro Motors", "phone": "", "address": "", "id_details": ""}}
     total = round(float(bill.get("price", 0) or 0), 2)
     document = {

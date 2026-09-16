@@ -1,0 +1,59 @@
+{
+  "summary": "Backend: created /app/backend/tests/test_iteration4_overview.py exercising overview/deals math, overview/dashboard, bill idempotency, cascade delete, amount_in_words and bill privacy. 9/10 pytest cases pass; ONE CRITICAL PRIVACY BUG confirmed on Seller → Buyer bill. Frontend: smoke-tested dashboard metrics, Deals list + search, DealView read-only page, Bills page generate-bill flow, bill preview modal for the seeded DEAL-C7554EF5D6CF, print CSS presence (#print-area + .no-print). All screens render live data.",
+  "backend_issues": {
+    "critical": [
+      {
+        "endpoint": "POST /api/deals/{deal_id}/bills/generate and GET /api/bills/{bill_id}/document",
+        "issue": "Seller → Buyer bill LEAKS commission (privacy spec violation). Both endpoints filter payments with `matches(payment, SALE_TERMS) or payment.get('person') == buyer.name`. Any payment whose person == buyer (e.g. a Commission payment paid by the buyer) is therefore added to the buyer-facing bill. This (a) shows a 'Commission' payment row on the customer bill, (b) inflates bill.price / total_amount, and (c) produces a wrong amount_in_words. Reproduced with a fresh deal (Sale 75k Paid + Commission 2k Paid where person = buyer): buyer bill total came back as 77000 with a 'commission' payment_line. Fix: for buyer-facing bills only include payments where payment_type contains a SALE term AND payment_type does NOT contain 'purchase'/'commission'; drop the `person == customer` fallback for the buyer bill, or explicitly exclude commission/purchase types.",
+        "priority": "CRITICAL"
+      }
+    ],
+    "minor": [
+      {
+        "endpoint": "GET /api/overview/dashboard",
+        "issue": "`todays_stock` counts every vehicle whose created_date starts with today's UTC date, even vehicles already marked Sold. On the current DB it reports 10 while bikes_in_stock is 1. Not spec-breaking but likely surprising."
+      }
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [
+      {
+        "flow": "Bills → Generate Bill → Seller → Buyer preview",
+        "issue": "Because the backend privacy bug leaks the commission payment into the buyer bill, the BillDocument preview will also render that Commission row and an inflated Total + words for any deal that has a commission payment recorded against the buyer. Fixing the backend fixes the UI automatically.",
+        "affected_selectors": ["bill-document", "bill-doc-total", "bill-doc-words", "bill-doc-line-*"]
+      }
+    ],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_iteration4_overview.py",
+    "/app/backend/tests/test_metro_motors_crud.py",
+    "/app/backend/tests/test_workflow_regression.py",
+    "/app/test_reports/pytest/pytest_iteration4.xml"
+  ],
+  "action_items": [
+    "Fix Seller → Buyer bill privacy: in both generate_bill() and bill_document() drop the `person == customer` filter for buyer-facing bills (or exclude commission/purchase payment_types explicitly) so no commission/purchase/margin data can be included in the buyer bill payload or its computed total. Re-run test_bill_buyer_privacy to confirm."
+  ],
+  "critical_code_review_comments": [
+    "generate_bill/bill_document share payment-selection logic with `person == customer` fallback — this is the source of the privacy leak and should be refactored into a single helper with an explicit buyer_facing branch that whitelists SALE terms only.",
+    "Both endpoints re-fetch the entire workspace (payments, documents, bills, witnesses). Fine at current scale, but consider caching once per request if the deal has many payments/bills.",
+    "amount_in_words does not handle amounts >= 100 Crore (no larger unit) and rounds using int(round(...)). Acceptable for showroom bills but worth noting.",
+    "Frontend App.js is a very dense single-line component (line 14). Not a defect but readability/maintainability is poor — future edits are error-prone."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_iteration4_overview.py",
+    "/app/test_reports/pytest/pytest_iteration4.xml",
+    "/app/test_reports/iteration_4.json"
+  ],
+  "success_rate": {
+    "backend": "90% (9/10 pytest cases pass; 1 critical privacy failure)",
+    "frontend": "100% of smoke-tested UI paths (dashboard, deals, deal view, bill picker/preview, print CSS) rendered correctly with live data"
+  },
+  "test_credentials": "N/A – app has no authentication.",
+  "seed_data_creation": "Ephemeral TEST_ deals/vehicles/people/payments created via /api/workflow/deals and torn down with cascade delete. Seeded DEAL-C7554EF5D6CF was preserved.",
+  "retest_needed": true,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Re-run /app/backend/tests/test_iteration4_overview.py::test_bill_buyer_privacy after main agent fixes the buyer-bill filter. Also verify UI: create a deal with a Commission payment where person == buyer, generate the Seller → Buyer bill, and confirm the preview no longer shows a commission line and total_amount equals only the sale-paid amount. Full CRUD/workflow regression already covered by test_metro_motors_crud.py and test_workflow_regression.py.",
+  "rca of the issue": "In server.py generate_bill() (~line 518) and bill_document() (~line 601), the buyer-facing payment filter is `matches(payment, SALE_TERMS) or payment.get('person') == buyer.name`. Since any payment person can be the buyer (including a commission payment recorded against the buyer), commission/purchase-type payments leak into the buyer bill payload, its `payment_lines`, its computed `price`/`total_amount`, and consequently `total_in_words`. Mitigation: for buyer-facing bills use only SALE_TERMS-matching payments and explicitly exclude 'commission' and 'purchase'/'buy' payment_types; remove the person-fallback for buyer bills."
+}
