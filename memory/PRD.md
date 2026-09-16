@@ -32,10 +32,17 @@ Build Metro Motors from scratch as a responsive full-stack web app. For this sta
 - Verified production build and browser flows at desktop and mobile sizes.
 - Fixed shared table search so Deals and Bills rows filter and clear correctly.
 
+### 2026-09-16 — Core data stage
+- Added MongoDB collections and CRUD endpoints for deals, vehicles, sellers, buyers, witnesses, payments, documents, and bills.
+- Added stable entity IDs, created/updated timestamps, unique indexes, Mongo-safe projections, and relationship validation.
+- Deal creation now requires existing vehicle, seller, and buyer references; all child transaction records use the same deal ID.
+- Added protected deal deletion so dependent witnesses, payments, documents, and bills cannot become orphaned.
+- Verified the full parent/child create, read, update, delete lifecycle and confirmed the existing frontend remains unchanged.
+
 ## Prioritized backlog
 
 ### P0 — Required for a future functional release
-- Connect deals, bills, inventory, finances, and follow-ups to backend APIs and MongoDB.
+- Connect the existing UI deals, bills, inventory, finances, and follow-ups to the new CRUD APIs.
 - Persist New Deal form submissions and generate immutable customer bills.
 - Add real authentication and owner/admin permissions.
 
