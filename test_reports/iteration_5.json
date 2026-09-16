@@ -1,0 +1,36 @@
+{
+  "summary": "Retest of the CRITICAL buyer-bill privacy leak from iteration 4 and the todays_stock minor. Backend: all 8 cases in test_iteration4_overview.py now PASS, plus 4 new focused cases in test_iteration5_privacy.py PASS (buyer bill total = sale only, payment_lines carry no purchase/commission/margin, confidential is null; intermediate bill still returns confidential block with purchase/sale/commission/margin; idempotent per (deal, bill_type); dashboard todays_stock <= bikes_in_stock). Frontend: seeded a deal with Commission Paid where person == buyer, opened Bills → Generate Bill picker → Seller → Buyer preview showed only Sale rows and ₹75,000 total with correct words (no commission/purchase/margin in payment lines, no confidential block). Seller → Intermediate preview showed the internal block (Purchase ₹50k, Sale ₹75k, Commission ₹2k, Margin ₹25k). Regenerating the buyer bill returned the same bill_number (idempotent). Deals list search/row, DealView read-only page, Finances page and Deals delete-with-confirmation all worked; deleted deal returned 404 and bills for it removed.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_iteration4_overview.py",
+    "/app/backend/tests/test_iteration5_privacy.py",
+    "/app/test_reports/pytest/pytest_iteration5.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "bill_payment_lines() correctly whitelists SALE terms and excludes commission/purchase/margin for buyer-facing bills; shared helper eliminates the earlier drift between generate_bill() and bill_document().",
+    "generate_bill and bill_document still call get_workspace() independently; minor duplication but acceptable at current scale.",
+    "amount_in_words has no unit larger than Crore (values >= 100 crore render as 'One Hundred Crore …'); acceptable for showroom bills.",
+    "server.py is still one long file (~688 lines) with dense single-line React components in the frontend – future-maintainability concern, not a defect."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_iteration5_privacy.py",
+    "/app/test_reports/pytest/pytest_iteration5.xml",
+    "/app/test_reports/iteration_5.json"
+  ],
+  "success_rate": {"backend": "100% (12/12 pytest cases pass)", "frontend": "100% of tested flows (Bills generate for both bill types, idempotency, DealView, Deals search + delete, Finances load)"},
+  "test_credentials": "N/A – app has no authentication.",
+  "seed_data_creation": "Ephemeral TEST_ deals/vehicles/persons/payments seeded via /api/workflow/deals. All were torn down (deal cascade + explicit vehicle/seller/buyer deletes). Additionally cleaned 8 orphan TEST vehicles / 8 sellers / 8 buyers left by prior runs. DEAL-C7554EF5D6CF and its 2 bills preserved.",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Buyer-bill privacy leak from iteration 4 is FIXED via shared bill_payment_lines() helper in server.py. Todays_stock now excludes Sold. Full regression is covered by /app/backend/tests/test_iteration4_overview.py (8) and /app/backend/tests/test_iteration5_privacy.py (4) plus existing test_metro_motors_crud.py and test_workflow_regression.py. Always export REACT_APP_BACKEND_URL from /app/frontend/.env before running pytest.",
+  "rca of the issue": "Previous leak root cause was `person == buyer.name` fallback in buyer-facing branch which pulled commission payments assigned to the buyer. Fix: server.py bill_payment_lines() now, in the buyer_facing branch, explicitly excludes any payment whose payment_type contains 'commission'/'margin'/'purchase' before applying the SALE_TERMS/person filter. bill_document() also sets confidential=None for buyer-facing bills. Verified end-to-end via API JSON body scan and rendered UI preview inspection."
+}

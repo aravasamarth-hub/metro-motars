@@ -49,9 +49,20 @@ Build Metro Motors from scratch as a responsive full-stack web app. For this sta
 
 ## Prioritized backlog
 
+### 2026-09-16 — Live workflow stage (this session)
+- Deals page now lists only real saved deals with joined vehicle/seller/buyer plus Total Paid, Pending, Spent, Earned and Commission computed from payment records; search covers deal ID, vehicle, registration, seller and buyer name/phone; Status and Deal Type filters work; View / Edit / Delete (confirmed cascade delete) all use the same Deal ID.
+- Dashboard metrics, "Successfully Sold" and "Bikes for Sale" now come from `/api/overview/dashboard`; clicking a sold row opens that deal.
+- Added read-only Deal Details page at `/deals/:dealId` (status, totals, vehicle, seller, buyer, witnesses, payment history, documents, bills) with Back / Edit Deal / Generate Bill; New Deal's "View Deal" now navigates there instead of showing a toast.
+- Added standalone A4 printable bill document (`BillDocument.js`) with Metro Motors header, bill number, date, Deal ID, vehicle details, parties, payment lines, total, total in words and signature blocks; print CSS prints only the bill.
+- Bills page gained a "Generate Bill" deal picker (search saved deals, choose bill type, auto-filled preview) with Print / Save as PDF; generation stays idempotent per deal + bill type.
+- Backend additions: `/api/overview/deals`, `/api/overview/dashboard`, `/api/bills/{bill_id}/document`, cascade delete on `/api/deals/{deal_id}?cascade=true`, Indian-format amount-in-words, shared `bill_payment_lines()` helper.
+- Fixed a CRITICAL privacy leak: Seller → Buyer bills excluded commission/purchase/margin payments (verified backend + UI, iteration_5 report all green).
+
+## Prioritized backlog
+
 ### P0 — Required for a future functional release
-- Connect the existing Dashboard and Deals presentation tables to live deal and vehicle APIs.
 - Add real authentication and owner/admin permissions.
+- Connect Follow-ups to real pending-payment records (still the only screen on placeholder data).
 
 ### P1 — Valuable next phase
 - Add editable deal and bill detail views with validation.
