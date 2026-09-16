@@ -154,6 +154,10 @@ class DocumentCreate(BaseModel):
     deal_id: str
     category: str
     file_reference: str
+    file_name: Optional[str] = None
+    mime_type: Optional[str] = None
+    file_size: Optional[int] = None
+    document_kind: str = "file"
 
 
 class DocumentUpdate(BaseModel):
@@ -162,6 +166,10 @@ class DocumentUpdate(BaseModel):
     deal_id: Optional[str] = None
     category: Optional[str] = None
     file_reference: Optional[str] = None
+    file_name: Optional[str] = None
+    mime_type: Optional[str] = None
+    file_size: Optional[int] = None
+    document_kind: Optional[str] = None
 
 
 class BillCreate(BaseModel):
@@ -186,6 +194,47 @@ class BillUpdate(BaseModel):
     vehicle: Optional[str] = None
     price: Optional[float] = Field(default=None, ge=0)
     document_reference: Optional[str] = None
+
+
+class WorkflowPayment(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    person: str
+    payment_type: str
+    amount: float = Field(gt=0)
+    payment_date: str
+    payment_status: str
+    notes: Optional[str] = None
+
+
+class DealWorkflowPayload(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    deal_id: Optional[str] = None
+    deal_type: str = "Buy & Sell"
+    status: str = "Draft"
+    vehicle: VehicleCreate
+    seller: PersonCreate
+    buyer: PersonCreate
+    witnesses: List[PersonCreate] = Field(default_factory=list)
+    payments: List[WorkflowPayment] = Field(default_factory=list)
+
+
+class BillGenerateRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    bill_type: str
+
+
+class FinanceSummaryResponse(BaseModel):
+    total_revenue: float
+    this_month: float
+    pending_dues: float
+    total_commission: float
+    net_profit: float
+    monthly_revenue: List[Dict[str, Any]]
+    revenue_breakdown: Dict[str, float]
+    revenue_trend: List[Dict[str, Any]]
 
 
 COLLECTIONS = {
@@ -221,6 +270,42 @@ async def validate_deal_links(data: Dict[str, Any]) -> None:
 
 async def validate_child_deal(data: Dict[str, Any]) -> None:
     await require_entity("deals", "deal_id", data["deal_id"])
+
+
+async def find_or_create_person(collection_name: str, id_field: str, prefix: str, person: Dict[str, Any]) -> Dict[str, Any]:
+    existing = await COLLECTIONS[collection_name].find_one({"phone": person["phone"]}, {"_id": 0})
+    if existing:
+        await COLLECTIONS[collection_name].update_one({id_field: existing[id_field]}, {"$set": {**person, "updated_date": now_iso()}})
+        return await find_one(collection_name, id_field, existing[id_field])
+    entity_id = new_id(prefix)
+    now = now_iso()
+    document = {id_field: entity_id, **person, "created_date": now, "updated_date": now}
+    await COLLECTIONS[collection_name].insert_one(document.copy())
+    return await find_one(collection_name, id_field, entity_id)
+
+
+async def find_or_create_vehicle(vehicle: Dict[str, Any]) -> Dict[str, Any]:
+    existing = await db.vehicles.find_one({"$or": [{"chassis_number": vehicle["chassis_number"]}, {"vehicle_number": vehicle["vehicle_number"]}]}, {"_id": 0})
+    if existing:
+        await db.vehicles.update_one({"vehicle_id": existing["vehicle_id"]}, {"$set": {**vehicle, "updated_date": now_iso()}})
+        return await find_one("vehicles", "vehicle_id", existing["vehicle_id"])
+    vehicle_id = new_id("VEH")
+    now = now_iso()
+    document = {"vehicle_id": vehicle_id, **vehicle, "created_date": now, "updated_date": now}
+    await db.vehicles.insert_one(document.copy())
+    return await find_one("vehicles", "vehicle_id", vehicle_id)
+
+
+async def get_workspace(deal_id: str) -> Dict[str, Any]:
+    deal = await require_entity("deals", "deal_id", deal_id)
+    vehicle = await require_entity("vehicles", "vehicle_id", deal["vehicle_id"])
+    seller = await find_one("sellers", "seller_id", deal.get("seller_id")) if deal.get("seller_id") else None
+    buyer = await find_one("buyers", "buyer_id", deal.get("buyer_id")) if deal.get("buyer_id") else None
+    witnesses = await db.witnesses.find({"deal_id": deal_id}, {"_id": 0}).sort("created_date", 1).to_list(100)
+    payments = await db.payments.find({"deal_id": deal_id}, {"_id": 0}).sort("payment_date", 1).to_list(500)
+    documents = await db.documents.find({"deal_id": deal_id}, {"_id": 0}).sort("created_date", 1).to_list(500)
+    bills = await db.bills.find({"deal_id": deal_id}, {"_id": 0}).sort("created_date", 1).to_list(100)
+    return {"deal": deal, "vehicle": vehicle, "seller": seller, "buyer": buyer, "witnesses": witnesses, "payments": payments, "documents": documents, "bills": bills}
 
 
 async def list_entities(collection_name: str) -> List[Dict[str, Any]]:
@@ -322,6 +407,94 @@ async def delete_deal(deal_id: str):
         raise HTTPException(status_code=409, detail="Delete related witnesses, payments, documents, and bills before deleting this deal")
     await db.deals.delete_one({"deal_id": deal_id})
     return {"deleted": True, "deal_id": deal_id}
+
+
+@api_router.post("/workflow/deals", response_model=Dict[str, Any], status_code=201)
+async def save_deal_workflow(payload: DealWorkflowPayload):
+    vehicle = await find_or_create_vehicle(payload.vehicle.model_dump())
+    seller = await find_or_create_person("sellers", "seller_id", "SELLER", payload.seller.model_dump(exclude_none=True))
+    buyer = await find_or_create_person("buyers", "buyer_id", "BUYER", payload.buyer.model_dump(exclude_none=True))
+    now = now_iso()
+    deal_id = payload.deal_id or new_id("DEAL")
+    deal_data = {"deal_type": payload.deal_type, "status": payload.status, "vehicle_id": vehicle["vehicle_id"], "seller_id": seller["seller_id"], "buyer_id": buyer["buyer_id"], "updated_date": now}
+    existing = await find_one("deals", "deal_id", deal_id)
+    if existing:
+        await db.deals.update_one({"deal_id": deal_id}, {"$set": deal_data})
+    else:
+        await db.deals.insert_one({"deal_id": deal_id, **deal_data, "created_date": now}.copy())
+
+    await db.witnesses.delete_many({"deal_id": deal_id})
+    for witness in payload.witnesses:
+        witness_doc = {"witness_id": new_id("WITNESS"), "deal_id": deal_id, **witness.model_dump(exclude_none=True), "created_date": now, "updated_date": now}
+        await db.witnesses.insert_one(witness_doc.copy())
+    await db.payments.delete_many({"deal_id": deal_id})
+    for payment in payload.payments:
+        payment_doc = {"payment_id": new_id("PAY"), "deal_id": deal_id, **payment.model_dump(exclude_none=True), "created_date": now, "updated_date": now}
+        await db.payments.insert_one(payment_doc.copy())
+    return await get_workspace(deal_id)
+
+
+@api_router.get("/deals/{deal_id}/workspace", response_model=Dict[str, Any])
+async def read_deal_workspace(deal_id: str):
+    return await get_workspace(deal_id)
+
+
+@api_router.post("/deals/{deal_id}/bills/generate", response_model=RecordResponse, status_code=201)
+async def generate_bill(deal_id: str, payload: BillGenerateRequest):
+    workspace = await get_workspace(deal_id)
+    allowed_types = {"Seller → Intermediate", "Seller → Buyer"}
+    if payload.bill_type not in allowed_types:
+        raise HTTPException(status_code=422, detail=f"bill_type must be one of: {', '.join(sorted(allowed_types))}")
+    existing = await db.bills.find_one({"deal_id": deal_id, "bill_type": payload.bill_type}, {"_id": 0})
+    if existing:
+        return existing
+    payments = workspace["payments"]
+    buyer = workspace.get("buyer") or {}
+    seller = workspace.get("seller") or {}
+    if payload.bill_type == "Seller → Intermediate":
+        customer = seller.get("name", "Seller")
+        relevant_terms = ("purchase", "buy", "seller", "intermediate")
+    else:
+        customer = buyer.get("name", "Buyer")
+        relevant_terms = ("sale", "sell", "buyer", "revenue", "income")
+    selected = [payment for payment in payments if any(term in payment.get("payment_type", "").lower() for term in relevant_terms) or payment.get("person") == customer]
+    price = round(sum(float(payment.get("amount", 0)) for payment in selected if payment.get("payment_status", "").lower() in {"paid", "completed", "settled"}), 2)
+    bill_id = new_id("BILL")
+    document = {"bill_id": bill_id, "deal_id": deal_id, "bill_type": payload.bill_type, "bill_number": f"MM-{datetime.now(timezone.utc).strftime('%Y%m%d')}-{bill_id[-6:]}", "customer": customer, "vehicle": workspace["vehicle"]["vehicle_name"], "price": price, "document_reference": f"bill://{bill_id}", "created_date": now_iso(), "updated_date": now_iso()}
+    await db.bills.insert_one(document.copy())
+    return await find_one("bills", "bill_id", bill_id)
+
+
+@api_router.get("/finances/summary", response_model=FinanceSummaryResponse)
+async def finances_summary():
+    payments = await db.payments.find({}, {"_id": 0}).to_list(5000)
+    now = datetime.now(timezone.utc)
+    revenue = purchase = commission = pending = this_month = 0.0
+    monthly: Dict[str, float] = {}
+    for payment in payments:
+        amount = float(payment.get("amount", 0))
+        payment_type = payment.get("payment_type", "").lower()
+        payment_status = payment.get("payment_status", "").lower()
+        is_paid = payment_status in {"paid", "completed", "settled"}
+        if not is_paid:
+            pending += amount
+        if any(term in payment_type for term in ("sale", "sell", "buyer", "revenue", "income")) and is_paid:
+            revenue += amount
+            try:
+                payment_date = datetime.fromisoformat(payment["payment_date"].replace("Z", "+00:00"))
+                if payment_date.year == now.year and payment_date.month == now.month:
+                    this_month += amount
+                month_key = payment_date.strftime("%b %Y")
+                monthly[month_key] = monthly.get(month_key, 0) + amount
+            except (KeyError, ValueError):
+                pass
+        if any(term in payment_type for term in ("purchase", "buy", "seller", "intermediate")) and is_paid:
+            purchase += amount
+        if "commission" in payment_type and is_paid:
+            commission += amount
+    ordered_months = sorted(monthly.items(), key=lambda item: datetime.strptime(item[0], "%b %Y"))[-12:]
+    trend = [{"month": month, "value": round(value, 2)} for month, value in ordered_months]
+    return {"total_revenue": round(revenue, 2), "this_month": round(this_month, 2), "pending_dues": round(pending, 2), "total_commission": round(commission, 2), "net_profit": round(revenue - purchase + commission, 2), "monthly_revenue": trend, "revenue_breakdown": {"sales": round(revenue, 2), "purchase_cost": round(purchase, 2), "commission": round(commission, 2)}, "revenue_trend": trend}
 
 
 register_simple_crud("vehicles", "vehicles", "vehicle_id", "VEH", VehicleCreate, VehicleUpdate)
