@@ -39,17 +39,24 @@ Build Metro Motors from scratch as a responsive full-stack web app. For this sta
 - Added protected deal deletion so dependent witnesses, payments, documents, and bills cannot become orphaned.
 - Verified the full parent/child create, read, update, delete lifecycle and confirmed the existing frontend remains unchanged.
 
+### 2026-09-16 — Connected workflow stage
+- Made the existing New Deal screen save and edit one connected workspace across Vehicle, Seller, Buyer, Witnesses, Payments, and Files.
+- Added automatic deal IDs, vehicle reuse by chassis/vehicle number, categorized multi-file records, image previews, replacement, and deletion.
+- Added generated Seller → Intermediate and Seller → Buyer bills under the same deal, with the buyer-facing bill scoped away from purchase/margin details.
+- Connected Bills to live records with preview, edit, print/PDF browser action, and search.
+- Connected Finances to recorded payment data for revenue, dues, commission, profit, monthly totals, breakdown, and trend.
+- Completed independent end-to-end regression and cleaned temporary records.
+
 ## Prioritized backlog
 
 ### P0 — Required for a future functional release
-- Connect the existing UI deals, bills, inventory, finances, and follow-ups to the new CRUD APIs.
-- Persist New Deal form submissions and generate immutable customer bills.
+- Connect the existing Dashboard and Deals presentation tables to live deal and vehicle APIs.
 - Add real authentication and owner/admin permissions.
 
 ### P1 — Valuable next phase
-- Add real vehicle photo capture/upload and inventory image management.
 - Add editable deal and bill detail views with validation.
 - Add date-range and status filtering backed by live financial data.
+- Add production object storage for large photo/document files instead of data-URL references.
 
 ### P2 — Nice-to-have enhancements
 - Add printable/PDF bill output and exportable finance reports.
@@ -57,6 +64,6 @@ Build Metro Motors from scratch as a responsive full-stack web app. For this sta
 - Add dashboard trend comparisons and showroom performance goals.
 
 ## Next tasks
-1. Review the UI with showroom staff and confirm labels, placeholder metrics, and workflow order.
-2. Define API contracts and data models for deals, vehicles, bills, payments, and follow-ups.
-3. Replace placeholder interactions with persisted flows only after the UI direction is approved.
+1. Connect Dashboard and Deals to the live collections without changing the visual language.
+2. Move file references to production object storage when file volume requires it.
+3. Add authentication and role-aware access before exposing customer records broadly.
