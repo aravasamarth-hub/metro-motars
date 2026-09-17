@@ -13,7 +13,9 @@ Legacy API client and legacy Bills/Finances components are retained but not rout
 - `data/browserDealAdapter.js`: native browser IndexedDB implementation. Records and
   photo Blobs are local to this browser and origin. No external database exists.
 - `features/deals/useDealWizard.js`: navigation, edits, validation and saving state.
-- Independent step components: vehicle, seller/buyer, witnesses, payments, review.
+- Five wizard steps: vehicle, seller (with Seller witness), buyer (with Buyer
+  witness), payments, review. `witnesses[0]` and `witnesses[1]` and their original
+  photo keys are retained, so saved records require no migration after relocation.
 
 ## Bill numbering
 `MM-YY-NNNN`, e.g. `MM-26-0001`. The header is a **preview**, not a reservation.

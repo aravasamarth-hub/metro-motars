@@ -7,7 +7,7 @@ DM Sans / Manrope typography, responsive sidebar, Light/Dark toggle. Navigation:
 Dashboard, Deals, Bills, New Deal, Finances, Follow-ups, Settings.
 
 ## Current approved scope — 2026-09-17
-Latest user directive (source of truth, supersedes previous backlog):
+Base UI-phase directive (subject to the witness relocation below):
 > Yes, continue with the frontend UI first, but follow these constraints exactly:
 > Do NOT redesign the existing Metro Motors dark blue + gold theme or sidebar.
 > Build the complete 6-step New Deal wizard with all fields, 10 vehicle photos,
@@ -21,6 +21,16 @@ Latest user directive (source of truth, supersedes previous backlog):
 > Keep the Deals page search and filters.
 > Do not implement real authentication, cloud storage, translations, or backend yet.
 > Focus on completing the UI architecture cleanly in this phase.
+
+### Latest approved visual change — 2026-09-17
+> add the witness 1 in Seller make it as Seller witness and add the witness 2
+> in buyer make it as buyer witness keep the same options in it
+
+- Removed the separate Witnesses navigation step as requested in the visual edit.
+- Current wizard has **five steps**: Vehicle, Seller, Buyer, Payments, Notes & Save.
+- Seller witness retains Witness 1's name/mobile/address/ID fields and one photo.
+- Buyer witness retains Witness 2's identical fields and one photo.
+- Data shape/IDs and optional behavior remain unchanged; 32 total photo slots.
 
 **Critical constraints**
 - All active routes are browser-local/mock only. No API calls or external database.
@@ -47,7 +57,7 @@ Latest user directive (source of truth, supersedes previous backlog):
   image Blobs and atomic year-specific sequences. Browser storage, NOT an external DB.
 - `src/data/README.md`: adapter contract, photo model, future Supabase boundary.
 - `src/features/deals/useDealWizard.js`: step navigation, form state, validation, save.
-- Small step components: `VehicleStep`, `PersonStep`, `WitnessStep`, `PaymentStep`,
+- Small step components: `VehicleStep`, `PersonStep` (with `WitnessSection`), `PaymentStep`,
   `ReviewStep`; shared `DealField`, `PhotoSlots`, `DealSummary`, `DealsTable`, `LocalUI`.
 - Existing FastAPI/MongoDB backend and `metroApi.js` remain untouched and dormant
   from the active UI. Environment variables and services are unchanged.
@@ -56,7 +66,7 @@ Latest user directive (source of truth, supersedes previous backlog):
   local preview records with live financial records.
 
 ## Implemented — 2026-09-17 frontend-local upgrade
-### Six-step New Deal
+### Five-step New Deal (revised by latest visual change)
 1. **Vehicle:** stock status; RC Pending/Completed; vehicle name, make/model/variant,
    year, color, vehicle/registration numbers and date, engine/chassis numbers,
    engine capacity, fuel, transmission, odometer; ownership, condition, bought/sold
@@ -64,12 +74,21 @@ Latest user directive (source of truth, supersedes previous backlog):
    PUC expiry, hypothecation, financier, NOC; 10 vehicle photo slots.
 2. **Seller:** name, father/spouse, mobile/alternate, email/address/city/state/PIN,
    ID type/number and PAN; dealer toggle, dealership name/GST/address; 10 photos.
+   Includes optional **Seller witness** with name, phone, address, ID and one photo.
 3. **Buyer:** same fields and dealer toggle; 10 photos. Buyer optional In Stock,
-   required for Sold deals.
-4. **Witnesses:** two optional witnesses, each name, phone, address, ID and one photo.
-5. **Payments:** purchase/selling prices, paid to seller/received from buyer,
+   required for Sold deals. Includes optional **Buyer witness** with the same fields
+   and one photo.
+4. **Payments:** purchase/selling prices, paid to seller/received from buyer,
    method/date/reference/notes; live commission and seller/buyer balances.
-6. **Notes & Save:** summary with edit shortcuts, stock/RC status, notes and Save Deal.
+5. **Notes & Save:** summary with edit shortcuts, stock/RC status, notes and Save Deal.
+
+### Witness relocation — 2026-09-17
+- Seller step edits `witnesses[0]`; Buyer step edits `witnesses[1]`.
+- Existing photo keys `witness-1-1` and `witness-2-1` retained; no storage migration.
+- Witness validation now runs on its respective party step; payments on step four.
+- Review summary has separate Seller witness/Buyer witness rows and correct edit
+  shortcuts; Deal Details groups each witness under the corresponding party.
+- Navigation/progress/footer updated to five steps; original theme/sidebar unchanged.
 
 ### Local workflow behavior
 - Required-field and mobile/email/year/date/amount validation, including Sold rules.
@@ -127,6 +146,10 @@ Latest user directive (source of truth, supersedes previous backlog):
 - Testing agent changed test reports/fixtures only; no application code changes.
 - Test data cleaned from the test browser. No auth accounts or credentials created.
 - Backend testing intentionally skipped because no backend changes were made.
+- `/app/test_reports/iteration_8.json`: five-step witness relocation regression,
+  per-party validation, empty-witness optional behavior, payment validation,
+  distinct witness details/photos through save/reload/edit, summary shortcuts,
+  desktop/320px layouts and no API calls. All tests passed; no fixes outstanding.
 
 ## Prior work retained — 2026-09-16
 - Built original seven-screen dashboard experience with responsive dark/light themes.
@@ -160,6 +183,6 @@ Latest user directive (source of truth, supersedes previous backlog):
 - Real Follow-ups, financial reports and reminders.
 
 ## Next action items
-1. User reviews wizard, photo slots, operational Dashboard and Deals UI.
+1. User reviews Seller witness and Buyer witness within their respective steps.
 2. Keep all persistence browser-local until expressly authorized otherwise.
 3. Suggested next enhancement: autosave unfinished deal drafts.

@@ -1,4 +1,4 @@
-export const STEPS = ["Vehicle", "Seller", "Buyer", "Witnesses", "Payments", "Notes & Save"];
+export const STEPS = ["Vehicle", "Seller", "Buyer", "Payments", "Notes & Save"];
 export const localDay = (date = new Date()) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 export const money = value => value === "" || value == null ? "—" : new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 2 }).format(Number(value));
 export const displayDate = value => value ? new Date(value.includes("T") ? value : `${value}T12:00:00`).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }) : "—";
@@ -21,8 +21,11 @@ export function validateStep(deal, step) {
     if (deal.status === "Sold") required("vehicle.sold_date", deal.vehicle.sold_date, "Sold date");
     if (deal.vehicle.sold_date && deal.vehicle.sold_date < deal.vehicle.bought_date) errors["vehicle.sold_date"] = "Sold date cannot be before bought date.";
   }
-  if (step === 1 || step === 2 || step === 3) {
-    const people = step === 3 ? deal.witnesses.map((p, i) => [`witnesses.${i}`, p, false]) : [[step === 1 ? "seller" : "buyer", step === 1 ? deal.seller : deal.buyer, step === 1 || deal.status === "Sold"]];
+  if (step === 1 || step === 2) {
+    const people = [
+      [step === 1 ? "seller" : "buyer", step === 1 ? deal.seller : deal.buyer, step === 1 || deal.status === "Sold"],
+      [`witnesses.${step - 1}`, deal.witnesses[step - 1], false],
+    ];
     people.forEach(([prefix, p, needed]) => {
       const entered = needed || !!(p.name || p.phone || p.address || p.id_number || p.is_dealer);
       if (entered) { required(`${prefix}.name`, p.name, "Name"); required(`${prefix}.phone`, p.phone, "Phone"); }
@@ -32,7 +35,7 @@ export function validateStep(deal, step) {
       if (p.is_dealer) required(`${prefix}.dealer_name`, p.dealer_name, "Dealership name");
     });
   }
-  if (step === 4) {
+  if (step === 3) {
     required("payments.purchase_price", deal.payments.purchase_price, "Purchase price");
     if (deal.status === "Sold") required("payments.selling_price", deal.payments.selling_price, "Selling price");
     ["purchase_price", "selling_price", "paid_to_seller", "received_from_buyer"].forEach(key => {

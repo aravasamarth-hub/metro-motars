@@ -22,8 +22,7 @@ export default function DealView() {
       <DealSummary deal={deal}/>
       {vehicleGroups.map(group => <ReadGroup key={group.title} title={group.title} fields={group.fields} value={deal.vehicle} prefix="vehicle"/>)}
       <PhotoSlots group="vehicle" photos={deal.photos} readOnly/>
-      {["seller", "buyer"].map(group => <div key={group}><ReadGroup title={group === "seller" ? "Seller" : "Buyer"} fields={deal[group].is_dealer ? [...personFields, ...dealerFields] : personFields} value={deal[group]} prefix={group}/><PhotoSlots group={group} photos={deal.photos} readOnly/></div>)}
-      {deal.witnesses.map((person, i) => <div key={i}><ReadGroup title={`Witness ${i + 1}`} fields={witnessFields} value={person} prefix={`witness-${i + 1}`}/><PhotoSlots group={`witness-${i + 1}`} photos={deal.photos} readOnly/></div>)}
+      {["seller", "buyer"].map((group, i) => <div key={group}><ReadGroup title={group === "seller" ? "Seller" : "Buyer"} fields={deal[group].is_dealer ? [...personFields, ...dealerFields] : personFields} value={deal[group]} prefix={group}/><PhotoSlots group={group} photos={deal.photos} readOnly/><ReadGroup title={group === "seller" ? "Seller witness" : "Buyer witness"} fields={witnessFields} value={deal.witnesses[i]} prefix={`witness-${i + 1}`}/><PhotoSlots group={`witness-${i + 1}`} photos={deal.photos} readOnly/></div>)}
       <ReadGroup title="Payments" fields={paymentFields} value={deal.payments} prefix="payments"/>
       <section className="wizard-group"><div className="section-title"><h2>Notes & remarks</h2></div><p className="local-notes" data-testid="deal-view-notes">{deal.notes || "No notes recorded."}</p></section>
     </>}

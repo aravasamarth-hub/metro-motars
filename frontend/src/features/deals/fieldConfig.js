@@ -13,5 +13,5 @@ export const photoSlots = {
   vehicle: ["Front view", "Rear view", "Left side", "Right side", "Odometer", "Engine number", "Chassis number", "RC front", "RC back", "Insurance document"],
   seller: ["Seller portrait", "Aadhaar front", "Aadhaar back", "PAN card", "Driving licence front", "Driving licence back", "Address proof", "Signature", "Purchase agreement", "Additional document"],
   buyer: ["Buyer portrait", "Aadhaar front", "Aadhaar back", "PAN card", "Driving licence front", "Driving licence back", "Address proof", "Signature", "Sale agreement", "Additional document"],
-  "witness-1": ["Witness 1 photo"], "witness-2": ["Witness 2 photo"],
+  "witness-1": ["Seller witness photo"], "witness-2": ["Buyer witness photo"],
 };

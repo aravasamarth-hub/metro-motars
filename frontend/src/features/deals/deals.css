@@ -13,7 +13,7 @@
 .wizard-bill span { display: block; color: var(--local-muted); font-size: 10px; margin-bottom: 6px; }
 .wizard-bill strong { font: 700 15px Manrope, sans-serif; color: #ab842f; }
 .theme-dark .wizard-bill strong { color: var(--gold); }
-.wizard-steps { display: grid; grid-template-columns: repeat(6,minmax(0,1fr)); gap: 6px; padding: 0 0 22px; border-bottom: 1px solid var(--local-border); }
+.wizard-steps { display: grid; grid-template-columns: repeat(5,minmax(0,1fr)); gap: 6px; padding: 0 0 22px; border-bottom: 1px solid var(--local-border); }
 .wizard-steps button { display: flex; align-items: center; gap: 9px; min-width: 0; padding: 10px 9px; color: var(--local-muted); background: transparent; border: 1px solid transparent; border-radius: 6px; text-align: left; transition: background-color .18s, border-color .18s; }
 .wizard-steps button b { font-size: 11px; line-height: 1.4; }
 .wizard-steps button > span { display: grid; place-items: center; width: 28px; height: 28px; flex: none; border: 1px solid var(--local-border); border-radius: 50%; font-size: 11px; font-weight: 700; }
