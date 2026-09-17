@@ -6,8 +6,8 @@ import FunctionalNewDeal from "@/components/FunctionalNewDeal";
 import FunctionalDashboard from "@/components/FunctionalDashboard";
 import FunctionalDeals from "@/components/FunctionalDeals";
 import DealView from "@/components/DealView";
-import FunctionalBills from "@/components/FunctionalBills";
-import FunctionalFinances from "@/components/FunctionalFinances";
+import { LocalBills as FunctionalBills, LocalFinances as FunctionalFinances } from "@/features/deals/LocalPreviewPages";
+import "@/features/deals/deals.css";
 
 const navItems = [["Dashboard", "/", LayoutDashboard], ["Deals", "/deals", BriefcaseBusiness], ["Bills", "/bills", FileText], ["New Deal", "/new-deal", Plus], ["Finances", "/finances", CircleDollarSign], ["Follow-ups", "/follow-ups", CalendarDays], ["Settings", "/settings", SettingsIcon]];
 
@@ -21,5 +21,22 @@ function FollowUps() { const followups = [["Meera Shah", "+91 98765 43210", "Buy
 function FollowRow({ row, i }) { return <div className="follow-row" data-testid={`follow-up-row-${i}`}><div className="person-avatar">{row[0].split(" ").map(x => x[0]).join("")}</div><div className="follow-person"><b>{row[0]}</b><span><Phone size={12}/>{row[1]}</span></div><StatusPill tone={row[2] === "Buyer" ? "blue" : "gold"}>{row[2]}</StatusPill><div className="follow-bike"><Bike size={15}/><b>{row[3]}</b></div><div className="follow-due"><span>Amount due</span><b>{row[4]}</b></div><div className="follow-date"><span>Due date</span><b>{row[5]}</b></div><button className="open-button" data-testid={`open-follow-up-${i}`}>Open <ArrowUpRight size={14}/></button></div> }
 function Settings() { return <><PageHeader eyebrow="Workspace preferences" title="Settings" subtitle="Manage your profile and showroom preferences."/><div className="settings-grid"><section className="settings-section"><SectionTitle title="Account"/><div className="profile-card"><div className="large-avatar">AK</div><div><h3>Alex Kumar</h3><p>alex@metromotors.in</p><StatusPill tone="gold">Owner</StatusPill></div><button className="icon-button" aria-label="Edit profile" data-testid="edit-profile-button"><Pencil size={16}/></button></div><div className="settings-fields"><SettingField label="Full name" value="Alex Kumar"/><SettingField label="Email address" value="alex@metromotors.in"/><SettingField label="Role" value="Owner"/></div></section><section className="settings-section"><SectionTitle title="Active Sessions" action={<StatusPill>1 active</StatusPill>}/><div className="session-row"><div className="session-icon"><Zap size={17}/></div><div><b>Chrome on Windows</b><span>New Delhi, India · Current session</span></div><span className="current-dot"><i/>Active</span></div></section><section className="settings-section"><SectionTitle title="Showroom"/><div className="settings-fields"><SettingField label="Showroom name" value="Metro Motors"/><SettingField label="Currency" value="Indian Rupee (₹)"/><SettingField label="Date format" value="DD MMM YYYY"/></div><Button primary icon={<Check size={16}/>} testid="save-settings-button">Save changes</Button></section></div></> }
 function SettingField({ label, value }) { return <label className="setting-field"><span>{label}</span><div>{value}<Pencil size={14}/></div></label> }
-function App() { const [dark, setDark] = useState(true); return <BrowserRouter><AppShell dark={dark} setDark={setDark}><Routes><Route path="/" element={<FunctionalDashboard/>}/><Route path="/deals" element={<FunctionalDeals/>}/><Route path="/deals/:dealId" element={<DealView/>}/><Route path="/bills" element={<FunctionalBills/>}/><Route path="/new-deal" element={<FunctionalNewDeal/>}/><Route path="/new-deal/:dealId" element={<FunctionalNewDeal/>}/><Route path="/finances" element={<FunctionalFinances/>}/><Route path="/follow-ups" element={<FollowUps/>}/><Route path="/settings" element={<Settings/>}/><Route path="*" element={<FunctionalDashboard/>}/></Routes></AppShell></BrowserRouter> }
+function App() {
+  const [dark, setDark] = useState(true);
+  return <BrowserRouter><AppShell dark={dark} setDark={setDark}>
+    <div className="local-mode-label" data-testid="browser-local-mode">Browser-local preview · No cloud sync</div>
+    <Routes>
+      <Route path="/" element={<FunctionalDashboard/>}/>
+      <Route path="/deals" element={<FunctionalDeals/>}/>
+      <Route path="/deals/:dealId" element={<DealView/>}/>
+      <Route path="/bills" element={<FunctionalBills/>}/>
+      <Route path="/new-deal" element={<FunctionalNewDeal/>}/>
+      <Route path="/new-deal/:dealId" element={<FunctionalNewDeal/>}/>
+      <Route path="/finances" element={<FunctionalFinances/>}/>
+      <Route path="/follow-ups" element={<FollowUps/>}/>
+      <Route path="/settings" element={<Settings/>}/>
+      <Route path="*" element={<FunctionalDashboard/>}/>
+    </Routes>
+  </AppShell></BrowserRouter>;
+}
 export default App;
