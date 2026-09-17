@@ -15,35 +15,29 @@ export function validateStep(deal, step) {
   const errors = {};
   const required = (key, value, label) => { if (!String(value ?? "").trim()) errors[key] = `${label} is required.`; };
   if (step === 0) {
-    ["vehicle_name", "make", "model", "year", "vehicle_number", "bought_date"].forEach(key => required(`vehicle.${key}`, deal.vehicle[key], key.replaceAll("_", " ")));
+    required("vehicle.vehicle_name", deal.vehicle.vehicle_name, "Vehicle name");
     if (deal.vehicle.year && (!/^\d{4}$/.test(deal.vehicle.year) || +deal.vehicle.year < 1900 || +deal.vehicle.year > new Date().getFullYear() + 1)) errors["vehicle.year"] = "Enter a valid four-digit year.";
     ["engine_cc", "odometer"].forEach(key => { if (deal.vehicle[key] !== "" && (!Number.isFinite(+deal.vehicle[key]) || +deal.vehicle[key] < 0)) errors[`vehicle.${key}`] = "Enter a non-negative number."; });
-    if (deal.status === "Sold") required("vehicle.sold_date", deal.vehicle.sold_date, "Sold date");
-    if (deal.vehicle.sold_date && deal.vehicle.sold_date < deal.vehicle.bought_date) errors["vehicle.sold_date"] = "Sold date cannot be before bought date.";
+    if (deal.vehicle.sold_date && deal.vehicle.bought_date && deal.vehicle.sold_date < deal.vehicle.bought_date) errors["vehicle.sold_date"] = "Sold date cannot be before bought date.";
   }
   if (step === 1 || step === 2) {
     const people = [
-      [step === 1 ? "seller" : "buyer", step === 1 ? deal.seller : deal.buyer, step === 1 || deal.status === "Sold"],
-      [`witnesses.${step - 1}`, deal.witnesses[step - 1], false],
+      [step === 1 ? "seller" : "buyer", step === 1 ? deal.seller : deal.buyer],
+      [`witnesses.${step - 1}`, deal.witnesses[step - 1]],
     ];
-    people.forEach(([prefix, p, needed]) => {
-      const entered = needed || !!(p.name || p.phone || p.address || p.id_number || p.is_dealer);
-      if (entered) { required(`${prefix}.name`, p.name, "Name"); required(`${prefix}.phone`, p.phone, "Phone"); }
+    people.forEach(([prefix, p]) => {
       ["phone", "alternate_phone"].forEach(key => { if (p[key] && !/^(?:\+91[\s-]?)?[6-9]\d{9}$/.test(p[key].replace(/[\s-]/g, ""))) errors[`${prefix}.${key}`] = "Enter a valid 10-digit Indian mobile number."; });
       if (p.pincode && !/^[1-9]\d{5}$/.test(p.pincode)) errors[`${prefix}.pincode`] = "Enter a six-digit PIN code.";
       if (p.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(p.email)) errors[`${prefix}.email`] = "Enter a valid email address.";
-      if (p.is_dealer) required(`${prefix}.dealer_name`, p.dealer_name, "Dealership name");
     });
   }
   if (step === 3) {
-    required("payments.purchase_price", deal.payments.purchase_price, "Purchase price");
-    if (deal.status === "Sold") required("payments.selling_price", deal.payments.selling_price, "Selling price");
     ["purchase_price", "selling_price", "paid_to_seller", "received_from_buyer"].forEach(key => {
       const value = deal.payments[key];
       if (value !== "" && (!Number.isFinite(+value) || +value < 0 || +value > 999999999)) errors[`payments.${key}`] = "Enter an amount between 0 and 999,999,999.";
     });
-    if (+deal.payments.paid_to_seller > +deal.payments.purchase_price) errors["payments.paid_to_seller"] = "Cannot exceed the purchase price.";
-    if (+deal.payments.received_from_buyer > +deal.payments.selling_price) errors["payments.received_from_buyer"] = "Cannot exceed the selling price.";
+    if (deal.payments.purchase_price !== "" && +deal.payments.paid_to_seller > +deal.payments.purchase_price) errors["payments.paid_to_seller"] = "Cannot exceed the purchase price.";
+    if (deal.payments.selling_price !== "" && +deal.payments.received_from_buyer > +deal.payments.selling_price) errors["payments.received_from_buyer"] = "Cannot exceed the selling price.";
   }
   return errors;
 }

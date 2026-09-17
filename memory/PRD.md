@@ -7,7 +7,7 @@ DM Sans / Manrope typography, responsive sidebar, Light/Dark toggle. Navigation:
 Dashboard, Deals, Bills, New Deal, Finances, Follow-ups, Settings.
 
 ## Current approved scope — 2026-09-17
-Base UI-phase directive (subject to the witness relocation below):
+Base UI-phase directive (subject to the latest changes below):
 > Yes, continue with the frontend UI first, but follow these constraints exactly:
 > Do NOT redesign the existing Metro Motors dark blue + gold theme or sidebar.
 > Build the complete 6-step New Deal wizard with all fields, 10 vehicle photos,
@@ -38,6 +38,16 @@ Base UI-phase directive (subject to the witness relocation below):
   or translations without new user approval.
 - Preserve the existing theme, sidebar, and navigation order.
 - User language: English.
+
+### Latest required-field change — 2026-09-17
+> only Vehicle name is required fields
+
+- **Vehicle name is the sole required field across all five steps**, for In Stock
+  and Sold deals. Empty/whitespace name shows `Vehicle name is required.`
+- All other vehicle, seller/buyer, witness, dealership, date and payment fields
+  are optional, including partially entered party/witness records.
+- Format/range validation still applies when optional values are entered.
+- Removed all other required markers and conditional Sold/dealer requirements.
 
 ## Personas
 - Showroom owner: creates purchases/sales, tracks stock and RC transfers.
@@ -75,8 +85,8 @@ Base UI-phase directive (subject to the witness relocation below):
 2. **Seller:** name, father/spouse, mobile/alternate, email/address/city/state/PIN,
    ID type/number and PAN; dealer toggle, dealership name/GST/address; 10 photos.
    Includes optional **Seller witness** with name, phone, address, ID and one photo.
-3. **Buyer:** same fields and dealer toggle; 10 photos. Buyer optional In Stock,
-   required for Sold deals. Includes optional **Buyer witness** with the same fields
+3. **Buyer:** same optional fields and dealer toggle; 10 photos. Optional for both
+   In Stock and Sold deals. Includes optional **Buyer witness** with the same fields
    and one photo.
 4. **Payments:** purchase/selling prices, paid to seller/received from buyer,
    method/date/reference/notes; live commission and seller/buyer balances.
@@ -91,11 +101,14 @@ Base UI-phase directive (subject to the witness relocation below):
 - Navigation/progress/footer updated to five steps; original theme/sidebar unchanged.
 
 ### Local workflow behavior
-- Required-field and mobile/email/year/date/amount validation, including Sold rules.
+- Only Vehicle name required; format checks for provided mobile/email/year/date/amount values.
 - Forward step navigation validates preceding steps; previous navigation retains state.
-- Seller required; partial optional parties/witnesses require name and phone.
-- Purchase price required; selling price required for Sold; negative commissions
-  supported and visibly flagged; price omission displays dash, not false profit.
+- All other fields optional; partial parties/witnesses/dealer records do not create
+  additional required fields, regardless of stock status.
+- Purchase and selling prices optional; negative commissions supported and visibly
+  flagged when both prices supplied; price omission displays dash, not false profit.
+- Paid/received versus price comparisons run only when that price is provided;
+  supplying a paid/received amount alone does not force a price entry.
 - Photo support: 32 named slots, local JPG/PNG/WebP selection, preview modal,
   replace/remove; max 10 MB each and decode validation; invalid choices do not
   overwrite the current photo. Object URLs revoked on preview unmount.
@@ -150,6 +163,10 @@ Base UI-phase directive (subject to the witness relocation below):
   per-party validation, empty-witness optional behavior, payment validation,
   distinct witness details/photos through save/reload/edit, summary shortcuts,
   desktop/320px layouts and no API calls. All tests passed; no fixes outstanding.
+- `/app/test_reports/iteration_9.json`: sole required Vehicle name / exact error,
+  name-only save/reload In Stock and Sold, partial optional people/dealers/witnesses,
+  optional field format checks, guarded payment comparisons and missing-price
+  commission dash. All focused tests passed; no product defects; test records cleaned.
 
 ## Prior work retained — 2026-09-16
 - Built original seven-screen dashboard experience with responsive dark/light themes.
@@ -183,6 +200,6 @@ Base UI-phase directive (subject to the witness relocation below):
 - Real Follow-ups, financial reports and reminders.
 
 ## Next action items
-1. User reviews Seller witness and Buyer witness within their respective steps.
+1. User reviews name-only deal creation; additional details can be filled later.
 2. Keep all persistence browser-local until expressly authorized otherwise.
 3. Suggested next enhancement: autosave unfinished deal drafts.

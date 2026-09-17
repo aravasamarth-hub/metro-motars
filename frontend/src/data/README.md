@@ -17,6 +17,12 @@ Legacy API client and legacy Bills/Finances components are retained but not rout
   witness), payments, review. `witnesses[0]` and `witnesses[1]` and their original
   photo keys are retained, so saved records require no migration after relocation.
 
+## Required fields
+Vehicle name is the only required field for every stock status. Other details,
+including partial party/witness/dealership records and all pricing, are optional.
+Optional values still undergo format/range checks when supplied; payment comparisons
+are only enforced when the corresponding purchase/selling price is supplied.
+
 ## Bill numbering
 `MM-YY-NNNN`, e.g. `MM-26-0001`. The header is a **preview**, not a reservation.
 The year-specific sequence and the record commit in one browser transaction so
