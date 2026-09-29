@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { BrowserRouter, NavLink, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import { ArrowLeft, ArrowUpRight, Bike, BriefcaseBusiness, CalendarDays, Camera, Check, ChevronDown, CircleDollarSign, ClipboardList, CreditCard, FileText, LayoutDashboard, LogOut, Menu, MoreHorizontal, Moon, Pencil, Phone, Plus, Printer, Search, Settings as SettingsIcon, Sun, Trash2, UsersRound, WalletCards, X, Zap } from "lucide-react";
 import "@/App.css";
@@ -9,34 +9,289 @@ import DealView from "@/components/DealView";
 import { LocalBills as FunctionalBills, LocalFinances as FunctionalFinances } from "@/features/deals/LocalPreviewPages";
 import "@/features/deals/deals.css";
 
-const navItems = [["Dashboard", "/", LayoutDashboard], ["Deals", "/deals", BriefcaseBusiness], ["Bills", "/bills", FileText], ["New Deal", "/new-deal", Plus], ["Finances", "/finances", CircleDollarSign], ["Follow-ups", "/follow-ups", CalendarDays], ["Settings", "/settings", SettingsIcon]];
+import { LanguageProvider, useLanguage } from "@/features/i18n/LanguageContext";
+import { LanguageSwitcher } from "@/features/i18n/LanguageSwitcher";
 
-function AppShell({ children, dark, setDark }) { const location = useLocation(); const [mobileNav, setMobileNav] = useState(false); const pageName = navItems.find(([, path]) => path === location.pathname)?.[0] || (location.pathname.startsWith("/new-deal") ? "New Deal" : location.pathname.startsWith("/deals") ? "Deals" : "Dashboard"); return <div className={`app-shell ${dark ? "theme-dark" : "theme-light"}`}><aside className={`sidebar ${mobileNav ? "is-open" : ""}`} data-testid="sidebar"><div className="brand-lockup" data-testid="brand-lockup"><div className="brand-mark">MM</div><div><strong>METRO</strong><strong>MOTORS</strong><small>RESELLING SHOWROOM</small></div></div><div className="sidebar-label">MAIN MENU</div><nav className="main-nav" aria-label="Main navigation">{navItems.map(([label, path, Icon]) => <NavLink key={path} to={path} onClick={() => setMobileNav(false)} className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`} data-testid={`nav-${label.toLowerCase().replace(" ", "-")}`}><Icon size={18}/><span>{label}</span>{label === "New Deal" && <span className="nav-plus">+</span>}</NavLink>)}</nav><div className="sidebar-footer"><div className="support-card"><Zap size={17}/><div><b>Quick actions</b><span>Keep your showroom moving.</span></div></div><button className="logout-link" data-testid="logout-button"><LogOut size={17}/> Logout</button><div className="version">Metro Motors <span>v1.0</span></div></div></aside>{mobileNav && <button className="mobile-overlay" onClick={() => setMobileNav(false)} aria-label="Close menu" data-testid="mobile-menu-overlay"/>}<main className="main-content"><header className="topbar"><button className="icon-button mobile-menu" onClick={() => setMobileNav(true)} aria-label="Open menu" data-testid="mobile-menu-button"><Menu size={21}/></button><div className="breadcrumb"><span>Metro Motors</span><span>/</span><b>{pageName}</b></div><div className="topbar-actions"><button className="theme-toggle" onClick={() => setDark(!dark)} data-testid="theme-toggle"><span className={!dark ? "selected" : ""}><Sun size={15}/> Light</span><span className={dark ? "selected" : ""}><Moon size={15}/> Dark</span></button><span className="owner-badge" data-testid="owner-badge">OWNER</span><div className="user-chip" data-testid="user-area"><div className="avatar">AK</div><div className="user-copy"><b>Alex Kumar</b><span>Administrator</span></div><ChevronDown size={15}/></div></div></header><div className="page-content">{children}</div></main></div> }
+const navItems = [
+  ["nav.dashboard", "Dashboard", "/", LayoutDashboard],
+  ["nav.deals", "Deals", "/deals", BriefcaseBusiness],
+  ["nav.bills", "Bills", "/bills", FileText],
+  ["nav.new_deal", "New Deal", "/new-deal", Plus],
+  ["nav.finances", "Finances", "/finances", CircleDollarSign],
+  ["nav.follow_ups", "Follow-ups", "/follow-ups", CalendarDays],
+  ["nav.settings", "Settings", "/settings", SettingsIcon],
+];
+
+function AppShell({ children, dark, setDark }) {
+  const { t } = useLanguage();
+  const location = useLocation();
+  const [mobileNav, setMobileNav] = useState(false);
+  const currentNav = navItems.find(([, , path]) => path === location.pathname);
+  const pageName = currentNav
+    ? t(currentNav[0], currentNav[1])
+    : location.pathname.startsWith("/new-deal")
+    ? t("nav.new_deal", "New Deal")
+    : location.pathname.startsWith("/deals")
+    ? t("nav.deals", "Deals")
+    : t("nav.dashboard", "Dashboard");
+
+  return (
+    <div className={`app-shell ${dark ? "theme-dark" : "theme-light"}`}>
+      <aside className={`sidebar ${mobileNav ? "is-open" : ""}`} data-testid="sidebar">
+        <div className="brand-lockup" data-testid="brand-lockup">
+          <div className="brand-mark">MM</div>
+          <div>
+            <strong>METRO</strong>
+            <strong>MOTORS</strong>
+            <small>{t("brand.subtitle", "RESELLING SHOWROOM")}</small>
+          </div>
+        </div>
+        <div className="sidebar-label">{t("nav.main_menu", "MAIN MENU")}</div>
+        <nav className="main-nav" aria-label="Main navigation">
+          {navItems.map(([key, label, path, Icon]) => (
+            <NavLink
+              key={path}
+              to={path}
+              onClick={() => setMobileNav(false)}
+              className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`}
+              data-testid={`nav-${label.toLowerCase().replace(" ", "-")}`}
+            >
+              <Icon size={18} />
+              <span>{t(key, label)}</span>
+              {label === "New Deal" && <span className="nav-plus">+</span>}
+            </NavLink>
+          ))}
+        </nav>
+        <div className="sidebar-footer">
+          <div className="support-card">
+            <Zap size={17} />
+            <div>
+              <b>{t("nav.quick_actions", "Quick actions")}</b>
+              <span>{t("nav.showroom_moving", "Keep your showroom moving.")}</span>
+            </div>
+          </div>
+          <button className="logout-link" data-testid="logout-button">
+            <LogOut size={17} /> {t("nav.logout", "Logout")}
+          </button>
+          <div className="version">
+            Metro Motors <span>v1.0</span>
+          </div>
+        </div>
+      </aside>
+      {mobileNav && (
+        <button
+          className="mobile-overlay"
+          onClick={() => setMobileNav(false)}
+          aria-label="Close menu"
+          data-testid="mobile-menu-overlay"
+        />
+      )}
+      <main className="main-content">
+        <header className="topbar">
+          <button
+            className="icon-button mobile-menu"
+            onClick={() => setMobileNav(true)}
+            aria-label="Open menu"
+            data-testid="mobile-menu-button"
+          >
+            <Menu size={21} />
+          </button>
+          <div className="breadcrumb">
+            <span>Metro Motors</span>
+            <span>/</span>
+            <b>{pageName}</b>
+          </div>
+          <div className="topbar-actions">
+            <button
+              type="button"
+              className="theme-toggle"
+              onClick={() => setDark(!dark)}
+              data-testid="theme-toggle"
+              aria-label={dark ? "Switch to light mode" : "Switch to dark mode"}
+              title={dark ? "Switch to light mode" : "Switch to dark mode"}
+            >
+              {dark ? (
+                <>
+                  <Sun size={15} strokeWidth={2.2} className="theme-toggle-icon" />
+                  <span>{t("topbar.light", "Light")}</span>
+                </>
+              ) : (
+                <>
+                  <Moon size={15} strokeWidth={2.2} className="theme-toggle-icon" />
+                  <span>{t("topbar.dark", "Dark")}</span>
+                </>
+              )}
+            </button>
+            <LanguageSwitcher />
+            <span className="owner-badge" data-testid="owner-badge">
+              {t("topbar.owner", "OWNER")}
+            </span>
+            <div className="user-chip" data-testid="user-area">
+              <div className="avatar">AK</div>
+              <div className="user-copy">
+                <b>Alex Kumar</b>
+                <span>{t("topbar.administrator", "Administrator")}</span>
+              </div>
+              <ChevronDown size={15} />
+            </div>
+          </div>
+        </header>
+        <div className="page-content">{children}</div>
+      </main>
+    </div>
+  );
+}
+
 const PageHeader = ({ eyebrow, title, subtitle, action }) => <div className="page-header"><div><div className="eyebrow">{eyebrow}</div><h1 data-testid="page-title">{title}</h1>{subtitle && <p>{subtitle}</p>}</div>{action}</div>;
 const Button = ({ children, primary = false, onClick, icon, testid }) => <button className={`button ${primary ? "button-primary" : "button-secondary"}`} onClick={onClick} data-testid={testid || "action-button"}>{icon}{children}</button>;
 const StatusPill = ({ children, tone = "green" }) => <span className={`status-pill ${tone}`} data-testid={`status-${String(children).toLowerCase().replaceAll(" ", "-")}`}>{children}</span>;
 const SectionTitle = ({ title, action }) => <div className="section-title"><h2>{title}</h2>{action}</div>;
 
-function FollowUps() { const followups = [["Meera Shah", "+91 98765 43210", "Buyer", "Triumph Street Twin", "₹42,000", "Today"],["Rohan Joshi", "+91 99887 11223", "Seller", "KTM Duke 390", "₹18,500", "Today"],["Priya Nair", "+91 98111 22334", "Buyer", "Honda H'ness CB350", "₹28,000", "23 Jun 2025"]]; return <><PageHeader eyebrow="Customer relationships" title="Follow-ups" subtitle="Stay on top of every conversation and outstanding payment." action={<Button primary icon={<Plus size={17}/>} testid="add-follow-up-button">Add follow-up</Button>}/><section className="follow-section"><SectionTitle title="Today & Overdue" action={<StatusPill tone="red">2 due today</StatusPill>}/><div className="follow-list">{followups.slice(0,2).map((row, i) => <FollowRow row={row} key={row[0]} i={i}/>)}</div></section><section className="follow-section"><SectionTitle title="Upcoming" action={<button className="text-button" data-testid="view-all-follow-ups">View all <ArrowUpRight size={15}/></button>}/><div className="follow-list">{followups.slice(2).map((row, i) => <FollowRow row={row} key={row[0]} i={i + 2}/>)}</div></section></> }
-function FollowRow({ row, i }) { return <div className="follow-row" data-testid={`follow-up-row-${i}`}><div className="person-avatar">{row[0].split(" ").map(x => x[0]).join("")}</div><div className="follow-person"><b>{row[0]}</b><span><Phone size={12}/>{row[1]}</span></div><StatusPill tone={row[2] === "Buyer" ? "blue" : "gold"}>{row[2]}</StatusPill><div className="follow-bike"><Bike size={15}/><b>{row[3]}</b></div><div className="follow-due"><span>Amount due</span><b>{row[4]}</b></div><div className="follow-date"><span>Due date</span><b>{row[5]}</b></div><button className="open-button" data-testid={`open-follow-up-${i}`}>Open <ArrowUpRight size={14}/></button></div> }
-function Settings() { return <><PageHeader eyebrow="Workspace preferences" title="Settings" subtitle="Manage your profile and showroom preferences."/><div className="settings-grid"><section className="settings-section"><SectionTitle title="Account"/><div className="profile-card"><div className="large-avatar">AK</div><div><h3>Alex Kumar</h3><p>alex@metromotors.in</p><StatusPill tone="gold">Owner</StatusPill></div><button className="icon-button" aria-label="Edit profile" data-testid="edit-profile-button"><Pencil size={16}/></button></div><div className="settings-fields"><SettingField label="Full name" value="Alex Kumar"/><SettingField label="Email address" value="alex@metromotors.in"/><SettingField label="Role" value="Owner"/></div></section><section className="settings-section"><SectionTitle title="Active Sessions" action={<StatusPill>1 active</StatusPill>}/><div className="session-row"><div className="session-icon"><Zap size={17}/></div><div><b>Chrome on Windows</b><span>New Delhi, India · Current session</span></div><span className="current-dot"><i/>Active</span></div></section><section className="settings-section"><SectionTitle title="Showroom"/><div className="settings-fields"><SettingField label="Showroom name" value="Metro Motors"/><SettingField label="Currency" value="Indian Rupee (₹)"/><SettingField label="Date format" value="DD MMM YYYY"/></div><Button primary icon={<Check size={16}/>} testid="save-settings-button">Save changes</Button></section></div></> }
+function FollowUps() {
+  const { t } = useLanguage();
+  const followups = [
+    ["Meera Shah", "+91 98765 43210", "Buyer", "Triumph Street Twin", "₹42,000", "Today"],
+    ["Rohan Joshi", "+91 99887 11223", "Seller", "KTM Duke 390", "₹18,500", "Today"],
+    ["Priya Nair", "+91 98111 22334", "Buyer", "Honda H'ness CB350", "₹28,000", "23 Jun 2025"]
+  ];
+  return (
+    <>
+      <PageHeader
+        eyebrow={t("followups.eyebrow", "Customer relationships")}
+        title={t("followups.title", "Follow-ups")}
+        subtitle={t("followups.subtitle", "Stay on top of every conversation and outstanding payment.")}
+        action={<Button primary icon={<Plus size={17}/>} testid="add-follow-up-button">{t("followups.add_button", "Add follow-up")}</Button>}
+      />
+      <section className="follow-section">
+        <SectionTitle title={t("followups.today_overdue", "Today & Overdue")} action={<StatusPill tone="red">{t("followups.due_today_count", "2 due today")}</StatusPill>}/>
+        <div className="follow-list">{followups.slice(0,2).map((row, i) => <FollowRow row={row} key={row[0]} i={i}/>)}</div>
+      </section>
+      <section className="follow-section">
+        <SectionTitle title={t("followups.upcoming", "Upcoming")} action={<button className="text-button" data-testid="view-all-follow-ups">{t("followups.view_all", "View all")} <ArrowUpRight size={15}/></button>}/>
+        <div className="follow-list">{followups.slice(2).map((row, i) => <FollowRow row={row} key={row[0]} i={i + 2}/>)}</div>
+      </section>
+    </>
+  );
+}
+
+function FollowRow({ row, i }) {
+  const { t } = useLanguage();
+  const roleLabel = row[2] === "Buyer" ? t("followups.buyer", "Buyer") : t("followups.seller", "Seller");
+  const dateVal = row[5] === "Today" ? t("followups.today", "Today") : row[5];
+  return (
+    <div className="follow-row" data-testid={`follow-up-row-${i}`}>
+      <div className="person-avatar">{row[0].split(" ").map(x => x[0]).join("")}</div>
+      <div className="follow-person"><b>{row[0]}</b><span><Phone size={12}/>{row[1]}</span></div>
+      <StatusPill tone={row[2] === "Buyer" ? "blue" : "gold"}>{roleLabel}</StatusPill>
+      <div className="follow-bike"><Bike size={15}/><b>{row[3]}</b></div>
+      <div className="follow-due"><span>{t("followups.amount_due", "Amount due")}</span><b>{row[4]}</b></div>
+      <div className="follow-date"><span>{t("followups.due_date", "Due date")}</span><b>{dateVal}</b></div>
+      <button className="open-button" data-testid={`open-follow-up-${i}`}>{t("followups.open", "Open")} <ArrowUpRight size={14}/></button>
+    </div>
+  );
+}
+
+function Settings() {
+  const { t } = useLanguage();
+  return (
+    <>
+      <PageHeader
+        eyebrow={t("settings.eyebrow", "Workspace preferences")}
+        title={t("settings.title", "Settings")}
+        subtitle={t("settings.subtitle", "Manage your profile and showroom preferences.")}
+      />
+      <div className="settings-grid">
+        <section className="settings-section">
+          <SectionTitle title={t("settings.account", "Account")}/>
+          <div className="profile-card">
+            <div className="large-avatar">AK</div>
+            <div>
+              <h3>Alex Kumar</h3>
+              <p>alex@metromotors.in</p>
+              <StatusPill tone="gold">{t("settings.owner", "Owner")}</StatusPill>
+            </div>
+            <button className="icon-button" aria-label={t("settings.edit_profile", "Edit profile")} data-testid="edit-profile-button"><Pencil size={16}/></button>
+          </div>
+          <div className="settings-fields">
+            <SettingField label={t("settings.full_name", "Full name")} value="Alex Kumar"/>
+            <SettingField label={t("settings.email_address", "Email address")} value="alex@metromotors.in"/>
+            <SettingField label={t("settings.role", "Role")} value={t("settings.owner", "Owner")}/>
+          </div>
+        </section>
+        <section className="settings-section">
+          <SectionTitle title={t("settings.active_sessions", "Active Sessions")} action={<StatusPill>{t("settings.one_active", "1 active")}</StatusPill>}/>
+          <div className="session-row">
+            <div className="session-icon"><Zap size={17}/></div>
+            <div><b>{t("settings.current_device", "Chrome on Windows")}</b><span>{t("settings.current_location", "New Delhi, India · Current session")}</span></div>
+            <span className="current-dot"><i/>{t("settings.active_status", "Active")}</span>
+          </div>
+        </section>
+        <section className="settings-section">
+          <SectionTitle title={t("settings.showroom", "Showroom")}/>
+          <div className="settings-fields">
+            <SettingField label={t("settings.showroom_name", "Showroom name")} value="Metro Motors"/>
+            <SettingField label={t("settings.currency", "Currency")} value={t("settings.currency_val", "Indian Rupee (₹)")}/>
+            <SettingField label={t("settings.date_format", "Date format")} value="DD MMM YYYY"/>
+          </div>
+          <Button primary icon={<Check size={16}/>} testid="save-settings-button">{t("settings.save_changes", "Save changes")}</Button>
+        </section>
+      </div>
+    </>
+  );
+}
+
 function SettingField({ label, value }) { return <label className="setting-field"><span>{label}</span><div>{value}<Pencil size={14}/></div></label> }
+
+function LocalModeLabel() {
+  const { t } = useLanguage();
+  return (
+    <div className="local-mode-label" data-testid="browser-local-mode">
+      {t("common.browser_local_mode", "Browser-local preview · No cloud sync")}
+    </div>
+  );
+}
+
 function App() {
-  const [dark, setDark] = useState(true);
-  return <BrowserRouter><AppShell dark={dark} setDark={setDark}>
-    <div className="local-mode-label" data-testid="browser-local-mode">Browser-local preview · No cloud sync</div>
-    <Routes>
-      <Route path="/" element={<FunctionalDashboard/>}/>
-      <Route path="/deals" element={<FunctionalDeals/>}/>
-      <Route path="/deals/:dealId" element={<DealView/>}/>
-      <Route path="/bills" element={<FunctionalBills/>}/>
-      <Route path="/new-deal" element={<FunctionalNewDeal/>}/>
-      <Route path="/new-deal/:dealId" element={<FunctionalNewDeal/>}/>
-      <Route path="/finances" element={<FunctionalFinances/>}/>
-      <Route path="/follow-ups" element={<FollowUps/>}/>
-      <Route path="/settings" element={<Settings/>}/>
-      <Route path="*" element={<FunctionalDashboard/>}/>
-    </Routes>
-  </AppShell></BrowserRouter>;
+  const [dark, setDark] = useState(() => {
+    try {
+      const saved = localStorage.getItem("mm_theme");
+      return saved !== null ? saved === "dark" : true;
+    } catch {
+      return true;
+    }
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem("mm_theme", dark ? "dark" : "light");
+    } catch {}
+    if (dark) {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  }, [dark]);
+
+  return (
+    <LanguageProvider>
+      <BrowserRouter>
+        <AppShell dark={dark} setDark={setDark}>
+          <LocalModeLabel />
+          <Routes>
+            <Route path="/" element={<FunctionalDashboard />} />
+            <Route path="/deals" element={<FunctionalDeals />} />
+            <Route path="/deals/:dealId" element={<DealView />} />
+            <Route path="/bills" element={<FunctionalBills />} />
+            <Route path="/new-deal" element={<FunctionalNewDeal />} />
+            <Route path="/new-deal/:dealId" element={<FunctionalNewDeal />} />
+            <Route path="/finances" element={<FunctionalFinances />} />
+            <Route path="/follow-ups" element={<FollowUps />} />
+            <Route path="/settings" element={<Settings />} />
+            <Route path="*" element={<FunctionalDashboard />} />
+          </Routes>
+        </AppShell>
+      </BrowserRouter>
+    </LanguageProvider>
+  );
 }
 export default App;

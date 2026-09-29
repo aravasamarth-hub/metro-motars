@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { dealRepository } from "@/data/dealRepository";
-import { emptyDeal, validateDeal, validateStep } from "./dealModel";
+import { emptyDeal, isStepFilled, STEPS, validateDeal, validateStep } from "./dealModel";
 export const useDealWizard = (dealId, onSaved) => {
   const [deal, setDeal] = useState(emptyDeal);
   const [step, setStep] = useState(0);
@@ -30,8 +30,8 @@ export const useDealWizard = (dealId, onSaved) => {
   const updateWitness = (index, key, value) => change(current => ({ ...current, witnesses: current.witnesses.map((p, i) => i === index ? { ...p, [key]: value } : p) }));
   const setPhoto = (key, value) => change(current => { const photos = { ...current.photos }; if (value) photos[key] = value; else delete photos[key]; return { ...current, photos }; });
   const showErrors = (newErrors, targetStep) => { setErrors(newErrors); setMessage("Please check the highlighted fields."); setStep(targetStep); window.scrollTo({ top: 0, behavior: "smooth" }); };
-  const go = target => {
-    if (target > step) {
+  const go = (target, validate = true) => {
+    if (validate && target > step) {
       for (let i = 0; i < target; i++) { const invalid = validateStep(deal, i); if (Object.keys(invalid).length) { showErrors(invalid, i); return; } }
     }
     setStep(target); setErrors({}); setMessage(""); window.scrollTo({ top: 0, behavior: "smooth" });

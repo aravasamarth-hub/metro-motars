@@ -1,22 +1,35 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, ArrowRight, Check, Save } from "lucide-react";
-import { STEPS } from "@/features/deals/dealModel";
+import { ArrowLeft, ArrowRight, Check, Save, CheckCircle2, AlertCircle } from "lucide-react";
+import { STEPS, getStepStatus } from "@/features/deals/dealModel";
 import { useDealWizard } from "@/features/deals/useDealWizard";
 import { VehicleStep } from "@/features/deals/VehicleStep";
 import { PersonStep } from "@/features/deals/PersonStep";
+import { AgentStep } from "@/features/deals/AgentStep";
 import { PaymentStep } from "@/features/deals/PaymentStep";
 import { ReviewStep } from "@/features/deals/DealSummary";
 import { ConfirmDialog } from "@/features/deals/LocalUI";
+import { useLanguage } from "@/features/i18n/LanguageContext";
+
+const STEP_TRANSLATION_KEYS = [
+  "step.vehicle",
+  "step.seller",
+  "step.buyer",
+  "step.agent",
+  "step.payments",
+  "step.notes_save",
+];
 
 export default function FunctionalNewDeal() {
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const { dealId } = useParams();
   const [discardTarget, setDiscardTarget] = useState("");
   const wizard = useDealWizard(dealId, saved => navigate(`/deals/${saved.id}`, { state: { saved: saved.bill_number } }));
   const { deal, step, go, save, errors, loading, loadError, busy, message } = wizard;
   const isReview = step === STEPS.length - 1;
   const back = () => wizard.dirty ? setDiscardTarget("/deals") : navigate("/deals");
+
   useEffect(() => {
     if (!wizard.dirty) return;
     const guard = event => {
@@ -30,23 +43,88 @@ export default function FunctionalNewDeal() {
     return () => document.removeEventListener("click", guard, true);
   }, [wizard.dirty]);
   return <div className="local-page wizard-page">
-    <button className="back-link wizard-back" onClick={back} data-testid="new-deal-back"><ArrowLeft size={16}/> Deals</button>
-    <div className="page-header"><div><div className="eyebrow">Deal workspace</div><h1 data-testid="page-title">{dealId ? "Edit Deal" : "New Deal"}</h1></div><div className="wizard-bill"><span>Bill number{!dealId && " · Preview"}</span><strong data-testid="wizard-bill-number">{loading ? "…" : deal.bill_number}</strong></div></div>
-    {loading ? <p role="status" data-testid="wizard-loading">Opening deal…</p> : loadError ? <div role="alert" className="workflow-message" data-testid="wizard-load-error">{loadError}</div> : <>
-      <nav className="wizard-steps" aria-label="Deal steps" data-testid="wizard-steps">{STEPS.map((name, i) => <button type="button" className={`${step === i ? "active" : ""} ${i < step ? "visited" : ""}`} key={name} onClick={() => go(i)} disabled={busy} aria-current={step === i ? "step" : undefined} data-testid={`wizard-step-${i + 1}`}><span>{i < step ? <Check size={15}/> : i + 1}</span><b>{name}</b></button>)}</nav>
-      <div className="wizard-step-heading"><h2 data-testid="wizard-step-title">{STEPS[step]}</h2><span data-testid="wizard-progress">Step {step + 1} of {STEPS.length}</span></div>
+    <button className="back-link wizard-back" onClick={back} data-testid="new-deal-back"><ArrowLeft size={16}/> {t("nav.deals", "Deals")}</button>
+    <div className="page-header"><div><div className="eyebrow">{t("deal.workspace", "Deal workspace")}</div><h1 data-testid="page-title">{dealId ? t("deal.edit_deal", "Edit Deal") : t("deal.new_deal", "New Deal")}</h1></div><div className="wizard-bill"><span>{t("deal.bill_number", "Bill number")}{!dealId && ` · ${t("deal.preview", "Preview")}`}</span><strong data-testid="wizard-bill-number">{loading ? "…" : deal.bill_number}</strong></div></div>
+    {loading ? <p role="status" data-testid="wizard-loading">{t("deal.opening", "Opening deal…")}</p> : loadError ? <div role="alert" className="workflow-message" data-testid="wizard-load-error">{loadError}</div> : <>
+      <nav className="wizard-steps-v2" aria-label="Deal steps" data-testid="wizard-steps">
+        {STEPS.map((name, i) => {
+          const active = i === step;
+          const status = getStepStatus(deal, i); // "complete" | "partial" | "empty"
+          const isComplete = status === "complete";
+          const isPartial = status === "partial";
+          const stepLabel = t(STEP_TRANSLATION_KEYS[i] || name, name);
+          return (
+            <button
+              type="button"
+              key={name}
+              className={`wsv2-item ${active ? "wsv2-active" : ""} ${isComplete && !active ? "wsv2-done" : ""} ${isPartial && !active ? "wsv2-error" : ""}`}
+              onClick={() => go(i, false)}
+              disabled={busy}
+              aria-current={active ? "step" : undefined}
+              data-testid={`wizard-step-${i + 1}`}
+              title={
+                isComplete
+                  ? `${stepLabel}: Completed`
+                  : isPartial
+                  ? `${stepLabel}: Partially filled`
+                  : `${stepLabel}: Not filled`
+              }
+            >
+              <span className="wsv2-circle">
+                {active ? (
+                  <span className="wsv2-num">{i + 1}</span>
+                ) : isComplete ? (
+                  <CheckCircle2 size={18} strokeWidth={2.5}/>
+                ) : isPartial ? (
+                  <AlertCircle size={18} strokeWidth={2.5}/>
+                ) : (
+                  <span className="wsv2-num">{i + 1}</span>
+                )}
+              </span>
+              <span className="wsv2-label">{stepLabel}</span>
+            </button>
+          );
+        })}
+      </nav>
       {message && <div className="workflow-message wizard-message" role="alert" data-testid="wizard-message">{message}<ul>{Object.entries(errors).map(([field, error]) => <li key={field} data-testid={`error-summary-${field.replaceAll(".", "-")}`}>{error}</li>)}</ul></div>}
       <form noValidate onSubmit={e => { e.preventDefault(); if (isReview) save(); else go(step + 1); }}>
         <fieldset disabled={busy} className="wizard-body" key={step}>
           {step === 0 && <VehicleStep {...wizard}/>}
           {step === 1 && <PersonStep group="seller" {...wizard}/>}
           {step === 2 && <PersonStep group="buyer" {...wizard}/>}
-          {step === 3 && <PaymentStep {...wizard}/>}
+          {step === 3 && <AgentStep {...wizard}/>}
+          {step === 4 && <PaymentStep {...wizard}/>}
           {isReview && <ReviewStep deal={deal} update={wizard.update} edit={go}/>}
         </fieldset>
-        <footer className="wizard-footer"><button type="button" className="button button-secondary" onClick={() => step ? go(step - 1) : back()} disabled={busy} data-testid="wizard-previous"><ArrowLeft size={16}/>{step ? "Previous" : "Cancel"}</button><span className="wizard-save-note" data-testid="wizard-save-note">{isReview ? "Saved on this browser only" : "Unsaved deal"}</span><button type="submit" className="button button-primary" disabled={busy} data-testid={isReview ? "save-deal-button" : "wizard-next"}>{isReview ? <><Save size={16}/>{busy ? "Saving…" : "Save Deal"}</> : <>Continue<ArrowRight size={16}/></>}</button></footer>
+        <footer className="wizard-footer">
+          <button type="button" className="button button-secondary" onClick={() => step ? go(step - 1) : back()} disabled={busy} data-testid="wizard-previous">
+            <ArrowLeft size={16}/>{step ? t("wizard.previous", "Previous") : t("wizard.cancel", "Cancel")}
+          </button>
+          <span className="wizard-save-note" data-testid="wizard-save-note">{isReview ? t("wizard.saved_browser_only", "Saved on this browser only") : t("wizard.unsaved_deal", "Unsaved deal")}</span>
+          <div className="wizard-footer-actions">
+            {!isReview && (
+              <button
+                type="button"
+                className="button button-secondary wizard-save-btn"
+                onClick={save}
+                disabled={busy}
+                data-testid="wizard-save-deal"
+              >
+                <Save size={16}/>{busy ? t("wizard.saving", "Saving…") : t("wizard.save_deal", "Save Deal")}
+              </button>
+            )}
+            <button
+              type="submit"
+              className="button button-primary"
+              disabled={busy}
+              data-testid={isReview ? "save-deal-button" : "wizard-next"}
+            >
+              {isReview ? <><Save size={16}/>{busy ? t("wizard.saving", "Saving…") : t("wizard.save_deal", "Save Deal")}</> : <>{t("wizard.continue", "Continue")}<ArrowRight size={16}/></>}
+            </button>
+          </div>
+        </footer>
       </form>
     </>}
-    <ConfirmDialog open={!!discardTarget} onOpenChange={open => !open && setDiscardTarget("")} title="Discard unsaved changes?" description="This deal has not been saved. Your changes and selected photos will be lost." onConfirm={() => navigate(discardTarget)} confirm="Discard changes" testid="discard-deal"/>
+    <ConfirmDialog open={!!discardTarget} onOpenChange={open => !open && setDiscardTarget("")} title={t("dialog.discard_title", "Discard unsaved changes?")} description={t("dialog.discard_desc", "This deal has not been saved. Your changes and selected photos will be lost.")} onConfirm={() => navigate(discardTarget)} confirm={t("dialog.discard_confirm", "Discard changes")} cancelText={t("dialog.cancel", "Cancel")} testid="discard-deal"/>
   </div>;
 }
