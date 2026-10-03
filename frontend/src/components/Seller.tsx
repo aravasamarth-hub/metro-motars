@@ -121,25 +121,21 @@ export function Seller({
             onClick={() => setPreviewOpen(true)}
             className="agreement-toggle-btn"
             data-testid="preview-seller-agreement-button"
-            title="Preview & Print Bill"
+            title="Preview & Edit Bill"
           >
             <Printer size={15} />
-            <span>{t("bills.print", "Preview & Print Bill")}</span>
+            <span>{t("bills.preview_bill", "Preview & Edit Bill")}</span>
           </button>
 
           <button
             type="button"
-            onClick={handleGenerateAgreement}
-            disabled={generating}
+            onClick={() => setPreviewOpen(true)}
             className="agreement-toggle-btn"
             data-testid="generate-seller-agreement-button"
-            title="Download PDF Agreement"
+            title="Preview, Edit & Download PDF Agreement"
           >
-            {generating ? (
-              <><Loader2 size={15} className="animate-spin" /><span>{t("legal.generating", "Generating…")}</span></>
-            ) : (
-              <><FileDown size={15} /><span>{t("legal.generate_btn", "Download PDF")}</span></>
-            )}
+            <FileDown size={15} />
+            <span>{t("legal.generate_btn", "Generate Bill & Download")}</span>
           </button>
         </div>
       </div>

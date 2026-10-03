@@ -110,15 +110,15 @@ export default function SaleAgreementBill({ deal = {}, doc = null }) {
   const place = d.place || d.seller?.city || "Davangere";
   const dateStr = formatDisplayDate(d.deliveryDate || d.payments?.payment_date || d.created_at);
   const dateParts = dateStr.includes("/") ? dateStr.split("/").map(s => s.trim()) : [dateStr, "", ""];
-  const dayPart = dateParts[0] || "";
-  const monthPart = dateParts[1] || "";
-  const yearPart = dateParts[2] || "";
+  const dayPart = d.deliveryDay || dateParts[0] || "";
+  const monthPart = d.deliveryMonth || dateParts[1] || "";
+  const yearPart = d.deliveryYear || dateParts[2] || "";
   const timeStr = d.deliveryTime || d.delivery_time || "11:30 AM";
 
   // Vehicle
   const v = d.vehicle || {};
   const vehicleMake = v.make || v.brand || "Honda";
-  const vehicleModel = v.model || v.variant || "Activa 6G";
+  const vehicleModel = v.model || v.variant || v.vehicle_name || "Activa 6G";
   const vehicleNo = v.vehicle_number || v.registration_number || "KA-17-EX-2456";
   const chassisNo = v.chassis_number || v.chassisNumber || "ME4JF4214P1234567";
   const engineNo = v.engine_number || v.engineNumber || "JF42E-1234567";
@@ -127,18 +127,22 @@ export default function SaleAgreementBill({ deal = {}, doc = null }) {
   const s = d.seller || {};
   const sellerName = s.name || "Ramesh Kumar";
   const rawSellerAddr = s.address || [s.address, s.city, s.state, s.pincode].filter(Boolean).join(", ") || "#12, 2nd Cross, Vinayaka Nagar, Davangere, Karnataka - 577004";
-  const [sellerAddr1, sellerAddr2, sellerAddr3] = splitAddress3(rawSellerAddr, 30, 42, 42);
+  const [sellerAddr1, sellerAddr2, sellerAddr3] = (s.address1 !== undefined || s.address2 !== undefined || s.address3 !== undefined)
+    ? [s.address1 || "", s.address2 || "", s.address3 || ""]
+    : splitAddress3(rawSellerAddr, 30, 42, 42);
   const sellerPhone = s.phone || s.mobile || "9448123456";
   const sellerAadhaar = s.id_number || s.aadhaar || "1234 5678 9012";
 
-  // Purchaser is permanently default METRO MOTORS (as requested)
-  const buyerName = "METRO MOTORS";
+  // Purchaser (default METRO MOTORS, or custom buyer name if edited)
+  const buyerName = d.buyerName || d.buyer?.name || "METRO MOTORS";
 
   // Witness 1
   const w1 = d.witness1 || (d.witnesses && d.witnesses[0]) || {};
   const witnessName = w1.name || "Suresh Kumar";
   const rawWitnessAddr = w1.address || "#5, Temple Road, Bapuji Nagar, Davangere, Karnataka - 577002";
-  const [witnessAddr1, witnessAddr2, witnessAddr3] = splitAddress3(rawWitnessAddr, 20, 26, 26);
+  const [witnessAddr1, witnessAddr2, witnessAddr3] = (w1.address1 !== undefined || w1.address2 !== undefined || w1.address3 !== undefined)
+    ? [w1.address1 || "", w1.address2 || "", w1.address3 || ""]
+    : splitAddress3(rawWitnessAddr, 20, 26, 26);
   const witnessPhone = w1.phone || w1.mobile || "9987654321";
   const witnessAadhaar = w1.id_number || w1.aadhaar || "9876 5432 1098";
 
@@ -171,10 +175,10 @@ export default function SaleAgreementBill({ deal = {}, doc = null }) {
   const toInsuranceFormatted = typeof toInsuranceVal === "number" || !isNaN(Number(toInsuranceVal)) ? formatAmount(toInsuranceVal) : String(toInsuranceVal);
 
   // Checkboxes
-  const isInsuranceChecked = d.insurance === true || v.insurance === "Active" || v.insurance === "Valid" || true;
-  const isFcChecked = d.fc === true || v.fitness === "Valid" || v.fitness === "Lifetime" || true;
-  const isTaxChecked = d.tax === true || v.tax === "Paid" || v.tax === "Lifetime" || true;
-  const isCcChecked = d.cc === true || v.noc === "Available" || v.hypothecation === "No" || true;
+  const isInsuranceChecked = d.insurance !== undefined ? !!d.insurance : true;
+  const isFcChecked = d.fc !== undefined ? !!d.fc : true;
+  const isTaxChecked = d.tax !== undefined ? !!d.tax : true;
+  const isCcChecked = d.cc !== undefined ? !!d.cc : true;
 
   // Photos & Media
   const photos = d.photos || {};

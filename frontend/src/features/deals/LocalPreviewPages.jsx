@@ -4,6 +4,7 @@ import { ArrowUpRight, FilePlus2, Printer, X, Search } from "lucide-react";
 import { useDeals } from "./useDeals";
 import { commission, money, localDay } from "./dealModel";
 import BillDocument from "@/components/BillDocument";
+import BillModal from "@/components/BillModal";
 import { useLanguage } from "@/features/i18n/LanguageContext";
 
 // ── constants ────────────────────────────────────────────────────────────────
@@ -107,7 +108,7 @@ export const LocalBills = () => {
     ), [deals, dealQ]);
 
   const generate = (deal) => {
-    setPreview({ doc: buildBillDoc(deal, billType) });
+    setPreview({ deal, doc: buildBillDoc(deal, billType) });
     setPicker(false);
   };
 
@@ -175,7 +176,7 @@ export const LocalBills = () => {
                         <ArrowUpRight size={15}/>
                       </button>
                       <button title={t("bills.generate_bill", "Generate bill")} data-testid={`gen-bill-${deal.id}`}
-                        onClick={() => { setBillType("Seller → Buyer"); setPreview({ doc: buildBillDoc(deal,"Seller → Buyer") }); }}
+                        onClick={() => { setBillType("Seller → Buyer"); setPreview({ deal, doc: buildBillDoc(deal, "Seller → Buyer") }); }}
                         aria-label="Generate bill">
                         <FilePlus2 size={15}/>
                       </button>
@@ -242,31 +243,12 @@ export const LocalBills = () => {
         </div>
       )}
 
-      {/* bill preview modal */}
-      {preview && (
-        <div className="bill-preview-backdrop bill-doc-backdrop" role="dialog" data-testid="bill-preview-modal">
-          <div className="bill-preview-shell">
-            <div className="bill-preview-bar no-print">
-              <span>{preview.doc.bill.bill_type} · {preview.doc.bill.bill_number}</span>
-              <div className="deal-actions">
-                <button className="button button-secondary" onClick={() => window.print()} data-testid="bill-print-action">
-                  <Printer size={15}/> {t("bills.print", "Print")}
-                </button>
-                <button className="button button-primary" onClick={() => window.print()} data-testid="generate-bill-pdf">
-                  <Printer size={15}/> {t("bills.save_pdf", "Save as PDF")}
-                </button>
-                <button className="icon-button" onClick={() => setPreview(null)}
-                  aria-label="Close bill preview" data-testid="close-bill-preview">
-                  <X size={18}/>
-                </button>
-              </div>
-            </div>
-            <div className="bill-print-area" id="print-area">
-              <BillDocument doc={preview.doc}/>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* BillModal for interactive preview and editing */}
+      <BillModal
+        deal={preview?.deal || preview?.doc?.deal}
+        isOpen={!!preview}
+        onClose={() => setPreview(null)}
+      />
     </>
   );
 };
