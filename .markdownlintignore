@@ -1,0 +1,9 @@
+# Ignore internal AI agent brain, scratchpads, and IDE temp files
+.gemini/
+brain/
+browser/
+scratch/
+scratchpad_*.md
+node_modules/
+build/
+dist/
