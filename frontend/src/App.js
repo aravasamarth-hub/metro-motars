@@ -1,13 +1,14 @@
 import { useState, useEffect } from "react";
-import { BrowserRouter, NavLink, Route, Routes, useLocation, useNavigate } from "react-router-dom";
-import { ArrowLeft, ArrowUpRight, Bike, BriefcaseBusiness, CalendarDays, Camera, Check, ChevronDown, CircleDollarSign, ClipboardList, CreditCard, FileText, LayoutDashboard, LogOut, Menu, MoreHorizontal, Moon, Pencil, Phone, Plus, Printer, Search, Settings as SettingsIcon, Sun, Trash2, UsersRound, WalletCards, X, Zap } from "lucide-react";
+import { BrowserRouter, NavLink, Route, Routes, useLocation, useNavigate, Navigate } from "react-router-dom";
+import { ArrowLeft, ArrowUpRight, Bike, BriefcaseBusiness, CalendarDays, Camera, Check, ChevronDown, CircleDollarSign, ClipboardList, CreditCard, LayoutDashboard, LogOut, Menu, MoreHorizontal, Moon, Pencil, Phone, Plus, Printer, RefreshCw, Search, Settings as SettingsIcon, Sun, Trash2, UsersRound, WalletCards, X, Zap } from "lucide-react";
 import "@/App.css";
 import FunctionalNewDeal from "@/components/FunctionalNewDeal";
 import FunctionalDashboard from "@/components/FunctionalDashboard";
 import FunctionalDeals from "@/components/FunctionalDeals";
 import DealView from "@/components/DealView";
-import { LocalBills as FunctionalBills, LocalFinances as FunctionalFinances } from "@/features/deals/LocalPreviewPages";
+import { LocalFinances as FunctionalFinances } from "@/features/deals/LocalPreviewPages";
 import "@/features/deals/deals.css";
+import { dealRepository } from "@/data/dealRepository";
 
 import { LanguageProvider, useLanguage } from "@/features/i18n/LanguageContext";
 import { LanguageSwitcher } from "@/features/i18n/LanguageSwitcher";
@@ -15,7 +16,6 @@ import { LanguageSwitcher } from "@/features/i18n/LanguageSwitcher";
 const navItems = [
   ["nav.dashboard", "Dashboard", "/", LayoutDashboard],
   ["nav.deals", "Deals", "/deals", BriefcaseBusiness],
-  ["nav.bills", "Bills", "/bills", FileText],
   ["nav.new_deal", "New Deal", "/new-deal", Plus],
   ["nav.finances", "Finances", "/finances", CircleDollarSign],
   ["nav.follow_ups", "Follow-ups", "/follow-ups", CalendarDays],
@@ -150,21 +150,23 @@ const SectionTitle = ({ title, action }) => <div className="section-title"><h2>{
 function FollowUps() {
   const { t } = useLanguage();
   const followups = [
-    ["Meera Shah", "+91 98765 43210", "Buyer", "Triumph Street Twin", "₹42,000", "Today"],
-    ["Rohan Joshi", "+91 99887 11223", "Seller", "KTM Duke 390", "₹18,500", "Today"],
-    ["Priya Nair", "+91 98111 22334", "Buyer", "Honda H'ness CB350", "₹28,000", "23 Jun 2025"]
+    ["Chirag Hegde", "+91 97412 83746", "Buyer", "Yamaha MT-15 V2", "₹1,10,000", "Today"],
+    ["Naveen Reddy", "+91 97390 19283", "Buyer", "TVS Apache RTR 200", "₹85,000", "Today"],
+    ["Arjun N. Mehta", "+91 98201 23456", "Seller", "KTM Duke 390", "NOC Collect", "Tomorrow"],
+    ["Aditya Mohan", "+91 99008 81122", "Buyer", "Royal Enfield Classic 350", "RC Dispatch", "08 Oct 2026"],
+    ["Tanmay Bhatia", "+91 99887 76655", "Buyer", "Kawasaki Ninja 300", "Service Due", "15 Oct 2026"],
   ];
   return (
     <>
       <PageHeader
         eyebrow={t("followups.eyebrow", "Customer relationships")}
         title={t("followups.title", "Follow-ups")}
-        subtitle={t("followups.subtitle", "Stay on top of every conversation and outstanding payment.")}
+        subtitle={t("followups.subtitle", "Stay on top of every conversation, delivery and outstanding balance.")}
         action={<Button primary icon={<Plus size={17}/>} testid="add-follow-up-button">{t("followups.add_button", "Add follow-up")}</Button>}
       />
       <section className="follow-section">
         <SectionTitle title={t("followups.today_overdue", "Today & Overdue")} action={<StatusPill tone="red">{t("followups.due_today_count", "2 due today")}</StatusPill>}/>
-        <div className="follow-list">{followups.slice(0,2).map((row, i) => <FollowRow row={row} key={row[0]} i={i}/>)}</div>
+        <div className="follow-list">{followups.slice(0, 2).map((row, i) => <FollowRow row={row} key={row[0]} i={i}/>)}</div>
       </section>
       <section className="follow-section">
         <SectionTitle title={t("followups.upcoming", "Upcoming")} action={<button className="text-button" data-testid="view-all-follow-ups">{t("followups.view_all", "View all")} <ArrowUpRight size={15}/></button>}/>
@@ -193,12 +195,44 @@ function FollowRow({ row, i }) {
 
 function Settings() {
   const { t } = useLanguage();
+  const [demoNotice, setDemoNotice] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  const reloadDemo = async () => {
+    setBusy(true);
+    setDemoNotice("");
+    try {
+      await dealRepository.resetDemoData();
+      setDemoNotice(t("settings.demo_loaded_msg", "All 7 comprehensive demo deals, party details, agent tasks and verified photos reloaded!"));
+      setTimeout(() => setDemoNotice(""), 6000);
+    } catch (e) {
+      setDemoNotice(e.message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const clearData = async () => {
+    if (!window.confirm("Are you sure you want to clear all deals from this browser?")) return;
+    setBusy(true);
+    setDemoNotice("");
+    try {
+      await dealRepository.clearAllData();
+      setDemoNotice(t("settings.demo_cleared_msg", "All local deals cleared from this browser."));
+      setTimeout(() => setDemoNotice(""), 6000);
+    } catch (e) {
+      setDemoNotice(e.message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
   return (
     <>
       <PageHeader
         eyebrow={t("settings.eyebrow", "Workspace preferences")}
         title={t("settings.title", "Settings")}
-        subtitle={t("settings.subtitle", "Manage your profile and showroom preferences.")}
+        subtitle={t("settings.subtitle", "Manage your profile, showroom preferences, and local demo state.")}
       />
       <div className="settings-grid">
         <section className="settings-section">
@@ -218,14 +252,16 @@ function Settings() {
             <SettingField label={t("settings.role", "Role")} value={t("settings.owner", "Owner")}/>
           </div>
         </section>
+
         <section className="settings-section">
           <SectionTitle title={t("settings.active_sessions", "Active Sessions")} action={<StatusPill>{t("settings.one_active", "1 active")}</StatusPill>}/>
           <div className="session-row">
             <div className="session-icon"><Zap size={17}/></div>
-            <div><b>{t("settings.current_device", "Chrome on Windows")}</b><span>{t("settings.current_location", "New Delhi, India · Current session")}</span></div>
+            <div><b>{t("settings.current_device", "Chrome on Windows")}</b><span>{t("settings.current_location", "Bengaluru, India · Current session")}</span></div>
             <span className="current-dot"><i/>{t("settings.active_status", "Active")}</span>
           </div>
         </section>
+
         <section className="settings-section">
           <SectionTitle title={t("settings.showroom", "Showroom")}/>
           <div className="settings-fields">
@@ -234,6 +270,41 @@ function Settings() {
             <SettingField label={t("settings.date_format", "Date format")} value="DD MMM YYYY"/>
           </div>
           <Button primary icon={<Check size={16}/>} testid="save-settings-button">{t("settings.save_changes", "Save changes")}</Button>
+        </section>
+
+        <section className="settings-section" style={{ gridColumn: "1 / -1" }}>
+          <SectionTitle title={t("settings.demo_data_header", "Showroom Demo Data & State")} />
+          <div style={{ display: "flex", flexDirection: "column", gap: "12px", background: "var(--card-bg, rgba(30, 41, 59, 0.4))", padding: "16px", borderRadius: "10px", border: "1px solid var(--border-color, rgba(255, 255, 255, 0.08))" }}>
+            <p style={{ margin: 0, fontSize: "14px", lineHeight: "1.5", color: "var(--text-muted, #94a3b8)" }}>
+              {t("settings.demo_data_desc", "Metro Motors comes pre-configured with 7 rich demo vehicle deals (Royal Enfield, KTM Duke, Yamaha MT-15, Honda Activa, Apache RTR, Kawasaki Ninja, and Hero Splendor) complete with vehicle specs, parties, witness details, agent transfers, payments, and verified photo documentation.")}
+            </p>
+            {demoNotice && (
+              <div className="workflow-message" role="status" data-testid="settings-demo-message" style={{ margin: "4px 0" }}>
+                {demoNotice}
+              </div>
+            )}
+            <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", marginTop: "4px" }}>
+              <button
+                type="button"
+                className="button button-primary"
+                onClick={reloadDemo}
+                disabled={busy}
+                data-testid="reload-demo-data-button"
+              >
+                <RefreshCw size={15} className={busy ? "animate-spin" : ""}/> {t("settings.reload_demo", "Reload Complete Demo Details")}
+              </button>
+              <button
+                type="button"
+                className="button button-secondary"
+                onClick={clearData}
+                disabled={busy}
+                data-testid="clear-all-data-button"
+                style={{ color: "#ef4444" }}
+              >
+                <Trash2 size={15} /> {t("settings.clear_all_data", "Clear All Records")}
+              </button>
+            </div>
+          </div>
         </section>
       </div>
     </>
@@ -244,9 +315,30 @@ function SettingField({ label, value }) { return <label className="setting-field
 
 function LocalModeLabel() {
   const { t } = useLanguage();
+  const [reloading, setReloading] = useState(false);
+  const handleReload = async () => {
+    setReloading(true);
+    try {
+      await dealRepository.resetDemoData();
+    } finally {
+      setReloading(false);
+    }
+  };
   return (
-    <div className="local-mode-label" data-testid="browser-local-mode">
-      {t("common.browser_local_mode", "Browser-local preview · No cloud sync")}
+    <div className="local-mode-label" data-testid="browser-local-mode" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", flexWrap: "wrap" }}>
+      <span>{t("common.browser_local_mode", "Browser-local preview · No cloud sync")}</span>
+      <button
+        type="button"
+        onClick={handleReload}
+        disabled={reloading}
+        className="text-button"
+        style={{ fontSize: "11px", fontWeight: "600", padding: "2px 8px", background: "rgba(217, 119, 6, 0.15)", borderRadius: "4px", color: "#f59e0b", border: "1px solid rgba(245, 158, 11, 0.3)", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "4px" }}
+        data-testid="quick-reload-demo"
+        title="Reload all demo details"
+      >
+        <RefreshCw size={12} className={reloading ? "animate-spin" : ""}/>
+        {reloading ? t("common.reloading", "Reloading…") : t("common.reload_demo", "Reload Demo Data")}
+      </button>
     </div>
   );
 }
@@ -281,7 +373,7 @@ function App() {
             <Route path="/" element={<FunctionalDashboard />} />
             <Route path="/deals" element={<FunctionalDeals />} />
             <Route path="/deals/:dealId" element={<DealView />} />
-            <Route path="/bills" element={<FunctionalBills />} />
+            <Route path="/bills" element={<Navigate to="/deals" replace />} />
             <Route path="/new-deal" element={<FunctionalNewDeal />} />
             <Route path="/new-deal/:dealId" element={<FunctionalNewDeal />} />
             <Route path="/finances" element={<FunctionalFinances />} />

@@ -200,4 +200,22 @@ export function isStepFilled(deal, step) {
   return getStepStatus(deal, step) === "complete";
 }
 
+export function areVehicleAndSellerComplete(deal) {
+  if (!deal) return false;
+  const v = deal.vehicle || {};
+  const s = deal.seller || {};
+
+  // Vehicle must have vehicle_name and vehicle_number or registration_number
+  const hasVehicleName = Boolean(v.vehicle_name && v.vehicle_name.trim());
+  const hasVehicleNumber = Boolean((v.vehicle_number && v.vehicle_number.trim()) || (v.registration_number && v.registration_number.trim()));
+  const isVehicleComplete = hasVehicleName && hasVehicleNumber;
+
+  // Seller must have name (or dealer_name) and phone
+  const hasSellerName = Boolean((s.name && s.name.trim()) || (s.is_dealer && s.dealer_name && s.dealer_name.trim()));
+  const hasSellerPhone = Boolean(s.phone && s.phone.trim());
+  const isSellerComplete = hasSellerName && hasSellerPhone;
+
+  return isVehicleComplete && isSellerComplete;
+}
+
 export const validateDeal = deal => STEPS.flatMap((_, step) => Object.entries(validateStep(deal, step)).map(([field, message]) => ({ field, message, step })));

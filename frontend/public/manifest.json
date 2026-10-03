@@ -1,0 +1,20 @@
+{
+  "short_name": "Metro Motors",
+  "name": "Metro Motors - Reselling Showroom",
+  "icons": [
+    {
+      "src": "favicon.svg",
+      "type": "image/svg+xml",
+      "sizes": "any"
+    },
+    {
+      "src": "favicon.png",
+      "type": "image/png",
+      "sizes": "32x32"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#0c1726",
+  "background_color": "#0c1726"
+}

@@ -181,9 +181,11 @@ export const translations = {
 
     // Options
     "opt.in_stock": "In Stock",
+    "opt.out_of_stock": "Out of Stock",
     "opt.sold": "Sold",
     "opt.pending": "Pending",
     "opt.completed": "Completed",
+    "opt.transferred": "Transferred",
     "opt.petrol": "Petrol",
     "opt.electric": "Electric",
     "opt.diesel": "Diesel",
@@ -303,6 +305,7 @@ export const translations = {
     "table.col_vehicle": "Vehicle",
     "table.col_seller": "Seller",
     "table.col_buyer": "Buyer",
+    "table.col_stock": "Stock",
     "table.col_status": "Status",
     "table.col_commission": "Commission",
     "table.col_created_date": "Created Date",
@@ -318,9 +321,14 @@ export const translations = {
 
     // Status
     "status.in_stock": "In Stock",
+    "status.out_of_stock": "Out of Stock",
     "status.sold": "Sold",
     "status.rc_pending": "RC Pending",
-    "status.rc_completed": "RC Completed",
+    "status.rc_completed": "RC Transferred",
+    "status.rc_transferred": "RC Transferred",
+    "status.details_pending": "Details Pending",
+    "status.pending": "Pending",
+    "status.transferred": "Transferred",
     "status.not_assigned": "Not assigned",
 
     // Bills
@@ -604,9 +612,11 @@ export const translations = {
 
     // Options
     "opt.in_stock": "स्टॉक में",
+    "opt.out_of_stock": "स्टॉक में नहीं",
     "opt.sold": "बिक गया",
     "opt.pending": "लंबित",
     "opt.completed": "पूर्ण",
+    "opt.transferred": "ट्रांसफर हो गया",
     "opt.petrol": "पेट्रोल",
     "opt.electric": "इलेक्ट्रिक",
     "opt.diesel": "डीजल",
@@ -726,6 +736,7 @@ export const translations = {
     "table.col_vehicle": "वाहन",
     "table.col_seller": "विक्रेता",
     "table.col_buyer": "खरीदार",
+    "table.col_stock": "स्टॉक",
     "table.col_status": "स्थिति",
     "table.col_commission": "कमीशन",
     "table.col_created_date": "निर्माण तिथि",
@@ -741,9 +752,14 @@ export const translations = {
 
     // Status
     "status.in_stock": "स्टॉक में",
+    "status.out_of_stock": "स्टॉक में नहीं",
     "status.sold": "बिक गया",
     "status.rc_pending": "आरसी लंबित",
-    "status.rc_completed": "आरसी पूर्ण",
+    "status.rc_completed": "आरसी ट्रांसफर",
+    "status.rc_transferred": "आरसी ट्रांसफर",
+    "status.details_pending": "विवरण लंबित",
+    "status.pending": "लंबित",
+    "status.transferred": "ट्रांसफर हो गया",
     "status.not_assigned": "असाइन नहीं किया गया",
 
     // Bills
@@ -1027,9 +1043,11 @@ export const translations = {
 
     // Options
     "opt.in_stock": "ಸ್ಟಾಕ್‌ನಲ್ಲಿದೆ",
+    "opt.out_of_stock": "ಸ್ಟಾಕ್‌ನಲ್ಲಿಲ್ಲ",
     "opt.sold": "ಮಾರಾಟವಾಗಿದೆ",
     "opt.pending": "ಬಾಕಿ ಇದೆ",
     "opt.completed": "ಪೂರ್ಣಗೊಂಡಿದೆ",
+    "opt.transferred": "ವರ್ಗಾವಣೆಗೊಂಡಿದೆ",
     "opt.petrol": "ಪೆಟ್ರೋಲ್",
     "opt.electric": "ಎಲೆಕ್ಟ್ರಿಕ್",
     "opt.diesel": "ಡೀಸೆಲ್",
@@ -1149,6 +1167,7 @@ export const translations = {
     "table.col_vehicle": "ವಾಹನ",
     "table.col_seller": "ಮಾರಾಟಗಾರ",
     "table.col_buyer": "ಖರೀದಿದಾರ",
+    "table.col_stock": "ಸ್ಟಾಕ್",
     "table.col_status": "ಸ್ಥಿತಿ",
     "table.col_commission": "ಕಮಿಷನ್",
     "table.col_created_date": "ರಚಿಸಿದ ದಿನಾಂಕ",
@@ -1164,9 +1183,14 @@ export const translations = {
 
     // Status
     "status.in_stock": "ಸ್ಟಾಕ್‌ನಲ್ಲಿದೆ",
+    "status.out_of_stock": "ಸ್ಟಾಕ್‌ನಲ್ಲಿಲ್ಲ",
     "status.sold": "ಮಾರಾಟವಾಗಿದೆ",
     "status.rc_pending": "ಆರ್‌ಸಿ ಬಾಕಿ",
-    "status.rc_completed": "ಆರ್‌ಸಿ ಪೂರ್ಣಗೊಂಡಿದೆ",
+    "status.rc_completed": "ಆರ್‌ಸಿ ವರ್ಗಾವಣೆ",
+    "status.rc_transferred": "ಆರ್‌ಸಿ ವರ್ಗಾವಣೆ",
+    "status.details_pending": "ವಿವರ ಬಾಕಿ",
+    "status.pending": "ಬಾಕಿ ಇದೆ",
+    "status.transferred": "ವರ್ಗಾವಣೆಗೊಂಡಿದೆ",
     "status.not_assigned": "ನಿಯೋಜಿಸಲಾಗಿಲ್ಲ",
 
     // Bills

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { FileDown, Loader2, CheckCircle2, AlertCircle } from "lucide-react";
+import { FileDown, Loader2, CheckCircle2, AlertCircle, Printer } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { FieldGrid } from "@/features/deals/DealField";
 import { personFields } from "@/features/deals/fieldConfig";
@@ -7,6 +7,7 @@ import { PhotoSlots } from "@/features/deals/PhotoSlots";
 import { WitnessSection } from "@/features/deals/PersonStep";
 import { useSellerAgreement } from "@/hooks/useSellerAgreement";
 import { useLanguage } from "@/features/i18n/LanguageContext";
+import BillModal from "@/components/BillModal";
 
 export interface SellerProps {
   deal: any;
@@ -30,6 +31,7 @@ export function Seller({
   const person = deal?.seller || {};
   const { generateAgreement, generating, error: agreementError } = useSellerAgreement();
   const [successMessage, setSuccessMessage] = useState<string>("");
+  const [previewOpen, setPreviewOpen] = useState<boolean>(false);
 
   const handleGenerateAgreement = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -112,20 +114,34 @@ export function Seller({
           </span>
         </div>
 
-        {/* Toggle-style outlined button */}
-        <button
-          type="button"
-          onClick={handleGenerateAgreement}
-          disabled={generating}
-          className="agreement-toggle-btn"
-          data-testid="generate-seller-agreement-button"
-        >
-          {generating ? (
-            <><Loader2 size={15} className="animate-spin" /><span>{t("legal.generating", "Generating…")}</span></>
-          ) : (
-            <><FileDown size={15} /><span>{t("legal.generate_btn", "Generate Seller Agreement")}</span></>
-          )}
-        </button>
+        {/* Toggle-style action buttons */}
+        <div style={{ display: "flex", gap: "10px", alignItems: "center", flexWrap: "wrap" }}>
+          <button
+            type="button"
+            onClick={() => setPreviewOpen(true)}
+            className="agreement-toggle-btn"
+            data-testid="preview-seller-agreement-button"
+            title="Preview & Print Bill"
+          >
+            <Printer size={15} />
+            <span>{t("bills.print", "Preview & Print Bill")}</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={handleGenerateAgreement}
+            disabled={generating}
+            className="agreement-toggle-btn"
+            data-testid="generate-seller-agreement-button"
+            title="Download PDF Agreement"
+          >
+            {generating ? (
+              <><Loader2 size={15} className="animate-spin" /><span>{t("legal.generating", "Generating…")}</span></>
+            ) : (
+              <><FileDown size={15} /><span>{t("legal.generate_btn", "Download PDF")}</span></>
+            )}
+          </button>
+        </div>
       </div>
 
       {successMessage && (
@@ -139,6 +155,8 @@ export function Seller({
           <AlertCircle size={16} /><span>{agreementError}</span>
         </div>
       )}
+
+      <BillModal deal={deal} isOpen={previewOpen} onClose={() => setPreviewOpen(false)} />
     </div>
   );
 }

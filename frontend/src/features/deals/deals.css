@@ -107,10 +107,11 @@
 .metric-arrow { position: absolute; bottom: 24px; right: 22px; color: var(--local-muted); }
 .local-deals-table { min-width: 0; width: 100%; table-layout: fixed; }
 .local-deals-table th { font-size: 9px; letter-spacing: 0; }
-.local-deals-table th, .local-deals-table td { white-space: normal; overflow-wrap: anywhere; padding: 18px 13px; }
-.local-deals-table th:nth-child(2) { width: 17%; }
-.local-deals-table th:nth-child(5) { width: 14%; }
-.local-deals-table th:last-child { width: 100px; }
+.local-deals-table th, .local-deals-table td { white-space: normal; overflow-wrap: anywhere; padding: 18px 11px; }
+.local-deals-table th:nth-child(2) { width: 16%; }
+.local-deals-table th:nth-child(5) { width: 11%; }
+.local-deals-table th:nth-child(6) { width: 12%; }
+.local-deals-table th:last-child { width: 95px; }
 .local-deals-table .table-bike { flex: none; }
 .local-deals-table .table-vehicle { gap: 7px; }
 .local-deals-table .local-status-stack { flex-direction: column; align-items: flex-start; }
@@ -431,6 +432,114 @@
   letter-spacing: .06em;
   margin: 8px 0 14px;
   font-weight: 600;
+}
+
+/* ── Vehicle Stock & RC Status Toggles Beside Photo ───────────────────────────── */
+.avatar-status-controls-wrapper {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: stretch;
+  margin-left: 4px;
+}
+.avatar-stock-toggle-box {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 14px;
+  background: rgba(229, 185, 76, 0.05);
+  border: 1px solid var(--local-border);
+  border-radius: 10px;
+  min-width: 210px;
+}
+.theme-dark .avatar-stock-toggle-box {
+  background: #142539;
+  border-color: #233950;
+}
+.theme-light .avatar-stock-toggle-box {
+  background: #f4f8fb;
+  border-color: #d1dde8;
+}
+.avatar-stock-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.avatar-stock-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--local-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.avatar-stock-btn-group {
+  display: flex;
+  gap: 8px;
+}
+.stock-switch-btn {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 7px 12px;
+  border-radius: 7px;
+  border: 1px solid var(--local-border);
+  background: transparent;
+  color: var(--local-muted);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+.stock-switch-btn:hover {
+  background: rgba(229, 185, 76, 0.08);
+  color: inherit;
+}
+.stock-switch-btn.in-stock.active {
+  background: #1b3a5b;
+  color: #8ebafa;
+  border-color: #3b74b8;
+  box-shadow: 0 2px 8px rgba(65, 123, 195, 0.25);
+}
+.theme-light .stock-switch-btn.in-stock.active {
+  background: #e0edfd;
+  color: #1a56a0;
+  border-color: #9ac2f7;
+}
+.stock-switch-btn.out-of-stock.active {
+  background: #4d292c;
+  color: #f28f8c;
+  border-color: #9d3e42;
+  box-shadow: 0 2px 8px rgba(189, 77, 75, 0.25);
+}
+.theme-light .stock-switch-btn.out-of-stock.active {
+  background: #fce3e1;
+  color: #a82e2c;
+  border-color: #f5a4a2;
+}
+.stock-switch-btn.rc-pending.active {
+  background: #47391d;
+  color: #f2cf64;
+  border-color: #8c6e26;
+  box-shadow: 0 2px 8px rgba(161, 121, 24, 0.25);
+}
+.theme-light .stock-switch-btn.rc-pending.active {
+  background: #fcf1cf;
+  color: #926c11;
+  border-color: #e5bf5c;
+}
+.stock-switch-btn.rc-transferred.active {
+  background: #183e38;
+  color: #68d7ae;
+  border-color: #276957;
+  box-shadow: 0 2px 8px rgba(22, 128, 92, 0.25);
+}
+.theme-light .stock-switch-btn.rc-transferred.active {
+  background: #d9f8eb;
+  color: #126e4e;
+  border-color: #79ddb8;
 }
 
 /* ── Modern Theme Toggle Button (matching screenshot) ──────────────────── */

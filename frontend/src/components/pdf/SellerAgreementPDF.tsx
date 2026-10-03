@@ -254,7 +254,7 @@ function formatCurrency(val: any): string {
   if (val === "" || val === null || val === undefined) return "";
   const num = typeof val === "string" ? parseFloat(val.replace(/,/g, "")) : Number(val);
   if (isNaN(num)) return String(val);
-  return "Rs. " + new Intl.NumberFormat("en-IN", { maximumFractionDigits: 0 }).format(num);
+  return new Intl.NumberFormat("en-IN", { maximumFractionDigits: 0 }).format(num) + " /-";
 }
 
 function splitAddressLines(text: string, maxLen = 65, maxLines = 2): string[] {
@@ -310,15 +310,7 @@ export function SellerAgreementPDF({ deal, resolvedImages }: SellerAgreementProp
   const chassisNumber = deal.vehicle?.chassisNumber || deal.vehicle?.chassis_number || "";
 
   // 4. Sentence section
-  const buyerName = deal.buyer?.name || "";
-  const buyerFullAddress =
-    deal.buyer?.fullAddress ||
-    [deal.buyer?.address, deal.buyer?.city, deal.buyer?.state, deal.buyer?.pincode]
-      .filter(Boolean)
-      .join(", ");
-  const buyerAddressLines = splitAddressLines(buyerFullAddress, 25, 2);
-  const buyerMobile = deal.buyer?.mobile || deal.buyer?.phone || "";
-  const buyerAadhaar = deal.buyer?.aadhaar || deal.buyer?.id_number || "";
+  const buyerName = "METRO MOTORS";
 
   // 5. Witness section
   const witness1: any = deal.witness1 || (deal.witnesses && deal.witnesses[0]) || {};
@@ -354,25 +346,31 @@ export function SellerAgreementPDF({ deal, resolvedImages }: SellerAgreementProp
   }
   const balanceAmountDisplay = balanceAmountRaw !== "" ? formatCurrency(balanceAmountRaw) : "";
   const toAndInsuranceDisplay =
-    deal.payment?.toAndInsurance || deal.toAndInsurance || "Included";
+    deal.payment?.toAndInsurance ? (
+      !isNaN(Number(deal.payment?.toAndInsurance)) ? formatCurrency(deal.payment?.toAndInsurance) : deal.payment?.toAndInsurance
+    ) : "5,000 /-";
 
   // 7. Checkboxes
   const isInsuranceChecked =
     deal.insurance === true ||
     deal.vehicle?.insurance === "Active" ||
-    deal.vehicle?.insurance === "Valid";
+    deal.vehicle?.insurance === "Valid" ||
+    deal.insurance !== false;
   const isFcChecked =
     deal.fc === true ||
     deal.vehicle?.fitness === "Valid" ||
-    deal.vehicle?.fitness === "Lifetime";
+    deal.vehicle?.fitness === "Lifetime" ||
+    deal.fc !== false;
   const isTaxChecked =
     deal.tax === true ||
     deal.vehicle?.tax === "Paid" ||
-    deal.vehicle?.tax === "Lifetime";
+    deal.vehicle?.tax === "Lifetime" ||
+    deal.tax !== false;
   const isCcChecked =
     deal.cc === true ||
     deal.vehicle?.noc === "Available" ||
-    deal.vehicle?.hypothecation === "No";
+    deal.vehicle?.hypothecation === "No" ||
+    deal.cc !== false;
 
   // 8. Photos & signatures
   const sellerPhoto = resolvedImages?.sellerPhoto || deal.seller?.photo;
@@ -607,7 +605,7 @@ export function SellerAgreementPDF({ deal, resolvedImages }: SellerAgreementProp
               left: SENTENCE_COORDINATES.buyerName.x,
               top: SENTENCE_COORDINATES.buyerName.y,
               width: SENTENCE_COORDINATES.buyerName.width,
-              color: "#b91c1c",
+              color: "#0f233f",
             },
           ]}
         >
@@ -658,7 +656,7 @@ export function SellerAgreementPDF({ deal, resolvedImages }: SellerAgreementProp
               },
             ]}
           >
-            {buyerName}
+            {buyerName === "METRO MOTORS" ? "Metro Motors" : buyerName}
           </Text>
         )}
 
@@ -762,103 +760,7 @@ export function SellerAgreementPDF({ deal, resolvedImages }: SellerAgreementProp
         </Text>
 
         {/* ----------------- PURCHASER BLOCK ----------------- */}
-        {/* Photo */}
-        {renderImageBox(buyerPhoto, PURCHASER_BLOCK_COORDINATES.photo)}
-
-        {/* Thumb */}
-        {renderImageBox(buyerThumb, PURCHASER_BLOCK_COORDINATES.thumb)}
-
-        {/* Name */}
-        <Text
-          style={[
-            styles.nameField,
-            {
-              left: PURCHASER_BLOCK_COORDINATES.name.x,
-              top: PURCHASER_BLOCK_COORDINATES.name.y,
-              width: PURCHASER_BLOCK_COORDINATES.name.width,
-              fontSize: 8.5,
-            },
-          ]}
-        >
-          {buyerName}
-        </Text>
-
-        {/* Address */}
-        <Text
-          style={[
-            styles.textRegular,
-            {
-              left: PURCHASER_BLOCK_COORDINATES.addressLine1.x,
-              top: PURCHASER_BLOCK_COORDINATES.addressLine1.y,
-              width: PURCHASER_BLOCK_COORDINATES.addressLine1.width,
-              fontSize: 7.5,
-            },
-          ]}
-        >
-          {buyerAddressLines[0] || ""}
-        </Text>
-        <Text
-          style={[
-            styles.textRegular,
-            {
-              left: PURCHASER_BLOCK_COORDINATES.addressLine2.x,
-              top: PURCHASER_BLOCK_COORDINATES.addressLine2.y,
-              width: PURCHASER_BLOCK_COORDINATES.addressLine2.width,
-              fontSize: 7.5,
-            },
-          ]}
-        >
-          {buyerAddressLines[1] || ""}
-        </Text>
-
-        {/* Sign */}
-        {buyerSignature ? (
-          renderImageBox(buyerSignature, PURCHASER_BLOCK_COORDINATES.sign, true)
-        ) : (
-          <Text
-            style={[
-              styles.textRegular,
-              {
-                left: PURCHASER_BLOCK_COORDINATES.sign.x,
-                top: PURCHASER_BLOCK_COORDINATES.sign.y + 2,
-                width: PURCHASER_BLOCK_COORDINATES.sign.width,
-                fontSize: 7.5,
-              },
-            ]}
-          >
-            {buyerName}
-          </Text>
-        )}
-
-        {/* Cell */}
-        <Text
-          style={[
-            styles.valueField,
-            {
-              left: PURCHASER_BLOCK_COORDINATES.cell.x,
-              top: PURCHASER_BLOCK_COORDINATES.cell.y,
-              width: PURCHASER_BLOCK_COORDINATES.cell.width,
-              fontSize: 8.0,
-            },
-          ]}
-        >
-          {buyerMobile}
-        </Text>
-
-        {/* Aadhaar */}
-        <Text
-          style={[
-            styles.valueField,
-            {
-              left: PURCHASER_BLOCK_COORDINATES.aadhaar.x,
-              top: PURCHASER_BLOCK_COORDINATES.aadhaar.y,
-              width: PURCHASER_BLOCK_COORDINATES.aadhaar.width,
-              fontSize: 8.0,
-            },
-          ]}
-        >
-          {buyerAadhaar}
-        </Text>
+        {/* Purchaser is permanently METRO MOTORS and pre-printed on the template */}
 
         {/* ----------------- WITNESS BLOCK ----------------- */}
         {/* Photo */}

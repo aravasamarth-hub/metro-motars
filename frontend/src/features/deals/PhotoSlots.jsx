@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Bike, Camera, Eye, Plus, Replace, Trash2, Upload } from "lucide-react";
+import { Bike, Camera, Check, Clock, Eye, Plus, Replace, Trash2, Upload, X } from "lucide-react";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { photoSlots } from "./fieldConfig";
 import { useLanguage } from "@/features/i18n/LanguageContext";
@@ -194,7 +194,7 @@ const PhotoSlot = ({ id, label, photo, onChange, readOnly, onDeleteExtra = null 
 };
 
 // ── Avatar-style portrait slot ────────────────────────────────────────────────
-const AvatarPortraitSlot = ({ id, label, photo, onChange, readOnly, icon = "person" }) => {
+const AvatarPortraitSlot = ({ id, label, photo, onChange, readOnly, icon = "person", stockStatus = null, onStockStatusChange = null, rcStatus = null, onRcStatusChange = null }) => {
   const { t } = useLanguage();
   const fileInput   = useRef(null);
   const cameraInput = useRef(null);
@@ -277,6 +277,73 @@ const AvatarPortraitSlot = ({ id, label, photo, onChange, readOnly, icon = "pers
         </p>
         {error && <small className="field-error" role="alert" data-testid={`photo-error-${id}`}>{error}</small>}
       </div>
+
+      {/* Status toggle buttons beside vehicle photo: Stock & RC Transfer */}
+      {(onStockStatusChange || onRcStatusChange) && (
+        <div className="avatar-status-controls-wrapper" data-testid="avatar-status-controls">
+          {onStockStatusChange && (
+            <div className="avatar-stock-toggle-box" data-testid="avatar-stock-toggle-box">
+              <div className="avatar-stock-header">
+                <span className="avatar-stock-title">{t("deals.stock_label", "Stock status")}</span>
+                <span className={`status-pill ${stockStatus === "Out of Stock" || stockStatus === "Sold" ? "red" : "blue"}`} data-testid="avatar-stock-pill">
+                  {stockStatus === "Out of Stock" || stockStatus === "Sold" ? t("status.out_of_stock", "Out of Stock") : t("status.in_stock", "In Stock")}
+                </span>
+              </div>
+              <div className="avatar-stock-btn-group">
+                <button
+                  type="button"
+                  className={`stock-switch-btn in-stock ${stockStatus !== "Out of Stock" && stockStatus !== "Sold" ? "active" : ""}`}
+                  onClick={() => onStockStatusChange("In Stock")}
+                  data-testid="stock-btn-in-stock"
+                >
+                  <Check size={14} strokeWidth={2.4}/>
+                  <span>{t("status.in_stock", "In Stock")}</span>
+                </button>
+                <button
+                  type="button"
+                  className={`stock-switch-btn out-of-stock ${stockStatus === "Out of Stock" || stockStatus === "Sold" ? "active" : ""}`}
+                  onClick={() => onStockStatusChange("Out of Stock")}
+                  data-testid="stock-btn-out-of-stock"
+                >
+                  <X size={14} strokeWidth={2.4}/>
+                  <span>{t("status.out_of_stock", "Out of Stock")}</span>
+                </button>
+              </div>
+            </div>
+          )}
+
+          {onRcStatusChange && (
+            <div className="avatar-stock-toggle-box rc-toggle-box" data-testid="avatar-rc-toggle-box">
+              <div className="avatar-stock-header">
+                <span className="avatar-stock-title">{t("deals.rc_label", "RC Transfer")}</span>
+                <span className={`status-pill ${rcStatus === "Completed" || rcStatus === "Transferred" ? "green" : "gold"}`} data-testid="avatar-rc-pill">
+                  {rcStatus === "Completed" || rcStatus === "Transferred" ? t("status.rc_transferred", "RC Transferred") : t("status.rc_pending", "RC Pending")}
+                </span>
+              </div>
+              <div className="avatar-stock-btn-group">
+                <button
+                  type="button"
+                  className={`stock-switch-btn rc-pending ${rcStatus !== "Completed" && rcStatus !== "Transferred" ? "active" : ""}`}
+                  onClick={() => onRcStatusChange("Pending")}
+                  data-testid="rc-btn-pending"
+                >
+                  <Clock size={14} strokeWidth={2.4}/>
+                  <span>{t("status.pending", "Pending")}</span>
+                </button>
+                <button
+                  type="button"
+                  className={`stock-switch-btn rc-transferred ${rcStatus === "Completed" || rcStatus === "Transferred" ? "active" : ""}`}
+                  onClick={() => onRcStatusChange("Transferred")}
+                  data-testid="rc-btn-transferred"
+                >
+                  <Check size={14} strokeWidth={2.4}/>
+                  <span>{t("status.transferred", "Transferred")}</span>
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Hidden inputs */}
       {!readOnly && <>
@@ -395,7 +462,7 @@ const AddPhotoBox = ({ group, onAddPhotos, disabled = false }) => {
 };
 
 // ── Main export ───────────────────────────────────────────────────────────────
-export const PhotoSlots = ({ group, photos, onChange, readOnly = false, dealerToggle = null, variant = "all" }) => {
+export const PhotoSlots = ({ group, photos, onChange, readOnly = false, dealerToggle = null, variant = "all", stockStatus = null, onStockStatusChange = null, rcStatus = null, onRcStatusChange = null }) => {
   const { t } = useLanguage();
   const slots         = photoSlots[group] || [];
   const count         = slots.filter((_, i) => photos[`${group}-${i + 1}`]).length;
@@ -461,6 +528,10 @@ export const PhotoSlots = ({ group, photos, onChange, readOnly = false, dealerTo
             onChange={onChange}
             readOnly={readOnly}
             icon={isVehicle ? "bike" : "person"}
+            stockStatus={isVehicle ? stockStatus : null}
+            onStockStatusChange={isVehicle ? onStockStatusChange : null}
+            rcStatus={isVehicle ? rcStatus : null}
+            onRcStatusChange={isVehicle ? onRcStatusChange : null}
           />
         </section>
       );

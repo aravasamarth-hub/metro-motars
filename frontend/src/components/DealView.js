@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, CheckCircle2, Pencil } from "lucide-react";
+import { ArrowLeft, CheckCircle2, FileText, Pencil } from "lucide-react";
 import { dealRepository } from "@/data/dealRepository";
 import { DealSummary } from "@/features/deals/DealSummary";
 import { StatusBadges } from "@/features/deals/LocalUI";
@@ -8,6 +8,7 @@ import { agentFields, dealerFields, paymentFields, personFields, vehicleGroups, 
 import { PhotoSlots } from "@/features/deals/PhotoSlots";
 import { displayDate } from "@/features/deals/dealModel";
 import { useLanguage } from "@/features/i18n/LanguageContext";
+import BillModal from "@/components/BillModal";
 
 const groupTitleMap = {
   "Vehicle details": "section.vehicle_details",
@@ -48,6 +49,7 @@ export default function DealView() {
   const navigate = useNavigate();
   const { t, language } = useLanguage();
   const [deal, setDeal] = useState(null);
+  const [billOpen, setBillOpen] = useState(false);
   const [error, setError] = useState("");
   useEffect(() => {
     let active = true;
@@ -72,9 +74,14 @@ export default function DealView() {
           <h1 data-testid="page-title">{deal?.bill_number || t("dealview.details_title", "Deal details")}</h1>
         </div>
         {deal && (
-          <button className="button button-primary" onClick={() => navigate(`/new-deal/${deal.id}`)} data-testid="deal-view-edit">
-            <Pencil size={16}/> {t("deal.edit_deal", "Edit Deal")}
-          </button>
+          <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+            <button className="button button-secondary" onClick={() => setBillOpen(true)} data-testid="deal-view-generate-bill">
+              <FileText size={16}/> {t("bills.generate_bill", "Generate Bill")}
+            </button>
+            <button className="button button-primary" onClick={() => navigate(`/new-deal/${deal.id}`)} data-testid="deal-view-edit">
+              <Pencil size={16}/> {t("deal.edit_deal", "Edit Deal")}
+            </button>
+          </div>
         )}
       </div>
       {error ? (
@@ -131,6 +138,7 @@ export default function DealView() {
           </section>
         </>
       )}
+      <BillModal deal={deal} isOpen={billOpen} onClose={() => setBillOpen(false)} />
     </div>
   );
 }

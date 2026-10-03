@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, ArrowRight, Check, Save, CheckCircle2, AlertCircle } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, Save, CheckCircle2, AlertCircle, Sparkles } from "lucide-react";
 import { STEPS, getStepStatus } from "@/features/deals/dealModel";
 import { useDealWizard } from "@/features/deals/useDealWizard";
 import { VehicleStep } from "@/features/deals/VehicleStep";
@@ -26,7 +26,7 @@ export default function FunctionalNewDeal() {
   const { dealId } = useParams();
   const [discardTarget, setDiscardTarget] = useState("");
   const wizard = useDealWizard(dealId, saved => navigate(`/deals/${saved.id}`, { state: { saved: saved.bill_number } }));
-  const { deal, step, go, save, errors, loading, loadError, busy, message } = wizard;
+  const { deal, step, go, save, errors, loading, loadError, busy, message, fillDemoText } = wizard;
   const isReview = step === STEPS.length - 1;
   const back = () => wizard.dirty ? setDiscardTarget("/deals") : navigate("/deals");
 
@@ -44,7 +44,29 @@ export default function FunctionalNewDeal() {
   }, [wizard.dirty]);
   return <div className="local-page wizard-page">
     <button className="back-link wizard-back" onClick={back} data-testid="new-deal-back"><ArrowLeft size={16}/> {t("nav.deals", "Deals")}</button>
-    <div className="page-header"><div><div className="eyebrow">{t("deal.workspace", "Deal workspace")}</div><h1 data-testid="page-title">{dealId ? t("deal.edit_deal", "Edit Deal") : t("deal.new_deal", "New Deal")}</h1></div><div className="wizard-bill"><span>{t("deal.bill_number", "Bill number")}{!dealId && ` · ${t("deal.preview", "Preview")}`}</span><strong data-testid="wizard-bill-number">{loading ? "…" : deal.bill_number}</strong></div></div>
+    <div className="page-header">
+      <div>
+        <div className="eyebrow">{t("deal.workspace", "Deal workspace")}</div>
+        <h1 data-testid="page-title">{dealId ? t("deal.edit_deal", "Edit Deal") : t("deal.new_deal", "New Deal")}</h1>
+      </div>
+      <div style={{ display: "flex", alignItems: "center", gap: "12px", flexWrap: "wrap" }}>
+        <button
+          type="button"
+          className="button button-secondary"
+          onClick={fillDemoText}
+          disabled={busy || loading}
+          data-testid="auto-fill-demo-text"
+          style={{ display: "inline-flex", alignItems: "center", gap: "6px", borderColor: "rgba(245, 158, 11, 0.5)", color: "#f59e0b", background: "rgba(245, 158, 11, 0.08)" }}
+          title="Fills all text fields across all steps without adding any photos"
+        >
+          <Sparkles size={16} /> {t("wizard.fill_demo", "Auto-Fill Demo (No Photos)")}
+        </button>
+        <div className="wizard-bill">
+          <span>{t("deal.bill_number", "Bill number")}{!dealId && ` · ${t("deal.preview", "Preview")}`}</span>
+          <strong data-testid="wizard-bill-number">{loading ? "…" : deal.bill_number}</strong>
+        </div>
+      </div>
+    </div>
     {loading ? <p role="status" data-testid="wizard-loading">{t("deal.opening", "Opening deal…")}</p> : loadError ? <div role="alert" className="workflow-message" data-testid="wizard-load-error">{loadError}</div> : <>
       <nav className="wizard-steps-v2" aria-label="Deal steps" data-testid="wizard-steps">
         {STEPS.map((name, i) => {

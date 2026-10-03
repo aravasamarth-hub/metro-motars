@@ -6,6 +6,7 @@ export const fieldId = (prefix, key) => `${prefix}-${key}`.replace(/[_.]/g, "-")
 
 const optionKeyMap = {
   "In Stock": "opt.in_stock",
+  "Out of Stock": "opt.out_of_stock",
   "Sold": "opt.sold",
   "Pending": "opt.pending",
   "Completed": "opt.completed",

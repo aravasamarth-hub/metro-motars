@@ -75,7 +75,7 @@ export const ReviewStep = ({ deal, update, edit }) => {
           <h2>{t("section.deal_status", "Deal status")}</h2>
         </div>
         <div className="form-grid wizard-fields">
-          <DealField config={{ key: "status", label: "Stock status", type: "select", options: ["In Stock", "Sold"] }} prefix="review" value={deal.status} onChange={update}/>
+          <DealField config={{ key: "status", label: "Stock status", type: "select", options: ["In Stock", "Out of Stock", "Sold"] }} prefix="review" value={deal.status} onChange={update}/>
           <DealField config={{ key: "rc_status", label: "RC transfer status", type: "select", options: ["Pending", "Completed"] }} prefix="review" value={deal.rc_status} onChange={update}/>
         </div>
       </section>
