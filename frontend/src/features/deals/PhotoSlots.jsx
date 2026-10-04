@@ -3,6 +3,7 @@ import { Bike, Camera, Check, Clock, Eye, Plus, Replace, Trash2, Upload, X } fro
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { photoSlots } from "./fieldConfig";
 import { useLanguage } from "@/features/i18n/LanguageContext";
+import { PartyIdentityRow } from "./PartyIdentityRow";
 
 const slotKeyMap = {
   "Front view": "slot.front_view",
@@ -509,6 +510,18 @@ export const PhotoSlots = ({ group, photos, onChange, readOnly = false, dealerTo
     const docsTitle     = isVehicle ? t("photo.additional_docs", "Additional photos & documents") : t("photo.docs_additional", "Documents & additional photos");
 
     if (variant === "portrait") {
+      if (isPersonGroup) {
+        return (
+          <PartyIdentityRow
+            group={group}
+            photos={photos}
+            onChange={onChange}
+            readOnly={readOnly}
+            dealerToggle={dealerToggle}
+          />
+        );
+      }
+
       return (
         <section className="wizard-group photo-group" data-testid={`${group}-portrait-section`}>
           <div className="section-title">
@@ -538,9 +551,14 @@ export const PhotoSlots = ({ group, photos, onChange, readOnly = false, dealerTo
     }
 
     if (variant === "docs") {
-      const extraUploaded = allExtraIds.filter(id => photos[id]).length;
-      const totalDocsCount = docsCount + extraUploaded;
-      const totalDocsSlots = restSlots.length + allExtraIds.length;
+      const filteredSlots = isPersonGroup ? restSlots.filter((s) => s !== "Signature") : restSlots;
+      const extraUploaded = allExtraIds.filter((id) => photos[id]).length;
+      const totalDocsCount =
+        filteredSlots.filter((label) => {
+          const originalIndex = restSlots.indexOf(label);
+          return photos[`${group}-${originalIndex + 2}`];
+        }).length + extraUploaded;
+      const totalDocsSlots = filteredSlots.length + allExtraIds.length;
 
       return (
         <section className="wizard-group photo-group" data-testid={`${group}-docs-section`}>
@@ -551,8 +569,9 @@ export const PhotoSlots = ({ group, photos, onChange, readOnly = false, dealerTo
             </span>
           </div>
           <div className="photo-slot-grid">
-            {restSlots.map((label, i) => {
-              const slotId = `${group}-${i + 2}`;
+            {filteredSlots.map((label) => {
+              const originalIndex = restSlots.indexOf(label);
+              const slotId = `${group}-${originalIndex + 2}`;
               return (
                 <PhotoSlot
                   key={label}

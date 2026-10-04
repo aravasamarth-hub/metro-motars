@@ -4,6 +4,7 @@ import { Switch } from "@/components/ui/switch";
 import { FieldGrid } from "@/features/deals/DealField";
 import { personFields } from "@/features/deals/fieldConfig";
 import { PhotoSlots } from "@/features/deals/PhotoSlots";
+import { PartyIdentityRow } from "@/features/deals/PartyIdentityRow";
 import { WitnessSection } from "@/features/deals/PersonStep";
 import { useSellerAgreement } from "@/hooks/useSellerAgreement";
 import { useLanguage } from "@/features/i18n/LanguageContext";
@@ -52,12 +53,13 @@ export function Seller({
       {/* Step title */}
       <h2 className="seller-step-title">{t("step.seller", "Seller")}</h2>
 
-      {/* Seller photo (avatar) on top */}
-      <PhotoSlots
+      {/* Unified 3-Card Identity Row: Photo | Signature | Thumb Impression */}
+      <PartyIdentityRow
         group="seller"
+        deal={deal}
         photos={deal?.photos || {}}
         onChange={setPhoto}
-        variant="portrait"
+        readOnly={false}
         dealerToggle={
           <label className="dealer-toggle" htmlFor="seller-dealer-photo">
             <span>{t("section.dealer", "Dealer")}</span>

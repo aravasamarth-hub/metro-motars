@@ -2,6 +2,7 @@ import { Switch } from "@/components/ui/switch";
 import { FieldGrid } from "./DealField";
 import { personFields, witnessFields } from "./fieldConfig";
 import { PhotoSlots } from "./PhotoSlots";
+import { PartyIdentityRow } from "./PartyIdentityRow";
 import { Seller } from "@/components/Seller";
 import { useLanguage } from "@/features/i18n/LanguageContext";
 
@@ -29,12 +30,13 @@ export const PersonStep = ({ group, deal, updateSection, updateWitness, setPhoto
       {/* Step title */}
       <h2 className="seller-step-title">{title}</h2>
 
-      {/* Photo section on top with Dealer toggle */}
-      <PhotoSlots
+      {/* Unified 3-Card Identity Row: Photo | Signature | Thumb Impression */}
+      <PartyIdentityRow
         group={group}
+        deal={deal}
         photos={deal?.photos || {}}
         onChange={setPhoto}
-        variant="portrait"
+        readOnly={false}
         dealerToggle={
           <label className="dealer-toggle" htmlFor={`${group}-dealer-photo`}>
             <span>{t("section.dealer", "Dealer")}</span>

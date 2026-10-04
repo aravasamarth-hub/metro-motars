@@ -182,13 +182,31 @@ export default function SaleAgreementBill({ deal = {}, doc = null }) {
 
   // Photos & Media
   const photos = d.photos || {};
-  const sellerPhoto = photos["seller-portrait"] || photos["seller-1"] || photos["seller_photo"] || s.photo;
-  const sellerThumb = photos["seller-thumb"] || photos["seller-2"] || s.thumb;
-  const sellerSig = photos["seller-signature"] || photos["seller-8"] || s.signature;
+  const resolveMediaUrl = (item) => {
+    if (!item) return null;
+    if (typeof item === "string") return item;
+    if (item.url) return item.url;
+    if (item.blob) {
+      try {
+        return URL.createObjectURL(item.blob);
+      } catch (e) {
+        return null;
+      }
+    }
+    return null;
+  };
 
-  const witnessPhoto = photos["witness-1-1"] || photos["witness-1"] || w1.photo;
-  const witnessThumb = photos["witness-1-thumb"] || photos["witness-1-2"] || w1.thumb;
-  const witnessSig = photos["witness-1-signature"] || w1.signature;
+  const sellerPhoto = resolveMediaUrl(photos["seller-portrait"] || photos["seller-1"] || photos["seller_photo"] || s.photo);
+  const sellerThumb = resolveMediaUrl(photos["seller-thumb"] || photos["seller-thumb-impression"] || photos["seller-2"] || s.thumb);
+  const sellerSig = resolveMediaUrl(photos["seller-signature"] || photos["seller-8"] || photos["seller_signature"] || s.signature);
+
+  const buyerPhoto = resolveMediaUrl(photos["buyer-portrait"] || photos["buyer-1"] || photos["buyer_photo"] || b.photo);
+  const buyerThumb = resolveMediaUrl(photos["buyer-thumb"] || photos["buyer-thumb-impression"] || photos["buyer-2"] || b.thumb);
+  const buyerSig = resolveMediaUrl(photos["buyer-signature"] || photos["buyer-8"] || photos["buyer_signature"] || b.signature);
+
+  const witnessPhoto = resolveMediaUrl(photos["witness-1-1"] || photos["witness-1"] || w1.photo);
+  const witnessThumb = resolveMediaUrl(photos["witness-1-thumb"] || photos["witness-1-2"] || w1.thumb);
+  const witnessSig = resolveMediaUrl(photos["witness-1-signature"] || w1.signature);
 
   return (
     <div className="sale-agreement-container" data-testid="sale-agreement-container">
@@ -277,7 +295,9 @@ export default function SaleAgreementBill({ deal = {}, doc = null }) {
 
         {/* Purchaser Signature : */}
         <div className="sab-field signature-script" style={{ left: "20.2%", top: "42.7%", width: "45.0%", height: "2.0%" }}>
-          {buyerName === "METRO MOTORS" ? "" : buyerName}
+          {buyerSig ? (
+            <img src={buyerSig} alt="Purchaser Sign" style={{ maxHeight: "100%", objectFit: "contain" }} />
+          ) : (buyerName === "METRO MOTORS" ? "" : buyerName)}
         </div>
 
         {/* ===================== 4. THREE COLUMNS (SELLER, PURCHASER, WITNESS) ===================== */}
