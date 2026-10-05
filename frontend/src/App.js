@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { BrowserRouter, NavLink, Route, Routes, useLocation, useNavigate, Navigate } from "react-router-dom";
-import { ArrowLeft, ArrowUpRight, Bike, BriefcaseBusiness, CalendarDays, Camera, Check, ChevronDown, CircleDollarSign, ClipboardList, CreditCard, LayoutDashboard, LogOut, Menu, MoreHorizontal, Moon, Pencil, Phone, Plus, Printer, RefreshCw, Search, Settings as SettingsIcon, Sun, Trash2, UsersRound, WalletCards, X, Zap } from "lucide-react";
+import { ArrowLeft, ArrowUpRight, Bike, BriefcaseBusiness, CalendarDays, Camera, Check, ChevronDown, CircleDollarSign, ClipboardList, Clock, CreditCard, LayoutDashboard, LogOut, Menu, MoreHorizontal, Moon, Pencil, Phone, Plus, Printer, RefreshCw, Search, Settings as SettingsIcon, ShieldCheck, Sun, Trash2, UsersRound, WalletCards, X, Zap } from "lucide-react";
 import "@/App.css";
 import FunctionalNewDeal from "@/components/FunctionalNewDeal";
 import FunctionalDashboard from "@/components/FunctionalDashboard";
@@ -157,22 +157,74 @@ function FollowUps() {
     ["Tanmay Bhatia", "+91 99887 76655", "Buyer", "Kawasaki Ninja 300", "Service Due", "15 Oct 2026"],
   ];
   return (
-    <>
-      <PageHeader
-        eyebrow={t("followups.eyebrow", "Customer relationships")}
-        title={t("followups.title", "Follow-ups")}
-        subtitle={t("followups.subtitle", "Stay on top of every conversation, delivery and outstanding balance.")}
-        action={<Button primary icon={<Plus size={17}/>} testid="add-follow-up-button">{t("followups.add_button", "Add follow-up")}</Button>}
-      />
-      <section className="follow-section">
-        <SectionTitle title={t("followups.today_overdue", "Today & Overdue")} action={<StatusPill tone="red">{t("followups.due_today_count", "2 due today")}</StatusPill>}/>
-        <div className="follow-list">{followups.slice(0, 2).map((row, i) => <FollowRow row={row} key={row[0]} i={i}/>)}</div>
+    <div className="followups-page-luxury">
+      <div className="page-header followups-luxury-header">
+        <div>
+          <div className="eyebrow followups-eyebrow">
+            <span className="eyebrow-beacon" />
+            <span>{t("followups.eyebrow", "CUSTOMER RELATIONSHIPS · ACTIVE PIPELINE")}</span>
+          </div>
+          <h1 data-testid="page-title" className="followups-hero-title">
+            {t("followups.title", "Follow-ups")}
+          </h1>
+          <p className="followups-hero-subtitle">
+            {t("followups.subtitle", "Stay on top of every customer conversation, balance collection and RTO delivery.")}
+          </p>
+        </div>
+        <Button
+          primary
+          icon={<Plus size={18} strokeWidth={2.4} />}
+          testid="add-follow-up-button"
+        >
+          {t("followups.add_button", "Add follow-up")}
+        </Button>
+      </div>
+
+      {/* CRM Urgency Metrics Strip */}
+      <div className="crm-urgency-strip">
+        <div className="crm-urgency-pill crm-urgent">
+          <Clock size={13} />
+          <span>2 Due Today & Overdue</span>
+        </div>
+        <div className="crm-urgency-pill crm-upcoming">
+          <CalendarDays size={13} />
+          <span>3 Scheduled Deliveries</span>
+        </div>
+        <div className="crm-urgency-pill crm-inflow">
+          <WalletCards size={13} />
+          <span>₹1,95,000 Collection Queue</span>
+        </div>
+      </div>
+
+      <section className="follow-section luxury-follow-section">
+        <SectionTitle
+          title={t("followups.today_overdue", "Today & Overdue")}
+          action={<StatusPill tone="red">{t("followups.due_today_count", "2 due today")}</StatusPill>}
+        />
+        <div className="follow-list">
+          {followups.slice(0, 2).map((row, i) => (
+            <FollowRow row={row} key={row[0]} i={i} />
+          ))}
+        </div>
       </section>
-      <section className="follow-section">
-        <SectionTitle title={t("followups.upcoming", "Upcoming")} action={<button className="text-button" data-testid="view-all-follow-ups">{t("followups.view_all", "View all")} <ArrowUpRight size={15}/></button>}/>
-        <div className="follow-list">{followups.slice(2).map((row, i) => <FollowRow row={row} key={row[0]} i={i + 2}/>)}</div>
+
+      <section className="follow-section luxury-follow-section">
+        <SectionTitle
+          title={t("followups.upcoming", "Upcoming")}
+          action={
+            <button className="text-button luxury-view-all-btn" data-testid="view-all-follow-ups">
+              <span>{t("followups.view_all", "View all")}</span>
+              <ArrowUpRight size={15} />
+            </button>
+          }
+        />
+        <div className="follow-list">
+          {followups.slice(2).map((row, i) => (
+            <FollowRow row={row} key={row[0]} i={i + 2} />
+          ))}
+        </div>
       </section>
-    </>
+    </div>
   );
 }
 
@@ -180,15 +232,35 @@ function FollowRow({ row, i }) {
   const { t } = useLanguage();
   const roleLabel = row[2] === "Buyer" ? t("followups.buyer", "Buyer") : t("followups.seller", "Seller");
   const dateVal = row[5] === "Today" ? t("followups.today", "Today") : row[5];
+  const isUrgent = row[5] === "Today";
+
   return (
-    <div className="follow-row" data-testid={`follow-up-row-${i}`}>
-      <div className="person-avatar">{row[0].split(" ").map(x => x[0]).join("")}</div>
-      <div className="follow-person"><b>{row[0]}</b><span><Phone size={12}/>{row[1]}</span></div>
+    <div className={`follow-row luxury-follow-row ${isUrgent ? "is-urgent" : ""}`} data-testid={`follow-up-row-${i}`}>
+      <div className="person-avatar luxury-avatar">{row[0].split(" ").map(x => x[0]).join("")}</div>
+      <div className="follow-person">
+        <b>{row[0]}</b>
+        <span>
+          <Phone size={12} className="text-amber-400" />
+          {row[1]}
+        </span>
+      </div>
       <StatusPill tone={row[2] === "Buyer" ? "blue" : "gold"}>{roleLabel}</StatusPill>
-      <div className="follow-bike"><Bike size={15}/><b>{row[3]}</b></div>
-      <div className="follow-due"><span>{t("followups.amount_due", "Amount due")}</span><b>{row[4]}</b></div>
-      <div className="follow-date"><span>{t("followups.due_date", "Due date")}</span><b>{dateVal}</b></div>
-      <button className="open-button" data-testid={`open-follow-up-${i}`}>{t("followups.open", "Open")} <ArrowUpRight size={14}/></button>
+      <div className="follow-bike">
+        <Bike size={15} className="text-blue-400" />
+        <b>{row[3]}</b>
+      </div>
+      <div className="follow-due">
+        <span>{t("followups.amount_due", "Amount due")}</span>
+        <strong className="due-gold-amount">{row[4]}</strong>
+      </div>
+      <div className="follow-date">
+        <span>{t("followups.due_date", "Due date")}</span>
+        <span className={`date-badge ${isUrgent ? "date-urgent" : "date-normal"}`}>{dateVal}</span>
+      </div>
+      <button className="open-button luxury-open-btn" data-testid={`open-follow-up-${i}`}>
+        <span>{t("followups.open", "Open")}</span>
+        <ArrowUpRight size={14} />
+      </button>
     </div>
   );
 }
@@ -228,62 +300,94 @@ function Settings() {
   };
 
   return (
-    <>
-      <PageHeader
-        eyebrow={t("settings.eyebrow", "Workspace preferences")}
-        title={t("settings.title", "Settings")}
-        subtitle={t("settings.subtitle", "Manage your profile, showroom preferences, and local demo state.")}
-      />
-      <div className="settings-grid">
-        <section className="settings-section">
-          <SectionTitle title={t("settings.account", "Account")}/>
-          <div className="profile-card">
-            <div className="large-avatar">AK</div>
-            <div>
+    <div className="settings-page-luxury">
+      <div className="page-header settings-luxury-header">
+        <div>
+          <div className="eyebrow settings-eyebrow">
+            <span className="eyebrow-beacon" />
+            <span>{t("settings.eyebrow", "SHOWROOM PREFERENCES & PROFILE ATELIER")}</span>
+          </div>
+          <h1 data-testid="page-title" className="settings-hero-title">
+            {t("settings.title", "Settings")}
+          </h1>
+          <p className="settings-hero-subtitle">
+            {t("settings.subtitle", "Manage your profile, showroom preferences, and local demo state.")}
+          </p>
+        </div>
+      </div>
+
+      <div className="settings-grid luxury-settings-grid">
+        <section className="settings-section luxury-settings-section">
+          <SectionTitle title={t("settings.account", "Account Profile")} />
+          <div className="profile-card luxury-profile-card">
+            <div className="large-avatar luxury-avatar-large">AK</div>
+            <div className="profile-info-block">
               <h3>Alex Kumar</h3>
               <p>alex@metromotors.in</p>
-              <StatusPill tone="gold">{t("settings.owner", "Owner")}</StatusPill>
+              <div className="profile-badge-row">
+                <StatusPill tone="gold">{t("settings.owner", "Owner")}</StatusPill>
+                <span className="verified-shield">
+                  <ShieldCheck size={12} className="text-emerald-400" />
+                  Verified Operator
+                </span>
+              </div>
             </div>
-            <button className="icon-button" aria-label={t("settings.edit_profile", "Edit profile")} data-testid="edit-profile-button"><Pencil size={16}/></button>
+            <button className="icon-button luxury-icon-btn" aria-label={t("settings.edit_profile", "Edit profile")} data-testid="edit-profile-button">
+              <Pencil size={16} />
+            </button>
           </div>
           <div className="settings-fields">
-            <SettingField label={t("settings.full_name", "Full name")} value="Alex Kumar"/>
-            <SettingField label={t("settings.email_address", "Email address")} value="alex@metromotors.in"/>
-            <SettingField label={t("settings.role", "Role")} value={t("settings.owner", "Owner")}/>
+            <SettingField label={t("settings.full_name", "Full name")} value="Alex Kumar" />
+            <SettingField label={t("settings.email_address", "Email address")} value="alex@metromotors.in" />
+            <SettingField label={t("settings.role", "Role")} value={t("settings.owner", "Owner")} />
           </div>
         </section>
 
-        <section className="settings-section">
-          <SectionTitle title={t("settings.active_sessions", "Active Sessions")} action={<StatusPill>{t("settings.one_active", "1 active")}</StatusPill>}/>
-          <div className="session-row">
-            <div className="session-icon"><Zap size={17}/></div>
-            <div><b>{t("settings.current_device", "Chrome on Windows")}</b><span>{t("settings.current_location", "Bengaluru, India · Current session")}</span></div>
-            <span className="current-dot"><i/>{t("settings.active_status", "Active")}</span>
+        <section className="settings-section luxury-settings-section">
+          <SectionTitle
+            title={t("settings.active_sessions", "Active Sessions")}
+            action={<StatusPill tone="green">{t("settings.one_active", "1 active")}</StatusPill>}
+          />
+          <div className="session-row luxury-session-row">
+            <div className="session-icon luxury-session-icon">
+              <Zap size={18} />
+            </div>
+            <div className="session-details">
+              <b>{t("settings.current_device", "Chrome on Windows")}</b>
+              <span>{t("settings.current_location", "Bengaluru, India · Current session")}</span>
+            </div>
+            <span className="current-dot">
+              <i />
+              {t("settings.active_status", "Active")}
+            </span>
           </div>
         </section>
 
-        <section className="settings-section">
-          <SectionTitle title={t("settings.showroom", "Showroom")}/>
+        <section className="settings-section luxury-settings-section">
+          <SectionTitle title={t("settings.showroom", "Showroom Identity")} />
           <div className="settings-fields">
-            <SettingField label={t("settings.showroom_name", "Showroom name")} value="Metro Motors"/>
-            <SettingField label={t("settings.currency", "Currency")} value={t("settings.currency_val", "Indian Rupee (₹)")}/>
-            <SettingField label={t("settings.date_format", "Date format")} value="DD MMM YYYY"/>
+            <SettingField label={t("settings.showroom_name", "Showroom name")} value="Metro Motors" />
+            <SettingField label={t("settings.currency", "Currency")} value={t("settings.currency_val", "Indian Rupee (₹)")} />
+            <SettingField label={t("settings.date_format", "Date format")} value="DD MMM YYYY" />
           </div>
-          <Button primary icon={<Check size={16}/>} testid="save-settings-button">{t("settings.save_changes", "Save changes")}</Button>
+          <Button primary icon={<Check size={16} />} testid="save-settings-button">
+            {t("settings.save_changes", "Save changes")}
+          </Button>
         </section>
 
-        <section className="settings-section" style={{ gridColumn: "1 / -1" }}>
-          <SectionTitle title={t("settings.demo_data_header", "Showroom Demo Data & State")} />
-          <div style={{ display: "flex", flexDirection: "column", gap: "12px", background: "var(--card-bg, rgba(30, 41, 59, 0.4))", padding: "16px", borderRadius: "10px", border: "1px solid var(--border-color, rgba(255, 255, 255, 0.08))" }}>
-            <p style={{ margin: 0, fontSize: "14px", lineHeight: "1.5", color: "var(--text-muted, #94a3b8)" }}>
+        <section className="settings-section luxury-settings-section" style={{ gridColumn: "1 / -1" }}>
+          <SectionTitle title={t("settings.demo_data_header", "Showroom Storage & Demo Fleet Data")} />
+          <div className="demo-vault-box">
+            <p className="demo-vault-text">
               {t("settings.demo_data_desc", "Metro Motors comes pre-configured with 7 rich demo vehicle deals (Royal Enfield, KTM Duke, Yamaha MT-15, Honda Activa, Apache RTR, Kawasaki Ninja, and Hero Splendor) complete with vehicle specs, parties, witness details, agent transfers, payments, and verified photo documentation.")}
             </p>
             {demoNotice && (
               <div className="workflow-message" role="status" data-testid="settings-demo-message" style={{ margin: "4px 0" }}>
-                {demoNotice}
+                <Sparkles size={14} className="text-amber-400" />
+                <span>{demoNotice}</span>
               </div>
             )}
-            <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", marginTop: "4px" }}>
+            <div className="demo-vault-actions">
               <button
                 type="button"
                 className="button button-primary"
@@ -291,27 +395,38 @@ function Settings() {
                 disabled={busy}
                 data-testid="reload-demo-data-button"
               >
-                <RefreshCw size={15} className={busy ? "animate-spin" : ""}/> {t("settings.reload_demo", "Reload Complete Demo Details")}
+                <RefreshCw size={15} className={busy ? "animate-spin" : ""} />
+                <span>{t("settings.reload_demo", "Reload Complete Demo Details")}</span>
               </button>
               <button
                 type="button"
-                className="button button-secondary"
+                className="button button-secondary clear-data-btn"
                 onClick={clearData}
                 disabled={busy}
                 data-testid="clear-all-data-button"
-                style={{ color: "#ef4444" }}
               >
-                <Trash2 size={15} /> {t("settings.clear_all_data", "Clear All Records")}
+                <Trash2 size={15} />
+                <span>{t("settings.clear_all_data", "Clear All Records")}</span>
               </button>
             </div>
           </div>
         </section>
       </div>
-    </>
+    </div>
   );
 }
 
-function SettingField({ label, value }) { return <label className="setting-field"><span>{label}</span><div>{value}<Pencil size={14}/></div></label> }
+function SettingField({ label, value }) {
+  return (
+    <label className="setting-field luxury-setting-field">
+      <span>{label}</span>
+      <div>
+        <span>{value}</span>
+        <Pencil size={14} className="pencil-icon" />
+      </div>
+    </label>
+  );
+}
 
 function LocalModeLabel() {
   const { t } = useLanguage();
