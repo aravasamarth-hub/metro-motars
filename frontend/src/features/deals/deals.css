@@ -6958,7 +6958,9 @@
   padding: 6px 4px;
   outline: none;
   text-align: right;
+  appearance: textfield;
   -moz-appearance: textfield;
+  -webkit-appearance: textfield;
 }
 
 .theme-light .maintenance-price-input {
