@@ -14,22 +14,25 @@ import {
   Sparkles,
   UserCheck,
   Users,
+  Wrench,
 } from "lucide-react";
 import { STEPS, getStepStatus } from "@/features/deals/dealModel";
 import { useDealWizard } from "@/features/deals/useDealWizard";
 import { VehicleStep } from "@/features/deals/VehicleStep";
 import { PersonStep } from "@/features/deals/PersonStep";
+import { MaintenanceStep } from "@/features/deals/MaintenanceStep";
 import { AgentStep } from "@/features/deals/AgentStep";
 import { PaymentStep } from "@/features/deals/PaymentStep";
 import { ReviewStep } from "@/features/deals/DealSummary";
 import { ConfirmDialog } from "@/features/deals/LocalUI";
 import { useLanguage } from "@/features/i18n/LanguageContext";
 
-const STEP_ICONS = [Bike, UserCheck, Users, Briefcase, CreditCard, FileCheck];
+const STEP_ICONS = [Bike, UserCheck, Wrench, Users, Briefcase, CreditCard, FileCheck];
 
 const STEP_TRANSLATION_KEYS = [
   "step.vehicle",
   "step.seller",
+  "step.maintenance",
   "step.buyer",
   "step.agent",
   "step.payments",
@@ -45,8 +48,11 @@ export default function FunctionalNewDeal() {
 
   const stepQuery = searchParams.get("step") || (location.hash === "#agent" ? "agent" : "");
   let targetInitialStep = 0;
-  if (stepQuery === "agent") targetInitialStep = 3;
-  else if (stepQuery === "payments" || stepQuery === "maintenance") targetInitialStep = 4;
+  if (stepQuery === "seller") targetInitialStep = 1;
+  else if (stepQuery === "maintenance") targetInitialStep = 2;
+  else if (stepQuery === "buyer") targetInitialStep = 3;
+  else if (stepQuery === "agent") targetInitialStep = 4;
+  else if (stepQuery === "payments") targetInitialStep = 5;
   else if (stepQuery && !isNaN(stepQuery)) targetInitialStep = parseInt(stepQuery, 10);
 
   const [discardTarget, setDiscardTarget] = useState("");
@@ -229,9 +235,10 @@ export default function FunctionalNewDeal() {
             <fieldset disabled={busy} className="wizard-body luxury-wizard-body" key={step}>
               {step === 0 && <VehicleStep {...wizard} />}
               {step === 1 && <PersonStep group="seller" {...wizard} />}
-              {step === 2 && <PersonStep group="buyer" {...wizard} />}
-              {step === 3 && <AgentStep {...wizard} />}
-              {step === 4 && <PaymentStep {...wizard} />}
+              {step === 2 && <MaintenanceStep {...wizard} />}
+              {step === 3 && <PersonStep group="buyer" {...wizard} />}
+              {step === 4 && <AgentStep {...wizard} />}
+              {step === 5 && <PaymentStep {...wizard} />}
               {isReview && <ReviewStep deal={deal} update={wizard.update} edit={go} />}
             </fieldset>
 

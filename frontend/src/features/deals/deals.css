@@ -2224,22 +2224,24 @@
 
 .luxury-steps-v2 {
   display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  gap: 10px;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
 }
 
-@media (max-width: 860px) {
+@media (max-width: 1100px) {
   .luxury-steps-v2 {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: 8px;
   }
 }
 
-@media (max-width: 520px) {
+@media (max-width: 720px) {
   .luxury-steps-v2 {
     grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
   }
 }
+
 
 .luxury-step-item {
   display: flex;

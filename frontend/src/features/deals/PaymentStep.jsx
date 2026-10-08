@@ -15,7 +15,6 @@ import { FieldGrid } from "./DealField";
 import { paymentFields } from "./fieldConfig";
 import { commission, grossCommission, calculateMaintenanceTotal, money } from "./dealModel";
 import { useLanguage } from "@/features/i18n/LanguageContext";
-import { MaintenanceSection } from "./MaintenanceSection";
 
 const PAYMENT_METHODS = [
   { id: "Cash", label: "Cash", desc: "Showroom Counter", icon: Banknote },
@@ -220,12 +219,6 @@ export const PaymentStep = ({ deal, updateSection, errors }) => {
           onChange={(key, value) => updateSection("payments", key, value)}
         />
       </section>
-
-      {/* Mechanical Maintenance & Refurbishment Cost Section */}
-      <MaintenanceSection
-        deal={deal}
-        updateSection={updateSection}
-      />
     </div>
   );
 };

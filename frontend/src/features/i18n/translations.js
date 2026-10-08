@@ -39,6 +39,7 @@ export const translations = {
     // Wizard Steps
     "step.vehicle": "Vehicle",
     "step.seller": "Seller",
+    "step.maintenance": "Maintenance",
     "step.buyer": "Buyer",
     "step.agent": "Agent",
     "step.payments": "Payments",
@@ -586,6 +587,7 @@ export const translations = {
     // Wizard Steps
     "step.vehicle": "वाहन",
     "step.seller": "विक्रेता",
+    "step.maintenance": "रखरखाव",
     "step.buyer": "खरीदार",
     "step.agent": "एजेंट",
     "step.payments": "भुगतान",
@@ -1133,6 +1135,7 @@ export const translations = {
     // Wizard Steps
     "step.vehicle": "ವಾಹನ",
     "step.seller": "ಮಾರಾಟಗಾರ",
+    "step.maintenance": "ನಿರ್ವಹಣೆ",
     "step.buyer": "ಖರೀದಿದಾರ",
     "step.agent": "ಏಜೆಂಟ್",
     "step.payments": "ಪಾವತಿಗಳು",

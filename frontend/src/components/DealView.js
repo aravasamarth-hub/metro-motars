@@ -142,26 +142,46 @@ export default function DealView() {
             );
           })}
           <PhotoSlots group="vehicle" photos={deal.photos} readOnly/>
-          {["seller", "buyer"].map((group, i) => (
-            <div key={group}>
-              <ReadGroup
-                title={group === "seller" ? t("step.seller", "Seller") : t("step.buyer", "Buyer")}
-                fields={deal[group].is_dealer ? [...personFields, ...dealerFields] : personFields}
-                value={deal[group]}
-                prefix={group}
-              />
-              <PhotoSlots group={group} photos={deal.photos} readOnly/>
-              <ReadGroup
-                title={group === "seller" ? t("section.seller_witness", "Seller witness") : t("section.buyer_witness", "Buyer witness")}
-                fields={witnessFields}
-                value={deal.witnesses[i]}
-                prefix={`witness-${i + 1}`}
-              />
-              <PhotoSlots group={`witness-${i + 1}`} photos={deal.photos} readOnly/>
-            </div>
-          ))}
+          {/* Seller details & witness */}
+          <div>
+            <ReadGroup
+              title={t("step.seller", "Seller")}
+              fields={deal.seller.is_dealer ? [...personFields, ...dealerFields] : personFields}
+              value={deal.seller}
+              prefix="seller"
+            />
+            <PhotoSlots group="seller" photos={deal.photos} readOnly/>
+            <ReadGroup
+              title={t("section.seller_witness", "Seller witness")}
+              fields={witnessFields}
+              value={deal.witnesses[0]}
+              prefix="witness-1"
+            />
+            <PhotoSlots group="witness-1" photos={deal.photos} readOnly/>
+          </div>
+
+          {/* Mechanical Maintenance Cost - Beside Seller */}
+          <MaintenanceSection deal={deal} readOnly onEdit={() => navigate(`/new-deal/${deal.id}?step=maintenance`)} />
+
+          {/* Buyer details & witness */}
+          <div>
+            <ReadGroup
+              title={t("step.buyer", "Buyer")}
+              fields={deal.buyer.is_dealer ? [...personFields, ...dealerFields] : personFields}
+              value={deal.buyer}
+              prefix="buyer"
+            />
+            <PhotoSlots group="buyer" photos={deal.photos} readOnly/>
+            <ReadGroup
+              title={t("section.buyer_witness", "Buyer witness")}
+              fields={witnessFields}
+              value={deal.witnesses[1]}
+              prefix="witness-2"
+            />
+            <PhotoSlots group="witness-2" photos={deal.photos} readOnly/>
+          </div>
+
           <ReadGroup title={t("step.payments", "Payments")} fields={paymentFields} value={deal.payments} prefix="payments"/>
-          <MaintenanceSection deal={deal} readOnly onEdit={() => navigate(`/new-deal/${deal.id}?step=payments`)} />
           {deal.agent?.name && (
             <div id="deal-agent-section">
               <ReadGroup

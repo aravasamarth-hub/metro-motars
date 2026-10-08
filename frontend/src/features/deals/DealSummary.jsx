@@ -10,15 +10,15 @@ export const DealSummary = ({ deal, edit }) => {
   const rows = [
     [t("step.vehicle", "Vehicle"), `${deal.vehicle.vehicle_name || "—"} · ${deal.vehicle.registration_number || deal.vehicle.vehicle_number || "—"}`, 0],
     [t("step.seller", "Seller"), deal.seller.is_dealer ? `${deal.seller.name} · ${deal.seller.dealer_name}` : deal.seller.name || "—", 1],
-    [t("step.buyer", "Buyer"), deal.buyer.name || t("summary.not_assigned", "Not assigned"), 2],
-    [t("section.seller_witness", "Seller witness"), deal.witnesses[0].name || t("summary.not_recorded", "Not recorded"), 1],
-    [t("section.buyer_witness", "Buyer witness"), deal.witnesses[1].name || t("summary.not_recorded", "Not recorded"), 2],
-    [t("field.purchase_price", "Purchase price"), money(deal.payments.purchase_price), 4],
-    [t("field.selling_price", "Selling price"), money(deal.payments.selling_price), 4],
     ...(maintenanceExpense > 0
-      ? [[t("maintenance.summary_label", "Maintenance Cost"), money(maintenanceExpense), 4]]
+      ? [[t("maintenance.summary_label", "Maintenance Cost"), money(maintenanceExpense), 2]]
       : []),
-    [t("section.commission", "Commission"), money(commission(deal.payments, maintenanceExpense)), 4],
+    [t("step.buyer", "Buyer"), deal.buyer.name || t("summary.not_assigned", "Not assigned"), 3],
+    [t("section.seller_witness", "Seller witness"), deal.witnesses[0].name || t("summary.not_recorded", "Not recorded"), 1],
+    [t("section.buyer_witness", "Buyer witness"), deal.witnesses[1].name || t("summary.not_recorded", "Not recorded"), 3],
+    [t("field.purchase_price", "Purchase price"), money(deal.payments.purchase_price), 5],
+    [t("field.selling_price", "Selling price"), money(deal.payments.selling_price), 5],
+    [t("section.commission", "Commission"), money(commission(deal.payments, maintenanceExpense)), 5],
     [t("photo.photos_count", "Photos"), `${Object.values(deal.photos).filter(Boolean).length} / 32 ${t("summary.attached", "attached")}`, 0],
   ];
 
@@ -29,7 +29,7 @@ export const DealSummary = ({ deal, edit }) => {
     rows.push([
       t("step.agent", "Agent"),
       `${deal.agent.name}${deal.agent.task ? ` · ${deal.agent.task}` : ""} · ${t("summary.balance", "Balance")}: ${money(bal)}`,
-      3
+      4
     ]);
   }
 

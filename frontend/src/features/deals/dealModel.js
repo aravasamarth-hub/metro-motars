@@ -1,4 +1,4 @@
-export const STEPS = ["Vehicle", "Seller", "Buyer", "Agent", "Payments", "Notes & Save"];
+export const STEPS = ["Vehicle", "Seller", "Maintenance", "Buyer", "Agent", "Payments", "Notes & Save"];
 export const localDay = (date = new Date()) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 export const money = value => value === "" || value == null ? "—" : new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 2 }).format(Number(value));
 export const displayDate = (value, lang = "en") => {
@@ -65,18 +65,41 @@ export function validateStep(deal, step) {
     ["engine_cc", "odometer"].forEach(key => { if (deal.vehicle[key] !== "" && (!Number.isFinite(+deal.vehicle[key]) || +deal.vehicle[key] < 0)) errors[`vehicle.${key}`] = "Enter a non-negative number."; });
     if (deal.vehicle.sold_date && deal.vehicle.bought_date && deal.vehicle.sold_date < deal.vehicle.bought_date) errors["vehicle.sold_date"] = "Sold date cannot be before bought date.";
   }
-  if (step === 1 || step === 2) {
+  if (step === 1) {
     const people = [
-      [step === 1 ? "seller" : "buyer", step === 1 ? deal.seller : deal.buyer],
-      [`witnesses.${step - 1}`, deal.witnesses[step - 1]],
+      ["seller", deal.seller],
+      ["witnesses.0", deal.witnesses[0]],
     ];
     people.forEach(([prefix, p]) => {
+      if (!p) return;
       ["phone", "alternate_phone"].forEach(key => { if (p[key] && !/^(?:\+91[\s-]?)?[6-9]\d{9}$/.test(p[key].replace(/[\s-]/g, ""))) errors[`${prefix}.${key}`] = "Enter a valid 10-digit Indian mobile number."; });
       if (p.pincode && !/^[1-9]\d{5}$/.test(p.pincode)) errors[`${prefix}.pincode`] = "Enter a six-digit PIN code.";
       if (p.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(p.email)) errors[`${prefix}.email`] = "Enter a valid email address.";
     });
   }
+  if (step === 2) {
+    const m = deal.maintenance || {};
+    if (Array.isArray(m.services)) {
+      m.services.forEach(s => {
+        if (s.price !== "" && s.price != null && (!Number.isFinite(+s.price) || +s.price < 0 || +s.price > 999999999)) {
+          errors[`maintenance.${s.id}`] = "Enter a valid amount.";
+        }
+      });
+    }
+  }
   if (step === 3) {
+    const people = [
+      ["buyer", deal.buyer],
+      ["witnesses.1", deal.witnesses[1]],
+    ];
+    people.forEach(([prefix, p]) => {
+      if (!p) return;
+      ["phone", "alternate_phone"].forEach(key => { if (p[key] && !/^(?:\+91[\s-]?)?[6-9]\d{9}$/.test(p[key].replace(/[\s-]/g, ""))) errors[`${prefix}.${key}`] = "Enter a valid 10-digit Indian mobile number."; });
+      if (p.pincode && !/^[1-9]\d{5}$/.test(p.pincode)) errors[`${prefix}.pincode`] = "Enter a six-digit PIN code.";
+      if (p.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(p.email)) errors[`${prefix}.email`] = "Enter a valid email address.";
+    });
+  }
+  if (step === 4) {
     const a = deal.agent || {};
     if (a.phone && !/^(?:\+91[\s-]?)?[6-9]\d{9}$/.test(a.phone.replace(/[\s-]/g, ""))) errors["agent.phone"] = "Enter a valid 10-digit Indian mobile number.";
     if (a.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(a.email)) errors["agent.email"] = "Enter a valid email address.";
@@ -85,7 +108,7 @@ export function validateStep(deal, step) {
       if (val !== "" && val != null && (!Number.isFinite(+val) || +val < 0 || +val > 999999999)) errors[`agent.${key}`] = "Enter a valid amount.";
     });
   }
-  if (step === 4) {
+  if (step === 5) {
     ["purchase_price", "selling_price", "paid_to_seller", "received_from_buyer"].forEach(key => {
       const value = deal.payments[key];
       if (value !== "" && (!Number.isFinite(+value) || +value < 0 || +value > 999999999)) errors[`payments.${key}`] = "Enter an amount between 0 and 999,999,999.";
@@ -156,6 +179,16 @@ export function getStepStatus(deal, step) {
   }
 
   if (step === 2) {
+    const m = deal.maintenance || {};
+    const hasData = Boolean(
+      (m.services && m.services.some(s => s.enabled || Number(s.price) > 0)) ||
+      m.notes?.trim()
+    );
+    if (!hasData) return "empty";
+    return Object.keys(validateStep(deal, 2)).length === 0 ? "complete" : "partial";
+  }
+
+  if (step === 3) {
     const b = deal.buyer || {};
     const hasPhotos = Object.keys(photos).some(k => k.startsWith("buyer") && photos[k]);
     const hasData = Boolean(
@@ -181,11 +214,11 @@ export function getStepStatus(deal, step) {
       (b.is_dealer && b.dealer_name && b.dealer_name.trim())
     );
     const hasPhone = Boolean(b.phone && b.phone.trim());
-    const isComplete = hasName && hasPhone && Object.keys(validateStep(deal, 2)).length === 0;
+    const isComplete = hasName && hasPhone && Object.keys(validateStep(deal, 3)).length === 0;
     return isComplete ? "complete" : "partial";
   }
 
-  if (step === 3) {
+  if (step === 4) {
     const a = deal.agent || {};
     const hasData = Boolean(
       a.name?.trim() ||
@@ -199,11 +232,11 @@ export function getStepStatus(deal, step) {
     if (!hasData) return "empty";
     const hasName = Boolean(a.name && a.name.trim());
     const hasPhone = Boolean(a.phone && a.phone.trim());
-    const isComplete = hasName && hasPhone && Object.keys(validateStep(deal, 3)).length === 0;
+    const isComplete = hasName && hasPhone && Object.keys(validateStep(deal, 4)).length === 0;
     return isComplete ? "complete" : "partial";
   }
 
-  if (step === 4) {
+  if (step === 5) {
     const p = deal.payments || {};
     const hasData = Boolean(
       (p.purchase_price !== "" && p.purchase_price != null) ||
@@ -216,18 +249,19 @@ export function getStepStatus(deal, step) {
     if (!hasData) return "empty";
     const hasPurchase = p.purchase_price !== "" && p.purchase_price != null && !isNaN(Number(p.purchase_price));
     const hasSelling = p.selling_price !== "" && p.selling_price != null && !isNaN(Number(p.selling_price));
-    const isComplete = hasPurchase && hasSelling && Object.keys(validateStep(deal, 4)).length === 0;
+    const isComplete = hasPurchase && hasSelling && Object.keys(validateStep(deal, 5)).length === 0;
     return isComplete ? "complete" : "partial";
   }
 
-  if (step === 5) {
+  if (step === 6) {
     const hasNotes = Boolean(deal.notes?.trim());
     const allPrevComplete =
       getStepStatus(deal, 0) === "complete" &&
       getStepStatus(deal, 1) === "complete" &&
-      getStepStatus(deal, 2) === "complete" &&
-      (getStepStatus(deal, 3) === "complete" || getStepStatus(deal, 3) === "empty") &&
-      getStepStatus(deal, 4) === "complete";
+      (getStepStatus(deal, 2) === "complete" || getStepStatus(deal, 2) === "empty") &&
+      getStepStatus(deal, 3) === "complete" &&
+      (getStepStatus(deal, 4) === "complete" || getStepStatus(deal, 4) === "empty") &&
+      getStepStatus(deal, 5) === "complete";
     if (allPrevComplete) return "complete";
     if (hasNotes) return "partial";
     return "empty";
