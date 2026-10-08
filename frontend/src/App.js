@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { BrowserRouter, NavLink, Route, Routes, useLocation, useNavigate, Navigate } from "react-router-dom";
-import { ArrowLeft, ArrowUpRight, Bike, BriefcaseBusiness, CalendarDays, Camera, Check, ChevronDown, CircleDollarSign, ClipboardList, Clock, CreditCard, LayoutDashboard, LogOut, Menu, MoreHorizontal, Moon, Pencil, Phone, Plus, Printer, RefreshCw, Search, Settings as SettingsIcon, ShieldCheck, Sun, Trash2, UsersRound, WalletCards, X, Zap } from "lucide-react";
+import { ArrowLeft, ArrowUpRight, Bike, BriefcaseBusiness, CalendarDays, Camera, Check, ChevronDown, CircleDollarSign, ClipboardList, Clock, CreditCard, LayoutDashboard, LogOut, Menu, MoreHorizontal, Moon, Pencil, Phone, Plus, Printer, RefreshCw, Search, Settings as SettingsIcon, ShieldCheck, Sun, Trash2, UserCheck, UsersRound, WalletCards, X, Zap } from "lucide-react";
 import "@/App.css";
 import FunctionalNewDeal from "@/components/FunctionalNewDeal";
 import FunctionalDashboard from "@/components/FunctionalDashboard";
@@ -9,6 +9,7 @@ import DealView from "@/components/DealView";
 import { LocalFinances as FunctionalFinances } from "@/features/deals/LocalPreviewPages";
 import "@/features/deals/deals.css";
 import { dealRepository } from "@/data/dealRepository";
+import AgentsView from "@/features/deals/AgentsView";
 
 import { LanguageProvider, useLanguage } from "@/features/i18n/LanguageContext";
 import { LanguageSwitcher } from "@/features/i18n/LanguageSwitcher";
@@ -17,6 +18,7 @@ const navItems = [
   ["nav.dashboard", "Dashboard", "/", LayoutDashboard],
   ["nav.deals", "Deals", "/deals", BriefcaseBusiness],
   ["nav.new_deal", "New Deal", "/new-deal", Plus],
+  ["nav.agents", "Agents", "/agents", UserCheck],
   ["nav.finances", "Finances", "/finances", CircleDollarSign],
   ["nav.follow_ups", "Follow-ups", "/follow-ups", CalendarDays],
   ["nav.settings", "Settings", "/settings", SettingsIcon],
@@ -29,6 +31,8 @@ function AppShell({ children, dark, setDark }) {
   const currentNav = navItems.find(([, , path]) => path === location.pathname);
   const pageName = currentNav
     ? t(currentNav[0], currentNav[1])
+    : location.pathname.startsWith("/agents")
+    ? t("nav.agents", "Agents")
     : location.pathname.startsWith("/new-deal")
     ? t("nav.new_deal", "New Deal")
     : location.pathname.startsWith("/deals")
@@ -491,6 +495,8 @@ function App() {
             <Route path="/bills" element={<Navigate to="/deals" replace />} />
             <Route path="/new-deal" element={<FunctionalNewDeal />} />
             <Route path="/new-deal/:dealId" element={<FunctionalNewDeal />} />
+            <Route path="/agents" element={<AgentsView />} />
+            <Route path="/agents/:agentName" element={<AgentsView />} />
             <Route path="/finances" element={<FunctionalFinances />} />
             <Route path="/follow-ups" element={<FollowUps />} />
             <Route path="/settings" element={<Settings />} />
