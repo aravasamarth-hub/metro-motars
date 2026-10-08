@@ -1,10 +1,11 @@
 import { Pencil } from "lucide-react";
-import { commission, money } from "./dealModel";
+import { commission, calculateMaintenanceTotal, money } from "./dealModel";
 import { DealField } from "./DealField";
 import { useLanguage } from "@/features/i18n/LanguageContext";
 
 export const DealSummary = ({ deal, edit }) => {
   const { t } = useLanguage();
+  const maintenanceExpense = calculateMaintenanceTotal(deal.maintenance);
 
   const rows = [
     [t("step.vehicle", "Vehicle"), `${deal.vehicle.vehicle_name || "—"} · ${deal.vehicle.registration_number || deal.vehicle.vehicle_number || "—"}`, 0],
@@ -14,7 +15,10 @@ export const DealSummary = ({ deal, edit }) => {
     [t("section.buyer_witness", "Buyer witness"), deal.witnesses[1].name || t("summary.not_recorded", "Not recorded"), 2],
     [t("field.purchase_price", "Purchase price"), money(deal.payments.purchase_price), 4],
     [t("field.selling_price", "Selling price"), money(deal.payments.selling_price), 4],
-    [t("section.commission", "Commission"), money(commission(deal.payments)), 4],
+    ...(maintenanceExpense > 0
+      ? [[t("maintenance.summary_label", "Maintenance Cost"), money(maintenanceExpense), 4]]
+      : []),
+    [t("section.commission", "Commission"), money(commission(deal.payments, maintenanceExpense)), 4],
     [t("photo.photos_count", "Photos"), `${Object.values(deal.photos).filter(Boolean).length} / 32 ${t("summary.attached", "attached")}`, 0],
   ];
 

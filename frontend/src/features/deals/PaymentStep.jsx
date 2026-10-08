@@ -9,11 +9,13 @@ import {
   FileCheck2,
   Layers,
   Sparkles,
+  Wrench,
 } from "lucide-react";
 import { FieldGrid } from "./DealField";
 import { paymentFields } from "./fieldConfig";
-import { commission, money } from "./dealModel";
+import { commission, grossCommission, calculateMaintenanceTotal, money } from "./dealModel";
 import { useLanguage } from "@/features/i18n/LanguageContext";
+import { MaintenanceSection } from "./MaintenanceSection";
 
 const PAYMENT_METHODS = [
   { id: "Cash", label: "Cash", desc: "Showroom Counter", icon: Banknote },
@@ -26,7 +28,9 @@ const PAYMENT_METHODS = [
 export const PaymentStep = ({ deal, updateSection, errors }) => {
   const { t } = useLanguage();
   const p = deal?.payments || {};
-  const amount = commission(p);
+  const maintenanceExpense = calculateMaintenanceTotal(deal?.maintenance);
+  const grossAmount = grossCommission(p);
+  const netAmount = commission(p, maintenanceExpense);
 
   const purchaseNum = Number(p.purchase_price) || 0;
   const sellingNum = Number(p.selling_price) || 0;
@@ -34,7 +38,9 @@ export const PaymentStep = ({ deal, updateSection, errors }) => {
   const paidNum = Number(p.paid_to_seller) || 0;
 
   const marginPercent =
-    sellingNum > 0 ? ((amount / sellingNum) * 100).toFixed(1) : null;
+    sellingNum > 0 && netAmount !== null
+      ? ((netAmount / sellingNum) * 100).toFixed(1)
+      : null;
 
   const sellerBalance =
     p.purchase_price === "" ? "—" : money(purchaseNum - paidNum);
@@ -80,8 +86,29 @@ export const PaymentStep = ({ deal, updateSection, errors }) => {
             </div>
           </div>
 
+          {/* Mechanical Maintenance Cost */}
+          <div className="cockpit-card">
+            <div className="cockpit-header">
+              <span className="cockpit-label">
+                {t("maintenance.cockpit_title", "Maintenance Cost")}
+              </span>
+              <Wrench size={16} className="cockpit-icon" style={{ color: "#f59e0b" }} />
+            </div>
+            <div className="cockpit-val" style={{ color: maintenanceExpense > 0 ? "#f59e0b" : undefined }}>
+              {money(maintenanceExpense)}
+            </div>
+            <div className="cockpit-sub">
+              <span>{t("maintenance.services", "Services")}:</span>
+              <strong>
+                {deal?.maintenance?.services
+                  ? `${deal.maintenance.services.filter((s) => s.enabled).length} active`
+                  : "0 active"}
+              </strong>
+            </div>
+          </div>
+
           {/* Net Margin / Commission */}
-          <div className={`cockpit-card ${amount >= 0 ? "margin-highlight" : ""}`}>
+          <div className={`cockpit-card ${netAmount >= 0 ? "margin-highlight" : ""}`}>
             <div className="cockpit-header">
               <span className="cockpit-label">
                 {t("section.commission", "Net Commission")}
@@ -89,20 +116,20 @@ export const PaymentStep = ({ deal, updateSection, errors }) => {
               <TrendingUp size={16} className="cockpit-icon" />
             </div>
             <div
-              className={`cockpit-val ${amount < 0 ? "negative" : "positive"}`}
+              className={`cockpit-val ${netAmount < 0 ? "negative" : "positive"}`}
               data-testid="calculated-commission"
               aria-live="polite"
             >
-              {money(amount)}
+              {money(netAmount)}
             </div>
             <div className="cockpit-sub">
               {marginPercent !== null && (
                 <span className="cockpit-margin-badge">
-                  {amount >= 0 ? `+${marginPercent}% Margin` : `${marginPercent}% Deficit`}
+                  {netAmount >= 0 ? `+${marginPercent}% Margin` : `${marginPercent}% Deficit`}
                 </span>
               )}
               {p.purchase_price && p.selling_price && (
-                <span>{amount >= 0 ? "Profitable" : "Below Cost"}</span>
+                <span>{netAmount >= 0 ? "Profitable" : "Below Cost"}</span>
               )}
             </div>
           </div>
@@ -131,9 +158,9 @@ export const PaymentStep = ({ deal, updateSection, errors }) => {
         </div>
       </div>
 
-      {amount < 0 && (
+      {netAmount < 0 && (
         <p className="field-error" role="status" data-testid="negative-commission-warning">
-          {t("payment.negative_commission", "Selling below purchase price: this deal has a negative commission.")}
+          {t("payment.negative_commission", "Selling below purchase + refurbishment price: this deal has a negative net commission.")}
         </p>
       )}
 
@@ -193,6 +220,12 @@ export const PaymentStep = ({ deal, updateSection, errors }) => {
           onChange={(key, value) => updateSection("payments", key, value)}
         />
       </section>
+
+      {/* Mechanical Maintenance & Refurbishment Cost Section */}
+      <MaintenanceSection
+        deal={deal}
+        updateSection={updateSection}
+      />
     </div>
   );
 };

@@ -1,5 +1,5 @@
 import { browserDealAdapter } from "./browserDealAdapter";
-import { commission, validateDeal } from "@/features/deals/dealModel";
+import { commission, calculateMaintenanceTotal, validateDeal } from "@/features/deals/dealModel";
 
 // UI-facing asynchronous contract. A future Supabase adapter implements these
 // methods; presentation components never import a storage SDK or API client.
@@ -17,7 +17,11 @@ export const dealRepository = {
       ...deal.vehicle,
       vehicle_number: deal.vehicle.registration_number || deal.vehicle.vehicle_number || "",
     };
-    const result = await adapter.save({ ...deal, vehicle, commission: commission(deal.payments) });
+    const result = await adapter.save({
+      ...deal,
+      vehicle,
+      commission: commission(deal.payments, calculateMaintenanceTotal(deal.maintenance)),
+    });
     notify();
     return result;
   },

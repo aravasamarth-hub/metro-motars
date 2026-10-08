@@ -6,7 +6,46 @@ export const displayDate = (value, lang = "en") => {
   const locale = lang === "kn" ? "kn-IN" : lang === "hi" ? "hi-IN" : "en-IN";
   return new Date(value.includes("T") ? value : `${value}T12:00:00`).toLocaleDateString(locale, { day: "2-digit", month: "short", year: "numeric" });
 };
-export const commission = payments => payments.purchase_price === "" || payments.selling_price === "" ? null : Math.round((Number(payments.selling_price) - Number(payments.purchase_price)) * 100) / 100;
+export const DEFAULT_MAINTENANCE_SERVICES = [
+  { id: "lof", name: "Lube, Oil, and Filter (LOF)", price: "850", enabled: false },
+  { id: "fluids", name: "Fluid Top-ups & Flushes", price: "400", enabled: false },
+  { id: "filters", name: "Filter Replacements", price: "350", enabled: false },
+  { id: "spark_plug", name: "Spark Plug Replacement", price: "250", enabled: false },
+  { id: "belts_hoses", name: "Belts and Hoses Inspection", price: "200", enabled: false },
+  { id: "tires", name: "Tire Repair & Replacement", price: "2200", enabled: false },
+  { id: "brakes", name: "Brake Pad & Shoe Replacement", price: "650", enabled: false },
+  { id: "battery", name: "Battery Testing & Replacement", price: "1500", enabled: false },
+  { id: "chain_sprocket", name: "Chain Sprocket & Drive Line Lubrication", price: "800", enabled: false },
+  { id: "carburetor_fi", name: "Carburetor / Fuel Injection Cleaning", price: "500", enabled: false },
+  { id: "suspension_fork", name: "Suspension & Fork Oil Overhaul", price: "950", enabled: false },
+  { id: "electrical_wiring", name: "Electrical & Lighting Service", price: "300", enabled: false },
+  { id: "detailing_wash", name: "Showroom Detailing, Teflon Coating & Wash", price: "600", enabled: false },
+];
+
+export const calculateMaintenanceTotal = (maintenance) => {
+  if (!maintenance || !Array.isArray(maintenance.services)) return 0;
+  return maintenance.services
+    .filter((s) => s.enabled)
+    .reduce((sum, s) => sum + (Number(s.price) || 0), 0);
+};
+
+export const commission = (payments, maintenanceCost = 0) =>
+  payments.purchase_price === "" || payments.selling_price === ""
+    ? null
+    : Math.round(
+        (Number(payments.selling_price) -
+          Number(payments.purchase_price) -
+          Number(maintenanceCost || 0)) *
+          100
+      ) / 100;
+
+export const grossCommission = (payments) =>
+  payments.purchase_price === "" || payments.selling_price === ""
+    ? null
+    : Math.round(
+        (Number(payments.selling_price) - Number(payments.purchase_price)) * 100
+      ) / 100;
+
 const person = () => ({ name: "", phone: "", alternate_phone: "", father_name: "", email: "", address: "", city: "", state: "Karnataka", pincode: "", id_type: "Aadhaar", id_number: "", pan_number: "", is_dealer: false, dealer_name: "", gst_number: "", dealer_address: "" });
 export function emptyDeal() {
   return { schema_version: 1, id: null, bill_number: "", status: "In Stock", rc_status: "Pending",
@@ -14,6 +53,7 @@ export function emptyDeal() {
     seller: person(), buyer: person(), witnesses: [person(), person()],
     payments: { purchase_price: "", selling_price: "", paid_to_seller: "", received_from_buyer: "", payment_method: "Cash", payment_date: localDay(), transaction_reference: "", notes: "" },
     agent: { name: "", phone: "", email: "", task: "", total_amount: "", amount_paid: "", amount_balance: "" },
+    maintenance: { services: DEFAULT_MAINTENANCE_SERVICES, total_expense: "0", notes: "" },
     photos: {}, notes: "", created_at: null, updated_at: null };
 }
 export function validateStep(deal, step) {

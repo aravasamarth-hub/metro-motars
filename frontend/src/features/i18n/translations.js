@@ -544,6 +544,13 @@ export const translations = {
     "agents.col_actions": "Action",
     "agents.view_deals": "View",
     "agents.go_to_deal": "View Deal Agent Page",
+
+    // Mechanical Maintenance Cost
+    "maintenance.title": "Mechanical Maintenance Cost",
+    "maintenance.cockpit_title": "Maintenance Cost",
+    "maintenance.refurbishment": "Refurbishment",
+    "maintenance.services": "Services",
+    "maintenance.summary_label": "Maintenance Cost",
   },
   hi: {
     // Navigation
@@ -1084,6 +1091,13 @@ export const translations = {
     "agents.col_actions": "कार्य",
     "agents.view_deals": "देखें",
     "agents.go_to_deal": "डील एजेंट पेज पर जाएं",
+
+    // Mechanical Maintenance Cost
+    "maintenance.title": "मैकेनिकल रखरखाव लागत",
+    "maintenance.cockpit_title": "रखरखाव लागत",
+    "maintenance.refurbishment": "नवीनीकरण",
+    "maintenance.services": "सेवाएं",
+    "maintenance.summary_label": "रखरखाव लागत",
   },
   kn: {
     // Navigation
@@ -1624,5 +1638,12 @@ export const translations = {
     "agents.col_actions": "ಕ್ರಮಗಳು",
     "agents.view_deals": "ನೋಡಿ",
     "agents.go_to_deal": "ಡೀಲ್ ಏಜೆಂಟ್ ಪುಟಕ್ಕೆ ಹೋಗಿ",
+
+    // Mechanical Maintenance Cost
+    "maintenance.title": "ಮೆಕ್ಯಾನಿಕಲ್ ನಿರ್ವಹಣೆ ವೆಚ್ಚ",
+    "maintenance.cockpit_title": "ನಿರ್ವಹಣೆ ವೆಚ್ಚ",
+    "maintenance.refurbishment": "ನವೀಕರಣ",
+    "maintenance.services": "ಸೇವೆಗಳು",
+    "maintenance.summary_label": "ನಿರ್ವಹಣೆ ವೆಚ್ಚ",
   },
 };

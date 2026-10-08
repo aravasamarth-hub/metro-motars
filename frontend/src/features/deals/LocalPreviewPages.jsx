@@ -16,7 +16,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { useDeals } from "./useDeals";
-import { commission, money, localDay } from "./dealModel";
+import { commission, calculateMaintenanceTotal, money, localDay } from "./dealModel";
 import BillDocument from "@/components/BillDocument";
 import BillModal from "@/components/BillModal";
 import { useLanguage } from "@/features/i18n/LanguageContext";
@@ -89,7 +89,7 @@ function buildBillDoc(deal, billType) {
     confidential: isBuyer ? null : {
       purchase_total: Number(p.purchase_price||0),
       sale_total:     Number(p.selling_price||0),
-      commission:     commission(p)||0,
+      commission:     commission(p, calculateMaintenanceTotal(deal.maintenance))||0,
       margin:         Number(p.selling_price||0) - Number(p.purchase_price||0),
     },
     total_amount:   totalAmount,
@@ -278,8 +278,16 @@ export const LocalFinances = () => {
   const sellingTotal = sum("selling_price");
   const paidToSellers = sum("paid_to_seller");
   const receivedFromBuyers = sum("received_from_buyer");
+  const maintenanceTotal = deals.reduce(
+    (total, d) => total + calculateMaintenanceTotal(d.maintenance),
+    0
+  );
   const totalCommission = deals.reduce(
-    (acc, d) => acc + (commission(d.payments) || 0),
+    (acc, d) =>
+      acc +
+      (d.commission != null
+        ? d.commission
+        : commission(d.payments, calculateMaintenanceTotal(d.maintenance)) || 0),
     0
   );
 
@@ -295,6 +303,9 @@ export const LocalFinances = () => {
   const rows = [
     [t("finances.purchase_total", "Purchase total"), purchaseTotal],
     [t("finances.selling_total", "Selling total"), sellingTotal],
+    ...(maintenanceTotal > 0
+      ? [[t("maintenance.title", "Maintenance Cost"), maintenanceTotal]]
+      : []),
     [t("finances.paid_to_sellers", "Paid to sellers"), paidToSellers],
     [t("finances.received_from_buyers", "Received from buyers"), receivedFromBuyers],
     [t("finances.commission", "Commission"), totalCommission],

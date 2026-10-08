@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { useDeals } from "@/features/deals/useDeals";
 import { DealsTable } from "@/features/deals/DealsTable";
-import { localDay, money, commission } from "@/features/deals/dealModel";
+import { localDay, money, commission, calculateMaintenanceTotal } from "@/features/deals/dealModel";
 import { useLanguage } from "@/features/i18n/LanguageContext";
 
 export default function FunctionalDashboard() {
@@ -50,7 +50,10 @@ export default function FunctionalDashboard() {
 
   const totalMargin = useMemo(() => {
     return deals.reduce((acc, d) => {
-      const comm = commission(d?.payments || {});
+      const comm =
+        d.commission != null
+          ? d.commission
+          : commission(d?.payments || {}, calculateMaintenanceTotal(d?.maintenance));
       return acc + (comm > 0 ? comm : 0);
     }, 0);
   }, [deals]);

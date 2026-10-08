@@ -10,6 +10,7 @@ import { displayDate } from "@/features/deals/dealModel";
 import { useLanguage } from "@/features/i18n/LanguageContext";
 import BillModal from "@/components/BillModal";
 import { AgentWhatsAppModal } from "@/features/deals/AgentWhatsAppModal";
+import { MaintenanceSection } from "@/features/deals/MaintenanceSection";
 
 const groupTitleMap = {
   "Vehicle details": "section.vehicle_details",
@@ -160,6 +161,7 @@ export default function DealView() {
             </div>
           ))}
           <ReadGroup title={t("step.payments", "Payments")} fields={paymentFields} value={deal.payments} prefix="payments"/>
+          <MaintenanceSection deal={deal} readOnly />
           {deal.agent?.name && (
             <div id="deal-agent-section">
               <ReadGroup

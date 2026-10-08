@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { ArrowUpRight, Bike, FileText, Pencil, Trash2 } from "lucide-react";
-import { commission, displayDate, money } from "./dealModel";
+import { commission, calculateMaintenanceTotal, displayDate, money } from "./dealModel";
 import { StatusBadges, StockBadge } from "./LocalUI";
 import { useLanguage } from "@/features/i18n/LanguageContext";
 
@@ -29,7 +29,7 @@ export const DealsTable = ({ deals, prefix = "deal", onDelete, onGenerateBill, l
         <td data-label={t("table.col_buyer", "Buyer")} data-testid={`${prefix}-buyer-${deal.id}`}>{deal.buyer.name || t("status.not_assigned", "Not assigned")}</td>
         <td data-label={t("table.col_stock", "Stock")}><StockBadge deal={deal} prefix={`${prefix}-${deal.id}`}/></td>
         <td data-label={t("table.col_status", "Status")}><StatusBadges deal={deal} prefix={`${prefix}-${deal.id}`} onlyRc={true}/></td>
-        {showCommission && <td data-label={t("table.col_commission", "Commission")} className="gold-text" data-testid={`${prefix}-commission-${deal.id}`}>{money(commission(deal.payments))}</td>}
+        {showCommission && <td data-label={t("table.col_commission", "Commission")} className="gold-text" data-testid={`${prefix}-commission-${deal.id}`}>{money(deal.commission != null ? deal.commission : commission(deal.payments, calculateMaintenanceTotal(deal.maintenance)))}</td>}
         <td data-label={t("table.col_created_date", "Created Date")} data-testid={`${prefix}-created-${deal.id}`}>{displayDate(deal.created_at, language)}</td>
         <td data-label={t("table.col_actions", "Actions")}><div className="row-actions"><button onClick={() => navigate(`/deals/${deal.id}`)} title={t("table.view_deal", "View deal")} aria-label={`View ${deal.bill_number}`} data-testid={`${prefix}-view-${deal.id}`}><ArrowUpRight size={16}/></button><button onClick={() => navigate(`/new-deal/${deal.id}`)} title={t("table.edit_deal", "Edit deal")} aria-label={`Edit ${deal.bill_number}`} data-testid={`${prefix}-edit-${deal.id}`}><Pencil size={15}/></button>{onGenerateBill && <button onClick={() => onGenerateBill(deal)} title={t("bills.generate_bill", "Generate Bill")} aria-label={`Generate bill for ${deal.bill_number}`} data-testid={`${prefix}-bill-gen-${deal.id}`}><FileText size={15}/></button>}{onDelete && <button onClick={() => onDelete(deal)} title={t("table.delete_deal", "Delete deal")} aria-label={`Delete ${deal.bill_number}`} data-testid={`${prefix}-delete-${deal.id}`}><Trash2 size={15}/></button>}</div></td>
       </tr>)}
