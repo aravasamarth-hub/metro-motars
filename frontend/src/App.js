@@ -11,6 +11,8 @@ import "@/features/deals/deals.css";
 import { dealRepository } from "@/data/dealRepository";
 import AgentsView from "@/features/deals/AgentsView";
 import FollowUpsView from "@/features/deals/FollowUpsView";
+import LoginPage from "@/features/auth/LoginPage";
+import { AuthProvider, useAuth } from "@/context/AuthContext";
 
 import { LanguageProvider, useLanguage } from "@/features/i18n/LanguageContext";
 import { LanguageSwitcher } from "@/features/i18n/LanguageSwitcher";
@@ -28,7 +30,14 @@ const navItems = [
 function AppShell({ children, dark, setDark }) {
   const { t } = useLanguage();
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
   const [mobileNav, setMobileNav] = useState(false);
+
+  if (location.pathname === "/login") {
+    return <div className={`login-page-wrapper ${dark ? "theme-dark dark" : "theme-light"}`}>{children}</div>;
+  }
+
   const currentNav = navItems.find(([, , path]) => path === location.pathname);
   const pageName = currentNav
     ? t(currentNav[0], currentNav[1])
@@ -75,7 +84,14 @@ function AppShell({ children, dark, setDark }) {
               <span>{t("nav.showroom_moving", "Keep your showroom moving.")}</span>
             </div>
           </div>
-          <button className="logout-link" data-testid="logout-button">
+          <button
+            className="logout-link"
+            data-testid="logout-button"
+            onClick={() => {
+              logout();
+              navigate("/login");
+            }}
+          >
             <LogOut size={17} /> {t("nav.logout", "Logout")}
           </button>
           <div className="version">
@@ -128,14 +144,36 @@ function AppShell({ children, dark, setDark }) {
               )}
             </button>
             <LanguageSwitcher />
-            <span className="owner-badge" data-testid="owner-badge">
-              {t("topbar.owner", "OWNER")}
+            <span
+              className="owner-badge"
+              data-testid="owner-badge"
+              style={{
+                backgroundColor: user?.badgeColor ? `${user.badgeColor}22` : undefined,
+                color: user?.badgeColor || undefined,
+                borderColor: user?.badgeColor ? `${user.badgeColor}55` : undefined,
+              }}
+            >
+              {user?.roleKey || t("topbar.owner", "OWNER")}
             </span>
-            <div className="user-chip" data-testid="user-area">
-              <div className="avatar">AK</div>
+            <div
+              className="user-chip"
+              data-testid="user-area"
+              onClick={() => navigate("/login")}
+              style={{ cursor: "pointer" }}
+              title="Showroom Account & Switch Persona"
+            >
+              <div
+                className="avatar"
+                style={{
+                  backgroundColor: user?.badgeColor || "#d97706",
+                  color: "#ffffff",
+                }}
+              >
+                {user?.avatar || "AK"}
+              </div>
               <div className="user-copy">
-                <b>Alex Kumar</b>
-                <span>{t("topbar.administrator", "Administrator")}</span>
+                <b>{user?.name || "Alex Kumar"}</b>
+                <span>{user?.role || t("topbar.administrator", "Administrator")}</span>
               </div>
               <ChevronDown size={15} />
             </div>
@@ -319,7 +357,11 @@ function SettingField({ label, value }) {
 
 function LocalModeLabel() {
   const { t } = useLanguage();
+  const location = useLocation();
   const [reloading, setReloading] = useState(false);
+
+  if (location.pathname === "/login") return null;
+
   const handleReload = async () => {
     setReloading(true);
     try {
@@ -370,25 +412,28 @@ function App() {
 
   return (
     <LanguageProvider>
-      <BrowserRouter>
-        <AppShell dark={dark} setDark={setDark}>
-          <LocalModeLabel />
-          <Routes>
-            <Route path="/" element={<FunctionalDashboard />} />
-            <Route path="/deals" element={<FunctionalDeals />} />
-            <Route path="/deals/:dealId" element={<DealView />} />
-            <Route path="/bills" element={<Navigate to="/deals" replace />} />
-            <Route path="/new-deal" element={<FunctionalNewDeal />} />
-            <Route path="/new-deal/:dealId" element={<FunctionalNewDeal />} />
-            <Route path="/agents" element={<AgentsView />} />
-            <Route path="/agents/:agentName" element={<AgentsView />} />
-            <Route path="/finances" element={<FunctionalFinances />} />
-            <Route path="/follow-ups" element={<FollowUps />} />
-            <Route path="/settings" element={<Settings />} />
-            <Route path="*" element={<FunctionalDashboard />} />
-          </Routes>
-        </AppShell>
-      </BrowserRouter>
+      <AuthProvider>
+        <BrowserRouter>
+          <AppShell dark={dark} setDark={setDark}>
+            <LocalModeLabel />
+            <Routes>
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/" element={<FunctionalDashboard />} />
+              <Route path="/deals" element={<FunctionalDeals />} />
+              <Route path="/deals/:dealId" element={<DealView />} />
+              <Route path="/bills" element={<Navigate to="/deals" replace />} />
+              <Route path="/new-deal" element={<FunctionalNewDeal />} />
+              <Route path="/new-deal/:dealId" element={<FunctionalNewDeal />} />
+              <Route path="/agents" element={<AgentsView />} />
+              <Route path="/agents/:agentName" element={<AgentsView />} />
+              <Route path="/finances" element={<FunctionalFinances />} />
+              <Route path="/follow-ups" element={<FollowUps />} />
+              <Route path="/settings" element={<Settings />} />
+              <Route path="*" element={<FunctionalDashboard />} />
+            </Routes>
+          </AppShell>
+        </BrowserRouter>
+      </AuthProvider>
     </LanguageProvider>
   );
 }
