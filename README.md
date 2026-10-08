@@ -27,39 +27,48 @@ Metro Motors is a showroom management web application designed for two-wheeler a
 ### Running Frontend
 
 1. Navigate to the frontend directory:
+
    ```bash
    cd frontend
    ```
 
 2. Install dependencies:
+
    ```bash
    yarn install
    ```
 
 3. Configure environment variables:
+
    ```bash
    cp .env.example .env
    ```
 
 4. Start the development server:
+
    ```bash
    yarn start
    ```
+
    Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ### Running Backend (Optional)
 
 1. Navigate to the backend directory:
+
    ```bash
    cd backend
    ```
 
 2. Install Python dependencies:
+
    ```bash
    pip install -r requirements.txt
    ```
 
 3. Start FastAPI server:
+
    ```bash
    uvicorn server:app --reload --port 8000
    ```
+

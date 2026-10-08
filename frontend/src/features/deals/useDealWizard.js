@@ -30,7 +30,12 @@ export const useDealWizard = (dealId, onSaved) => {
 
   const change = fn => { setDeal(fn); setDirty(true); setErrors({}); setMessage(""); };
   const update = (key, value) => change(current => ({ ...current, [key]: value }));
-  const updateSection = (section, key, value) => change(current => ({ ...current, [section]: { ...current[section], [key]: value } }));
+  const updateSection = (section, key, value) => change(current => ({
+    ...current,
+    [section]: typeof key === "object" && key !== null
+      ? { ...current[section], ...key }
+      : { ...current[section], [key]: value }
+  }));
   const updateWitness = (index, key, value) => change(current => ({ ...current, witnesses: current.witnesses.map((p, i) => i === index ? { ...p, [key]: value } : p) }));
   const setPhoto = (key, value) => change(current => { const photos = { ...current.photos }; if (value) photos[key] = value; else delete photos[key]; return { ...current, photos }; });
   const showErrors = (newErrors, targetStep) => { setErrors(newErrors); setMessage("Please check the highlighted fields."); setStep(targetStep); window.scrollTo({ top: 0, behavior: "smooth" }); };
@@ -44,7 +49,7 @@ export const useDealWizard = (dealId, onSaved) => {
         vehicle_name: "Royal Enfield Hunter 350 Dapper Ash",
         make: "Royal Enfield",
         model: "Hunter 350",
-        variant: "Dapper Series Dual-Channel ABS",
+        mfg_month: "May",
         year: "2023",
         color: "Dapper Ash",
         vehicle_number: "KA-05-MH-2024",

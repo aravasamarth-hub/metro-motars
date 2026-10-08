@@ -10,7 +10,7 @@ export const commission = payments => payments.purchase_price === "" || payments
 const person = () => ({ name: "", phone: "", alternate_phone: "", father_name: "", email: "", address: "", city: "", state: "Karnataka", pincode: "", id_type: "Aadhaar", id_number: "", pan_number: "", is_dealer: false, dealer_name: "", gst_number: "", dealer_address: "" });
 export function emptyDeal() {
   return { schema_version: 1, id: null, bill_number: "", status: "In Stock", rc_status: "Pending",
-    vehicle: { vehicle_name: "", make: "", model: "", variant: "", year: "", color: "", vehicle_number: "", registration_number: "", registration_date: "", engine_number: "", chassis_number: "", engine_cc: "", fuel_type: "Petrol", transmission: "Manual", odometer: "", ownership: "First Owner", condition: "Good", bought_date: localDay(), sold_date: "", tax: "Paid", tax_valid_until: "", fitness: "Valid", fitness_valid_until: "", insurance: "Active", insurance_policy: "", insurance_valid_until: "", puc_valid_until: "", hypothecation: "No", financier: "", noc: "Not Required", keys: "2", service_history: "" },
+    vehicle: { vehicle_name: "", make: "", model: "", mfg_month: "", year: "", color: "", vehicle_number: "", registration_number: "", registration_date: "", engine_number: "", chassis_number: "", engine_cc: "", fuel_type: "Petrol", transmission: "Manual", odometer: "", ownership: "First Owner", condition: "Good", bought_date: localDay(), sold_date: "", tax: "Paid", tax_valid_until: "", fitness: "Valid", fitness_valid_until: "", insurance: "Active", insurance_policy: "", insurance_valid_until: "", puc_valid_until: "", hypothecation: "No", financier: "", noc: "Not Required", keys: "2", service_history: "" },
     seller: person(), buyer: person(), witnesses: [person(), person()],
     payments: { purchase_price: "", selling_price: "", paid_to_seller: "", received_from_buyer: "", payment_method: "Cash", payment_date: localDay(), transaction_reference: "", notes: "" },
     agent: { name: "", phone: "", email: "", task: "", total_amount: "", amount_paid: "", amount_balance: "" },
@@ -21,7 +21,7 @@ export function validateStep(deal, step) {
   const required = (key, value, label) => { if (!String(value ?? "").trim()) errors[key] = `${label} is required.`; };
   if (step === 0) {
     required("vehicle.vehicle_name", deal.vehicle.vehicle_name, "Vehicle name");
-    if (deal.vehicle.year && (!/^\d{4}$/.test(deal.vehicle.year) || +deal.vehicle.year < 1900 || +deal.vehicle.year > new Date().getFullYear() + 1)) errors["vehicle.year"] = "Enter a valid four-digit year.";
+    if (deal.vehicle.year && (!/^\d{4}$/.test(String(deal.vehicle.year).trim()) || +deal.vehicle.year < 1900 || +deal.vehicle.year > new Date().getFullYear() + 1)) errors["vehicle.year"] = "Enter a valid four-digit year.";
     ["engine_cc", "odometer"].forEach(key => { if (deal.vehicle[key] !== "" && (!Number.isFinite(+deal.vehicle[key]) || +deal.vehicle[key] < 0)) errors[`vehicle.${key}`] = "Enter a non-negative number."; });
     if (deal.vehicle.sold_date && deal.vehicle.bought_date && deal.vehicle.sold_date < deal.vehicle.bought_date) errors["vehicle.sold_date"] = "Sold date cannot be before bought date.";
   }
@@ -67,7 +67,7 @@ export function getStepStatus(deal, step) {
       v.vehicle_number?.trim() ||
       v.make?.trim() ||
       v.model?.trim() ||
-      v.variant?.trim() ||
+      v.mfg_month?.trim() ||
       (v.year && String(v.year).trim()) ||
       v.color?.trim() ||
       v.registration_number?.trim() ||

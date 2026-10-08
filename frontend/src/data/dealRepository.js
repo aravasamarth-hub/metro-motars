@@ -13,7 +13,11 @@ export const dealRepository = {
   async save(deal) {
     const errors = validateDeal(deal);
     if (errors.length) throw new Error(errors[0].message);
-    const result = await adapter.save({ ...deal, commission: commission(deal.payments) });
+    const vehicle = {
+      ...deal.vehicle,
+      vehicle_number: deal.vehicle.registration_number || deal.vehicle.vehicle_number || "",
+    };
+    const result = await adapter.save({ ...deal, vehicle, commission: commission(deal.payments) });
     notify();
     return result;
   },

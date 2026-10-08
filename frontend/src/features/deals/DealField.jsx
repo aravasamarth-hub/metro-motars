@@ -44,9 +44,50 @@ const optionKeyMap = {
   "Driving Licence": "opt.driving_licence",
   "Passport": "opt.passport",
   "Voter ID": "opt.voter_id",
+  "January": "month.january",
+  "February": "month.february",
+  "March": "month.march",
+  "April": "month.april",
+  "May": "month.may",
+  "June": "month.june",
+  "July": "month.july",
+  "August": "month.august",
+  "September": "month.september",
+  "October": "month.october",
+  "November": "month.november",
+  "December": "month.december",
 };
 
-export const DealField = ({ config, prefix, value, onChange, error, readOnly = false }) => {
+const MONTH_NAMES = [
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December"
+];
+
+function toMonthInputValue(year, month) {
+  if (!year && !month) return "";
+  let y = String(year || "").trim();
+  let m = String(month || "").trim();
+
+  if (/^\d{4}-\d{2}$/.test(y)) return y;
+
+  const yMatch = y.match(/\d{4}/);
+  const cleanYear = yMatch ? yMatch[0] : "";
+  if (!cleanYear) return "";
+
+  let mNum = 1;
+  if (m) {
+    const idx = MONTH_NAMES.findIndex(name => name.toLowerCase() === m.toLowerCase());
+    if (idx !== -1) {
+      mNum = idx + 1;
+    } else {
+      const parsed = parseInt(m, 10);
+      if (parsed >= 1 && parsed <= 12) mNum = parsed;
+    }
+  }
+  return `${cleanYear}-${String(mNum).padStart(2, "0")}`;
+}
+
+export const DealField = ({ config, prefix, value, allValues, onChange, error, readOnly = false }) => {
   const { t } = useLanguage();
   const { key, label, type, required, options, min, max, step, placeholder } = config;
   const id = fieldId(prefix, key);
@@ -64,6 +105,25 @@ export const DealField = ({ config, prefix, value, onChange, error, readOnly = f
   // Translate placeholder if present
   const translatedPlaceholder = placeholder ? t(`placeholder.${key}`, placeholder) : undefined;
 
+  const isMonth = type === "month" || type === "month_year";
+  const monthInputValue = isMonth ? toMonthInputValue(value ?? allValues?.year, allValues?.mfg_month) : "";
+
+  const handleMonthChange = (e) => {
+    const val = e.target.value;
+    if (!val) {
+      try { onChange({ year: "", mfg_month: "" }); } catch (_) {}
+      onChange("year", "");
+      onChange("mfg_month", "");
+      return;
+    }
+    const [y, mStr] = val.split("-");
+    const mIndex = parseInt(mStr, 10) - 1;
+    const monthName = MONTH_NAMES[mIndex] || "";
+    try { onChange({ year: y, mfg_month: monthName }); } catch (_) {}
+    onChange("year", y);
+    onChange("mfg_month", monthName);
+  };
+
   const props = {
     id,
     value: value ?? "",
@@ -77,10 +137,32 @@ export const DealField = ({ config, prefix, value, onChange, error, readOnly = f
   };
 
   return (
-    <label className={`form-field wizard-field ${type === "textarea" ? "field-wide" : ""}`} htmlFor={id}>
+    <label className={`form-field wizard-field ${type === "textarea" || config.wide ? "field-wide" : ""}`} htmlFor={id}>
       <span>{translatedLabel}{required && <em>*</em>}</span>
-      {type === "select" ? (
+      {isMonth ? (
+        <Input
+          id={id}
+          type="month"
+          value={monthInputValue}
+          onChange={handleMonthChange}
+          onClick={(e) => {
+            try {
+              e.target.showPicker?.();
+            } catch (_) {}
+          }}
+          disabled={readOnly}
+          data-testid={`${id}-input`}
+          aria-invalid={!!error}
+          aria-describedby={error ? `${id}-error` : undefined}
+          aria-required={!!required}
+          className="month-picker-input"
+          autoComplete="off"
+        />
+      ) : type === "select" ? (
         <select {...props}>
+          {key === "mfg_month" && (
+            <option value="">{t("opt.select_month", "-- Select Month --")}</option>
+          )}
           {options.map(option => {
             const optKey = optionKeyMap[option];
             const displayOption = optKey ? t(optKey, option) : option;
@@ -117,6 +199,7 @@ export const FieldGrid = ({ fields, value, prefix, onChange, errors = {} }) => (
         config={config}
         prefix={prefix}
         value={value[config.key]}
+        allValues={value}
         onChange={onChange}
         error={errors[`${prefix}.${config.key}`]}
       />

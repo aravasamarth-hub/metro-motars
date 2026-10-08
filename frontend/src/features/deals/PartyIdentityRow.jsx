@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import {
   Camera,
   Check,
+  Download,
   Edit3,
   Eye,
   Fingerprint,
@@ -17,6 +18,7 @@ import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/compone
 import { SignaturePadModal } from "./SignaturePadModal";
 import { LiveCameraModal } from "./LiveCameraModal";
 import { useLanguage } from "@/features/i18n/LanguageContext";
+import { downloadPhoto } from "@/utils/photoDownload";
 
 export const PhotoPreview = ({ photo, alt, ...props }) => {
   const [url, setUrl] = useState(photo?.url || "");
@@ -209,6 +211,15 @@ export function PartyIdentityRow({
                     <button
                       type="button"
                       className="identity-link-action"
+                      onClick={() => downloadPhoto(portraitPhoto, `${groupLabel} Photo`)}
+                      data-testid={`${group}-photo-download-link`}
+                    >
+                      <Download size={12} /> {t("photo.download", "Download")}
+                    </button>
+                    <span className="identity-link-sep">•</span>
+                    <button
+                      type="button"
+                      className="identity-link-action"
                       onClick={() => portraitFileInput.current?.click()}
                     >
                       <Replace size={12} /> {t("photo.replace", "Replace")}
@@ -223,6 +234,18 @@ export function PartyIdentityRow({
                     </button>
                   </div>
                 )}
+              </div>
+            )}
+            {readOnly && portraitPhoto && (
+              <div className="identity-card-links">
+                <button
+                  type="button"
+                  className="identity-link-action"
+                  onClick={() => downloadPhoto(portraitPhoto, `${groupLabel} Photo`)}
+                  data-testid={`${group}-photo-download-link`}
+                >
+                  <Download size={12} /> {t("photo.download", "Download")}
+                </button>
               </div>
             )}
           </div>
@@ -325,6 +348,15 @@ export function PartyIdentityRow({
                     <button
                       type="button"
                       className="identity-link-action"
+                      onClick={() => downloadPhoto(signaturePhoto, `${groupLabel} Signature`)}
+                      data-testid={`${group}-sig-download-link`}
+                    >
+                      <Download size={12} /> {t("photo.download", "Download")}
+                    </button>
+                    <span className="identity-link-sep">•</span>
+                    <button
+                      type="button"
+                      className="identity-link-action"
                       onClick={() => setSignaturePadOpen(true)}
                     >
                       <Edit3 size={12} /> {t("identity.edit_sig", "Re-sign")}
@@ -339,6 +371,18 @@ export function PartyIdentityRow({
                     </button>
                   </div>
                 )}
+              </div>
+            )}
+            {readOnly && signaturePhoto && (
+              <div className="identity-card-links">
+                <button
+                  type="button"
+                  className="identity-link-action"
+                  onClick={() => downloadPhoto(signaturePhoto, `${groupLabel} Signature`)}
+                  data-testid={`${group}-sig-download-link`}
+                >
+                  <Download size={12} /> {t("photo.download", "Download")}
+                </button>
               </div>
             )}
           </div>
@@ -425,6 +469,15 @@ export function PartyIdentityRow({
                     <button
                       type="button"
                       className="identity-link-action"
+                      onClick={() => downloadPhoto(thumbPhoto, `${groupLabel} Thumb Impression`)}
+                      data-testid={`${group}-thumb-download-link`}
+                    >
+                      <Download size={12} /> {t("photo.download", "Download")}
+                    </button>
+                    <span className="identity-link-sep">•</span>
+                    <button
+                      type="button"
+                      className="identity-link-action"
                       onClick={() => thumbFileInput.current?.click()}
                     >
                       <Replace size={12} /> {t("photo.replace", "Replace")}
@@ -439,6 +492,18 @@ export function PartyIdentityRow({
                     </button>
                   </div>
                 )}
+              </div>
+            )}
+            {readOnly && thumbPhoto && (
+              <div className="identity-card-links">
+                <button
+                  type="button"
+                  className="identity-link-action"
+                  onClick={() => downloadPhoto(thumbPhoto, `${groupLabel} Thumb Impression`)}
+                  data-testid={`${group}-thumb-download-link`}
+                >
+                  <Download size={12} /> {t("photo.download", "Download")}
+                </button>
               </div>
             )}
           </div>
@@ -500,8 +565,23 @@ export function PartyIdentityRow({
       {zoomPhoto && (
         <Dialog open={!!zoomPhoto} onOpenChange={(open) => !open && setZoomPhoto(null)}>
           <DialogContent className="photo-dialog identity-zoom-dialog" data-testid="identity-zoom-dialog">
-            <DialogTitle>{zoomPhoto.title}</DialogTitle>
-            <DialogDescription>{zoomPhoto.photo?.name || "Image Preview"}</DialogDescription>
+            <div className="photo-dialog-header">
+              <div>
+                <DialogTitle>{zoomPhoto.title}</DialogTitle>
+                <DialogDescription>{zoomPhoto.photo?.name || "Image Preview"}</DialogDescription>
+              </div>
+              {zoomPhoto.photo && (
+                <button
+                  type="button"
+                  className="photo-dialog-download-btn"
+                  onClick={() => downloadPhoto(zoomPhoto.photo, zoomPhoto.title || "document")}
+                  data-testid="party-identity-dialog-download"
+                >
+                  <Download size={15} />
+                  <span>{t("photo.download_photo", "Download Photo")}</span>
+                </button>
+              )}
+            </div>
             <div className="identity-zoom-preview-container">
               <PhotoPreview photo={zoomPhoto.photo} alt={zoomPhoto.title} />
             </div>

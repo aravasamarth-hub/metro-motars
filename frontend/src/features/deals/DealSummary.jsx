@@ -7,7 +7,7 @@ export const DealSummary = ({ deal, edit }) => {
   const { t } = useLanguage();
 
   const rows = [
-    [t("step.vehicle", "Vehicle"), `${deal.vehicle.vehicle_name || "—"} · ${deal.vehicle.vehicle_number || "—"}`, 0],
+    [t("step.vehicle", "Vehicle"), `${deal.vehicle.vehicle_name || "—"} · ${deal.vehicle.registration_number || deal.vehicle.vehicle_number || "—"}`, 0],
     [t("step.seller", "Seller"), deal.seller.is_dealer ? `${deal.seller.name} · ${deal.seller.dealer_name}` : deal.seller.name || "—", 1],
     [t("step.buyer", "Buyer"), deal.buyer.name || t("summary.not_assigned", "Not assigned"), 2],
     [t("section.seller_witness", "Seller witness"), deal.witnesses[0].name || t("summary.not_recorded", "Not recorded"), 1],

@@ -5,6 +5,7 @@ import { PhotoSlots } from "./PhotoSlots";
 import { PartyIdentityRow } from "./PartyIdentityRow";
 import { Seller } from "@/components/Seller";
 import { useLanguage } from "@/features/i18n/LanguageContext";
+import { money } from "./dealModel";
 
 export const PersonStep = ({ group, deal, updateSection, updateWitness, setPhoto, errors }) => {
   const { t } = useLanguage();
@@ -24,6 +25,18 @@ export const PersonStep = ({ group, deal, updateSection, updateWitness, setPhoto
   const person = deal[group] || {};
   const title = group === "buyer" ? t("step.buyer", "Buyer") : group;
   const detailsTitle = group === "buyer" ? t("section.buyer_details", "Buyer details") : `${title} details`;
+
+  const payments = deal?.payments || {};
+  const isBuyer = group === "buyer";
+  const sellingPrice = payments.selling_price ?? "";
+  const receivedFromBuyer = payments.received_from_buyer ?? "";
+
+  const priceNum = Number(sellingPrice) || 0;
+  const receivedNum = Number(receivedFromBuyer) || 0;
+  const pendingNum = Math.max(0, priceNum - receivedNum);
+  const hasAmounts =
+    (sellingPrice !== "" && sellingPrice != null) ||
+    (receivedFromBuyer !== "" && receivedFromBuyer != null);
 
   return (
     <div className="person-step-container" data-testid={`${group}-step-container`}>
@@ -64,6 +77,81 @@ export const PersonStep = ({ group, deal, updateSection, updateWitness, setPhoto
           onChange={(key, value) => updateSection(group, key, value)}
         />
       </section>
+
+      {/* Buyer Payment / Pricing section: Price amount, Amount paid, Amount pending */}
+      {isBuyer && (
+        <section className="wizard-group" data-testid="buyer-payments-section">
+          <div className="section-title">
+            <h2>{t("section.buyer_payments", "Payment & pricing details")}</h2>
+            {hasAmounts && (
+              <span
+                className={`status-pill ${receivedNum >= priceNum && priceNum > 0 ? "green" : receivedNum > 0 ? "gold" : "blue"}`}
+                data-testid="buyer-payment-status-pill"
+              >
+                {receivedNum >= priceNum && priceNum > 0
+                  ? t("payment.paid_in_full", "Paid in Full")
+                  : receivedNum > 0
+                  ? `${t("payment.pending", "Pending")}: ${money(pendingNum)}`
+                  : t("payment.unpaid", "Unpaid")}
+              </span>
+            )}
+          </div>
+          <div className="form-grid wizard-fields">
+            <label className="form-field wizard-field" htmlFor="buyer-payments-selling-price">
+              <span>{t("field.price_amount", "Price amount (₹)")}</span>
+              <input
+                id="buyer-payments-selling-price"
+                type="number"
+                step="0.01"
+                min="0"
+                value={sellingPrice}
+                onChange={(e) => updateSection("payments", "selling_price", e.target.value)}
+                placeholder="e.g. 180000"
+                data-testid="buyer-payments-selling-price-input"
+                autoComplete="off"
+              />
+              {errors?.["payments.selling_price"] && (
+                <small className="field-error" id="buyer-payments-selling-price-error">
+                  {errors["payments.selling_price"]}
+                </small>
+              )}
+            </label>
+
+            <label className="form-field wizard-field" htmlFor="buyer-payments-received-from-buyer">
+              <span>{t("field.amount_paid", "Amount paid (₹)")}</span>
+              <input
+                id="buyer-payments-received-from-buyer"
+                type="number"
+                step="0.01"
+                min="0"
+                value={receivedFromBuyer}
+                onChange={(e) => updateSection("payments", "received_from_buyer", e.target.value)}
+                placeholder="e.g. 50000"
+                data-testid="buyer-payments-received-from-buyer-input"
+                autoComplete="off"
+              />
+              {errors?.["payments.received_from_buyer"] && (
+                <small className="field-error" id="buyer-payments-received-from-buyer-error">
+                  {errors["payments.received_from_buyer"]}
+                </small>
+              )}
+            </label>
+
+            <label className="form-field wizard-field" htmlFor="buyer-payments-amount-pending">
+              <span>{t("field.amount_pending", "Amount pending (₹)")}</span>
+              <input
+                id="buyer-payments-amount-pending"
+                type="text"
+                readOnly
+                value={sellingPrice !== "" && sellingPrice != null ? money(pendingNum) : "—"}
+                className="amount-pending-display"
+                data-testid="buyer-payments-amount-pending-input"
+                disabled
+              />
+            </label>
+          </div>
+        </section>
+      )}
 
       {/* Witness section */}
       <WitnessSection

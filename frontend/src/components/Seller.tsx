@@ -8,6 +8,7 @@ import { PartyIdentityRow } from "@/features/deals/PartyIdentityRow";
 import { WitnessSection } from "@/features/deals/PersonStep";
 import { useSellerAgreement } from "@/hooks/useSellerAgreement";
 import { useLanguage } from "@/features/i18n/LanguageContext";
+import { money } from "@/features/deals/dealModel";
 import BillModal from "@/components/BillModal";
 
 export interface SellerProps {
@@ -30,6 +31,15 @@ export function Seller({
 }: SellerProps) {
   const { t } = useLanguage();
   const person = deal?.seller || {};
+  const payments = deal?.payments || {};
+  const purchasePrice = payments.purchase_price ?? "";
+  const paidToSeller = payments.paid_to_seller ?? "";
+
+  const priceNum = Number(purchasePrice) || 0;
+  const paidNum = Number(paidToSeller) || 0;
+  const pendingNum = Math.max(0, priceNum - paidNum);
+  const hasAmounts = (purchasePrice !== "" && purchasePrice != null) || (paidToSeller !== "" && paidToSeller != null);
+
   const { generateAgreement, generating, error: agreementError } = useSellerAgreement();
   const [successMessage, setSuccessMessage] = useState<string>("");
   const [previewOpen, setPreviewOpen] = useState<boolean>(false);
@@ -88,6 +98,79 @@ export function Seller({
           errors={errors}
           onChange={(key, value) => updateSection("seller", key, value)}
         />
+      </section>
+
+      {/* Seller Payment / Pricing section: Price amount, Amount paid, Amount pending */}
+      <section className="wizard-group" data-testid="seller-payments-section">
+        <div className="section-title">
+          <h2>{t("section.seller_payments", "Payment & pricing details")}</h2>
+          {hasAmounts && (
+            <span
+              className={`status-pill ${paidNum >= priceNum && priceNum > 0 ? "green" : paidNum > 0 ? "gold" : "blue"}`}
+              data-testid="seller-payment-status-pill"
+            >
+              {paidNum >= priceNum && priceNum > 0
+                ? t("payment.paid_in_full", "Paid in Full")
+                : paidNum > 0
+                ? `${t("payment.pending", "Pending")}: ${money(pendingNum)}`
+                : t("payment.unpaid", "Unpaid")}
+            </span>
+          )}
+        </div>
+        <div className="form-grid wizard-fields">
+          <label className="form-field wizard-field" htmlFor="seller-payments-purchase-price">
+            <span>{t("field.price_amount", "Price amount (₹)")}</span>
+            <input
+              id="seller-payments-purchase-price"
+              type="number"
+              step="0.01"
+              min="0"
+              value={purchasePrice}
+              onChange={(e: any) => updateSection("payments", "purchase_price", e.target.value)}
+              placeholder="e.g. 150000"
+              data-testid="seller-payments-purchase-price-input"
+              autoComplete="off"
+            />
+            {errors?.["payments.purchase_price"] && (
+              <small className="field-error" id="seller-payments-purchase-price-error">
+                {errors["payments.purchase_price"]}
+              </small>
+            )}
+          </label>
+
+          <label className="form-field wizard-field" htmlFor="seller-payments-paid-to-seller">
+            <span>{t("field.amount_paid", "Amount paid (₹)")}</span>
+            <input
+              id="seller-payments-paid-to-seller"
+              type="number"
+              step="0.01"
+              min="0"
+              value={paidToSeller}
+              onChange={(e: any) => updateSection("payments", "paid_to_seller", e.target.value)}
+              placeholder="e.g. 50000"
+              data-testid="seller-payments-paid-to-seller-input"
+              autoComplete="off"
+            />
+            {errors?.["payments.paid_to_seller"] && (
+              <small className="field-error" id="seller-payments-paid-to-seller-error">
+                {errors["payments.paid_to_seller"]}
+              </small>
+            )}
+          </label>
+
+          <label className="form-field wizard-field" htmlFor="seller-payments-amount-pending">
+            <span>{t("field.amount_pending", "Amount pending (₹)")}</span>
+            <input
+              id="seller-payments-amount-pending"
+              type="text"
+              readOnly
+              value={purchasePrice !== "" && purchasePrice != null ? money(pendingNum) : "—"}
+              className="amount-pending-display"
+              data-testid="seller-payments-amount-pending-input"
+              disabled
+            />
+          </label>
+        </div>
       </section>
 
       {/* Witness section */}

@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from "react";
-import { Bike, Camera, Check, Clock, Eye, Plus, Replace, Trash2, Upload, X } from "lucide-react";
+import { Bike, Camera, Check, Clock, Download, Eye, Plus, Replace, Trash2, Upload, X } from "lucide-react";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { photoSlots } from "./fieldConfig";
 import { useLanguage } from "@/features/i18n/LanguageContext";
 import { PartyIdentityRow } from "./PartyIdentityRow";
+import { downloadPhoto } from "@/utils/photoDownload";
 
 const slotKeyMap = {
   "Front view": "slot.front_view",
@@ -106,41 +107,58 @@ const PhotoSlot = ({ id, label, photo, onChange, readOnly, onDeleteExtra = null 
 
       <div className="photo-slot-caption">
         <span data-testid={`photo-label-${id}`}>{displayLabel}</span>
-        {photo && !readOnly && (
+        {photo && (
           <div className="photo-caption-actions">
             <button
               type="button"
-              className="icon-button"
-              onClick={() => cameraInput.current?.click()}
-              title={`Retake ${label} with camera`}
-              aria-label={`Retake ${label} with camera`}
-              data-testid={`photo-retake-${id}`}
-            >
-              <Camera size={14}/>
-            </button>
-            <button
-              type="button"
-              className="icon-button"
-              onClick={() => fileInput.current?.click()}
-              title={`Upload new ${label}`}
-              aria-label={`Upload new ${label}`}
-              data-testid={`photo-replace-${id}`}
-            >
-              <Replace size={14}/>
-            </button>
-            <button
-              type="button"
-              className="icon-button"
-              onClick={() => {
-                onChange(id, null);
-                if (onDeleteExtra) onDeleteExtra();
+              className="icon-button download-icon-btn"
+              onClick={(e) => {
+                e.stopPropagation();
+                downloadPhoto(photo, displayLabel || label || id);
               }}
-              title={`Remove ${label}`}
-              aria-label={`Remove ${label}`}
-              data-testid={`photo-remove-${id}`}
+              title={t("photo.download_photo", "Download photo")}
+              aria-label={t("photo.download_photo", "Download photo")}
+              data-testid={`photo-download-${id}`}
             >
-              <Trash2 size={14}/>
+              <Download size={14}/>
             </button>
+            {!readOnly && (
+              <>
+                <button
+                  type="button"
+                  className="icon-button"
+                  onClick={() => cameraInput.current?.click()}
+                  title={`Retake ${label} with camera`}
+                  aria-label={`Retake ${label} with camera`}
+                  data-testid={`photo-retake-${id}`}
+                >
+                  <Camera size={14}/>
+                </button>
+                <button
+                  type="button"
+                  className="icon-button"
+                  onClick={() => fileInput.current?.click()}
+                  title={`Upload new ${label}`}
+                  aria-label={`Upload new ${label}`}
+                  data-testid={`photo-replace-${id}`}
+                >
+                  <Replace size={14}/>
+                </button>
+                <button
+                  type="button"
+                  className="icon-button"
+                  onClick={() => {
+                    onChange(id, null);
+                    if (onDeleteExtra) onDeleteExtra();
+                  }}
+                  title={`Remove ${label}`}
+                  aria-label={`Remove ${label}`}
+                  data-testid={`photo-remove-${id}`}
+                >
+                  <Trash2 size={14}/>
+                </button>
+              </>
+            )}
           </div>
         )}
         {!photo && !readOnly && onDeleteExtra && (
@@ -185,8 +203,23 @@ const PhotoSlot = ({ id, label, photo, onChange, readOnly, onDeleteExtra = null 
 
       <Dialog open={preview} onOpenChange={setPreview}>
         <DialogContent className="photo-dialog" data-testid={`photo-dialog-${id}`}>
-          <DialogTitle data-testid={`photo-title-${id}`}>{label}</DialogTitle>
-          <DialogDescription data-testid={`photo-filename-${id}`}>{photo?.name}</DialogDescription>
+          <div className="photo-dialog-header">
+            <div>
+              <DialogTitle data-testid={`photo-title-${id}`}>{displayLabel || label}</DialogTitle>
+              <DialogDescription data-testid={`photo-filename-${id}`}>{photo?.name || "Photo preview"}</DialogDescription>
+            </div>
+            {photo && (
+              <button
+                type="button"
+                className="photo-dialog-download-btn"
+                onClick={() => downloadPhoto(photo, displayLabel || label || id)}
+                data-testid={`photo-dialog-download-${id}`}
+              >
+                <Download size={15} />
+                <span>{t("photo.download_photo", "Download Photo")}</span>
+              </button>
+            )}
+          </div>
           <PhotoPreview photo={photo} alt={label} data-testid={`photo-full-${id}`}/>
         </DialogContent>
       </Dialog>
@@ -269,9 +302,23 @@ const AvatarPortraitSlot = ({ id, label, photo, onChange, readOnly, icon = "pers
         <p className="avatar-hint">
           {photo
             ? <>
-                <button type="button" className="avatar-replace-link" onClick={() => fileInput.current?.click()} data-testid={`photo-replace-${id}`}>{t("photo.replace", "Replace")}</button>
-                {" · "}
-                <button type="button" className="avatar-replace-link" onClick={() => onChange(id, null)} data-testid={`photo-remove-${id}`}>{t("photo.remove", "Remove")}</button>
+                <button
+                  type="button"
+                  className="avatar-replace-link"
+                  onClick={() => downloadPhoto(photo, displayLabel || label || id)}
+                  data-testid={`photo-download-${id}`}
+                >
+                  <Download size={12} style={{ display: "inline", verticalAlign: "middle", marginRight: 3 }} />
+                  {t("photo.download", "Download")}
+                </button>
+                {!readOnly && (
+                  <>
+                    {" · "}
+                    <button type="button" className="avatar-replace-link" onClick={() => fileInput.current?.click()} data-testid={`photo-replace-${id}`}>{t("photo.replace", "Replace")}</button>
+                    {" · "}
+                    <button type="button" className="avatar-replace-link" onClick={() => onChange(id, null)} data-testid={`photo-remove-${id}`}>{t("photo.remove", "Remove")}</button>
+                  </>
+                )}
               </>
             : t("photo.optional_hint", "Optional now — uploads automatically on save.")
           }
@@ -354,8 +401,23 @@ const AvatarPortraitSlot = ({ id, label, photo, onChange, readOnly, icon = "pers
 
       <Dialog open={preview} onOpenChange={setPreview}>
         <DialogContent className="photo-dialog" data-testid={`photo-dialog-${id}`}>
-          <DialogTitle data-testid={`photo-title-${id}`}>{displayLabel}</DialogTitle>
-          <DialogDescription data-testid={`photo-filename-${id}`}>{photo?.name}</DialogDescription>
+          <div className="photo-dialog-header">
+            <div>
+              <DialogTitle data-testid={`photo-title-${id}`}>{displayLabel}</DialogTitle>
+              <DialogDescription data-testid={`photo-filename-${id}`}>{photo?.name || "Photo preview"}</DialogDescription>
+            </div>
+            {photo && (
+              <button
+                type="button"
+                className="photo-dialog-download-btn"
+                onClick={() => downloadPhoto(photo, displayLabel || label || id)}
+                data-testid={`photo-dialog-download-${id}`}
+              >
+                <Download size={15} />
+                <span>{t("photo.download_photo", "Download Photo")}</span>
+              </button>
+            )}
+          </div>
           <PhotoPreview photo={photo} alt={displayLabel} data-testid={`photo-full-${id}`}/>
         </DialogContent>
       </Dialog>

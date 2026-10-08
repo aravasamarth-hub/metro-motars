@@ -24,7 +24,7 @@ export const DealsTable = ({ deals, prefix = "deal", onDelete, onGenerateBill, l
     <table className="local-deals-table" data-testid={`${prefix}-table`}><thead><tr>{cols.map(col => <th key={col.key}>{col.label}</th>)}</tr></thead><tbody>
       {deals.map(deal => <tr key={deal.id} data-testid={`${prefix}-row-${deal.id}`}>
         <td data-label={t("table.col_bill_no", "Bill No")}><button className="bill-number-link" onClick={() => navigate(`/deals/${deal.id}`)} data-testid={`${prefix}-bill-${deal.id}`}>{deal.bill_number}</button></td>
-        <td data-label={t("table.col_vehicle", "Vehicle")}><div className="table-vehicle"><div className="table-bike"><Bike size={16}/></div><div><b data-testid={`${prefix}-vehicle-${deal.id}`}>{deal.vehicle.vehicle_name}</b><small data-testid={`${prefix}-registration-${deal.id}`}>{deal.vehicle.vehicle_number}</small></div></div></td>
+        <td data-label={t("table.col_vehicle", "Vehicle")}><div className="table-vehicle"><div className="table-bike"><Bike size={16}/></div><div><b data-testid={`${prefix}-vehicle-${deal.id}`}>{deal.vehicle.vehicle_name}</b><small data-testid={`${prefix}-registration-${deal.id}`}>{deal.vehicle.registration_number || deal.vehicle.vehicle_number || "—"}</small></div></div></td>
         <td data-label={t("table.col_seller", "Seller")} data-testid={`${prefix}-seller-${deal.id}`}>{deal.seller.name || "—"}</td>
         <td data-label={t("table.col_buyer", "Buyer")} data-testid={`${prefix}-buyer-${deal.id}`}>{deal.buyer.name || t("status.not_assigned", "Not assigned")}</td>
         <td data-label={t("table.col_stock", "Stock")}><StockBadge deal={deal} prefix={`${prefix}-${deal.id}`}/></td>

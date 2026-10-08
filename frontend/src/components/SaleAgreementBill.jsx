@@ -118,7 +118,7 @@ export default function SaleAgreementBill({ deal = {}, doc = null }) {
   // Vehicle
   const v = d.vehicle || {};
   const vehicleMake = v.make || v.brand || "Honda";
-  const vehicleModel = v.model || v.variant || v.vehicle_name || "Activa 6G";
+  const vehicleModel = v.model || v.vehicle_name || "Activa 6G";
   const vehicleNo = v.vehicle_number || v.registration_number || "KA-17-EX-2456";
   const chassisNo = v.chassis_number || v.chassisNumber || "ME4JF4214P1234567";
   const engineNo = v.engine_number || v.engineNumber || "JF42E-1234567";

@@ -39,7 +39,7 @@ export const VehicleStep = ({ deal, update, updateSection, setPhoto, errors }) =
 
   // Form dynamic display title
   const vehicleDisplayName =
-    [v.year, v.make, v.model, v.variant].filter(Boolean).join(" ") ||
+    [v.mfg_month, v.year, v.make, v.model].filter(Boolean).join(" ") ||
     v.vehicle_name ||
     t("vehicle.unspecified", "Showroom Vehicle Unit");
 
