@@ -436,6 +436,10 @@ export const translations = {
     "followups.open": "Open",
     "followups.buyer": "Buyer",
     "followups.seller": "Seller",
+    "followups.agent": "Agent",
+    "followups.buyers_section": "Buyer Follow-ups",
+    "followups.sellers_section": "Seller Follow-ups",
+    "followups.agents_section": "Agent Follow-ups",
 
     // Settings
     "settings.eyebrow": "Workspace preferences",
@@ -972,6 +976,10 @@ export const translations = {
     "followups.open": "खोलें",
     "followups.buyer": "खरीदार",
     "followups.seller": "विक्रेता",
+    "followups.agent": "एजेंट",
+    "followups.buyers_section": "खरीदार फॉलो-अप",
+    "followups.sellers_section": "विक्रेता फॉलो-अप",
+    "followups.agents_section": "एजेंट फॉलो-अप",
 
     // Settings
     "settings.eyebrow": "कार्यक्षेत्र प्राथमिकताएं",
@@ -1508,6 +1516,10 @@ export const translations = {
     "followups.open": "ತೆರೆಯಿರಿ",
     "followups.buyer": "ಖರೀದಿದಾರ",
     "followups.seller": "ಮಾರಾಟಗಾರ",
+    "followups.agent": "ಏಜೆಂಟ್",
+    "followups.buyers_section": "ಖರೀದಿದಾರರ ಫಾಲೋ-ಅಪ್‌ಗಳು",
+    "followups.sellers_section": "ಮಾರಾಟಗಾರರ ಫಾಲೋ-ಅಪ್‌ಗಳು",
+    "followups.agents_section": "ಏಜೆಂಟ್ ಫಾಲೋ-ಅಪ್‌ಗಳು",
 
     // Settings
     "settings.eyebrow": "ಕಾರ್ಯಕ್ಷೇತ್ರ ಆದ್ಯತೆಗಳು",

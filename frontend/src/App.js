@@ -10,6 +10,7 @@ import { LocalFinances as FunctionalFinances } from "@/features/deals/LocalPrevi
 import "@/features/deals/deals.css";
 import { dealRepository } from "@/data/dealRepository";
 import AgentsView from "@/features/deals/AgentsView";
+import FollowUpsView from "@/features/deals/FollowUpsView";
 
 import { LanguageProvider, useLanguage } from "@/features/i18n/LanguageContext";
 import { LanguageSwitcher } from "@/features/i18n/LanguageSwitcher";
@@ -151,123 +152,7 @@ const Button = ({ children, primary = false, onClick, icon, testid }) => <button
 const StatusPill = ({ children, tone = "green" }) => <span className={`status-pill ${tone}`} data-testid={`status-${String(children).toLowerCase().replaceAll(" ", "-")}`}>{children}</span>;
 const SectionTitle = ({ title, action }) => <div className="section-title"><h2>{title}</h2>{action}</div>;
 
-function FollowUps() {
-  const { t } = useLanguage();
-  const followups = [
-    ["Chirag Hegde", "+91 97412 83746", "Buyer", "Yamaha MT-15 V2", "₹1,10,000", "Today"],
-    ["Naveen Reddy", "+91 97390 19283", "Buyer", "TVS Apache RTR 200", "₹85,000", "Today"],
-    ["Arjun N. Mehta", "+91 98201 23456", "Seller", "KTM Duke 390", "NOC Collect", "Tomorrow"],
-    ["Aditya Mohan", "+91 99008 81122", "Buyer", "Royal Enfield Classic 350", "RC Dispatch", "08 Oct 2026"],
-    ["Tanmay Bhatia", "+91 99887 76655", "Buyer", "Kawasaki Ninja 300", "Service Due", "15 Oct 2026"],
-  ];
-  return (
-    <div className="followups-page-luxury">
-      <div className="page-header followups-luxury-header">
-        <div>
-          <div className="eyebrow followups-eyebrow">
-            <span className="eyebrow-beacon" />
-            <span>{t("followups.eyebrow", "CUSTOMER RELATIONSHIPS · ACTIVE PIPELINE")}</span>
-          </div>
-          <h1 data-testid="page-title" className="followups-hero-title">
-            {t("followups.title", "Follow-ups")}
-          </h1>
-          <p className="followups-hero-subtitle">
-            {t("followups.subtitle", "Stay on top of every customer conversation, balance collection and RTO delivery.")}
-          </p>
-        </div>
-        <Button
-          primary
-          icon={<Plus size={18} strokeWidth={2.4} />}
-          testid="add-follow-up-button"
-        >
-          {t("followups.add_button", "Add follow-up")}
-        </Button>
-      </div>
-
-      {/* CRM Urgency Metrics Strip */}
-      <div className="crm-urgency-strip">
-        <div className="crm-urgency-pill crm-urgent">
-          <Clock size={13} />
-          <span>2 Due Today & Overdue</span>
-        </div>
-        <div className="crm-urgency-pill crm-upcoming">
-          <CalendarDays size={13} />
-          <span>3 Scheduled Deliveries</span>
-        </div>
-        <div className="crm-urgency-pill crm-inflow">
-          <WalletCards size={13} />
-          <span>₹1,95,000 Collection Queue</span>
-        </div>
-      </div>
-
-      <section className="follow-section luxury-follow-section">
-        <SectionTitle
-          title={t("followups.today_overdue", "Today & Overdue")}
-          action={<StatusPill tone="red">{t("followups.due_today_count", "2 due today")}</StatusPill>}
-        />
-        <div className="follow-list">
-          {followups.slice(0, 2).map((row, i) => (
-            <FollowRow row={row} key={row[0]} i={i} />
-          ))}
-        </div>
-      </section>
-
-      <section className="follow-section luxury-follow-section">
-        <SectionTitle
-          title={t("followups.upcoming", "Upcoming")}
-          action={
-            <button className="text-button luxury-view-all-btn" data-testid="view-all-follow-ups">
-              <span>{t("followups.view_all", "View all")}</span>
-              <ArrowUpRight size={15} />
-            </button>
-          }
-        />
-        <div className="follow-list">
-          {followups.slice(2).map((row, i) => (
-            <FollowRow row={row} key={row[0]} i={i + 2} />
-          ))}
-        </div>
-      </section>
-    </div>
-  );
-}
-
-function FollowRow({ row, i }) {
-  const { t } = useLanguage();
-  const roleLabel = row[2] === "Buyer" ? t("followups.buyer", "Buyer") : t("followups.seller", "Seller");
-  const dateVal = row[5] === "Today" ? t("followups.today", "Today") : row[5];
-  const isUrgent = row[5] === "Today";
-
-  return (
-    <div className={`follow-row luxury-follow-row ${isUrgent ? "is-urgent" : ""}`} data-testid={`follow-up-row-${i}`}>
-      <div className="person-avatar luxury-avatar">{row[0].split(" ").map(x => x[0]).join("")}</div>
-      <div className="follow-person">
-        <b>{row[0]}</b>
-        <span>
-          <Phone size={12} className="text-amber-400" />
-          {row[1]}
-        </span>
-      </div>
-      <StatusPill tone={row[2] === "Buyer" ? "blue" : "gold"}>{roleLabel}</StatusPill>
-      <div className="follow-bike">
-        <Bike size={15} className="text-blue-400" />
-        <b>{row[3]}</b>
-      </div>
-      <div className="follow-due">
-        <span>{t("followups.amount_due", "Amount due")}</span>
-        <strong className="due-gold-amount">{row[4]}</strong>
-      </div>
-      <div className="follow-date">
-        <span>{t("followups.due_date", "Due date")}</span>
-        <span className={`date-badge ${isUrgent ? "date-urgent" : "date-normal"}`}>{dateVal}</span>
-      </div>
-      <button className="open-button luxury-open-btn" data-testid={`open-follow-up-${i}`}>
-        <span>{t("followups.open", "Open")}</span>
-        <ArrowUpRight size={14} />
-      </button>
-    </div>
-  );
-}
+const FollowUps = FollowUpsView;
 
 function Settings() {
   const { t } = useLanguage();

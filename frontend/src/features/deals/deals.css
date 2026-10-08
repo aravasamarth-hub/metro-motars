@@ -6102,6 +6102,390 @@
   border-radius: 12px;
 }
 
+/* ==========================================================================
+   ENHANCED FOLLOW-UPS: BUYER, SELLER & AGENT PIPELINES
+   ========================================================================== */
+
+.followups-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+}
+
+.followups-search-field {
+  min-width: 280px;
+  max-width: 440px;
+}
+
+.followups-status-filter .followups-select {
+  background: var(--surface, #16263a);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text, #f1f5f9);
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  outline: none;
+  cursor: pointer;
+}
+
+.theme-light .followups-status-filter .followups-select {
+  background: #ffffff;
+  border-color: #cbd5e1;
+  color: #1e293b;
+}
+
+.followups-category-section {
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.followups-category-section.buyer-section {
+  border-left: 4px solid #38bdf8 !important;
+}
+
+.followups-category-section.seller-section {
+  border-left: 4px solid #fbbf24 !important;
+}
+
+.followups-category-section.agent-section {
+  border-left: 4px solid #c084fc !important;
+}
+
+.followups-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+
+.followups-title-block {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.followups-category-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+.followups-category-icon.blue {
+  background: rgba(56, 189, 248, 0.15);
+  color: #38bdf8;
+  border: 1px solid rgba(56, 189, 248, 0.3);
+}
+
+.followups-category-icon.amber {
+  background: rgba(251, 191, 36, 0.15);
+  color: #fbbf24;
+  border: 1px solid rgba(251, 191, 36, 0.3);
+}
+
+.followups-category-icon.purple {
+  background: rgba(192, 132, 252, 0.15);
+  color: #c084fc;
+  border: 1px solid rgba(192, 132, 252, 0.3);
+}
+
+.followups-section-desc {
+  font-size: 12px;
+  color: var(--local-muted, #94a3b8);
+  margin-top: 3px;
+}
+
+.followup-role-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 9px;
+  border-radius: 12px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.followup-role-pill.buyer {
+  background: rgba(56, 189, 248, 0.15);
+  color: #38bdf8;
+  border: 1px solid rgba(56, 189, 248, 0.3);
+}
+
+.followup-role-pill.seller {
+  background: rgba(251, 191, 36, 0.15);
+  color: #fbbf24;
+  border: 1px solid rgba(251, 191, 36, 0.3);
+}
+
+.followup-role-pill.agent {
+  background: rgba(192, 132, 252, 0.15);
+  color: #c084fc;
+  border: 1px solid rgba(192, 132, 252, 0.3);
+}
+
+.followup-unified-row {
+  display: grid;
+  grid-template-columns: 28px 42px 1.2fr auto 1.3fr 1fr .8fr auto;
+  align-items: center;
+  gap: 14px;
+  padding: 13px 12px;
+}
+
+.followup-unified-row.is-completed {
+  opacity: 0.62;
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.followup-checkbox-btn {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  border: 1.5px solid rgba(255, 255, 255, 0.25);
+  background: transparent;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  color: #10b981;
+  transition: all 0.15s ease;
+  padding: 0;
+}
+
+.theme-light .followup-checkbox-btn {
+  border-color: #cbd5e1;
+}
+
+.followup-checkbox-btn.checked {
+  background: #10b981;
+  border-color: #10b981;
+  color: #ffffff;
+}
+
+.person-avatar.role-buyer {
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.2), rgba(56, 189, 248, 0.05)) !important;
+  color: #38bdf8 !important;
+  border: 1px solid rgba(56, 189, 248, 0.3) !important;
+}
+
+.person-avatar.role-seller {
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.2), rgba(251, 191, 36, 0.05)) !important;
+  color: #fbbf24 !important;
+  border: 1px solid rgba(251, 191, 36, 0.3) !important;
+}
+
+.person-avatar.role-agent {
+  background: linear-gradient(135deg, rgba(192, 132, 252, 0.2), rgba(192, 132, 252, 0.05)) !important;
+  color: #c084fc !important;
+  border: 1px solid rgba(192, 132, 252, 0.3) !important;
+}
+
+.follow-phone-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--local-muted, #94a3b8);
+  font-size: 11px;
+  text-decoration: none;
+  margin-top: 3px;
+  transition: color 0.15s ease;
+}
+
+.follow-phone-link:hover {
+  color: var(--gold, #e5b94c);
+}
+
+.follow-reg-sub {
+  display: block;
+  font-size: 10px;
+  color: var(--local-muted, #94a3b8);
+  font-family: monospace;
+  margin-top: 2px;
+}
+
+.follow-task-text {
+  display: block;
+  font-size: 11px;
+  color: var(--text, #f1f5f9);
+  max-width: 260px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.theme-light .follow-task-text {
+  color: #1e293b;
+}
+
+.followup-row-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.followup-action-btn.whatsapp {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 11px;
+  border-radius: 7px;
+  background: rgba(37, 211, 102, 0.12);
+  border: 1px solid rgba(37, 211, 102, 0.35);
+  color: #25d366;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.followup-action-btn.whatsapp:hover {
+  background: #25d366;
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.followups-empty-row {
+  padding: 24px 12px;
+  text-align: center;
+  color: var(--local-muted, #94a3b8);
+  font-size: 12px;
+}
+
+/* Modal for Adding Follow-up */
+.followups-modal-shell {
+  max-width: 580px;
+}
+
+.followups-modal-form {
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.followup-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.followup-form-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--local-muted, #94a3b8);
+}
+
+.followup-role-selector {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.role-choice-pill {
+  padding: 10px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text, #f1f5f9);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.16s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.theme-light .role-choice-pill {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+  color: #1e293b;
+}
+
+.role-choice-pill.buyer.selected {
+  background: rgba(56, 189, 248, 0.2);
+  border-color: #38bdf8;
+  color: #38bdf8;
+}
+
+.role-choice-pill.seller.selected {
+  background: rgba(251, 191, 36, 0.2);
+  border-color: #fbbf24;
+  color: #fbbf24;
+}
+
+.role-choice-pill.agent.selected {
+  background: rgba(192, 132, 252, 0.2);
+  border-color: #c084fc;
+  color: #c084fc;
+}
+
+.followup-form-row {
+  display: flex;
+  gap: 12px;
+}
+
+.followup-modal-input {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: var(--text, #f1f5f9);
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.theme-light .followup-modal-input {
+  background: #ffffff;
+  border-color: #cbd5e1;
+  color: #0f172a;
+}
+
+.followup-modal-input:focus {
+  border-color: var(--gold, #e5b94c);
+}
+
+.followup-modal-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+@media (max-width: 1100px) {
+  .followup-unified-row {
+    grid-template-columns: 28px 40px 1.2fr auto 1fr auto;
+  }
+  .followup-unified-row .follow-bike {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .followup-unified-row {
+    grid-template-columns: 28px 1fr auto;
+    gap: 10px;
+  }
+  .followup-unified-row .follow-date,
+  .followup-unified-row .follow-due,
+  .followup-unified-row .person-avatar {
+    display: none;
+  }
+}
+
+
 
 
 
