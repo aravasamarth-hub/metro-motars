@@ -15,6 +15,7 @@ import {
   Clock,
   RotateCcw,
   CheckCircle2,
+  Pencil,
 } from "lucide-react";
 import {
   DEFAULT_MAINTENANCE_SERVICES,
@@ -23,7 +24,7 @@ import {
 } from "./dealModel";
 import { useLanguage } from "@/features/i18n/LanguageContext";
 
-export const MaintenanceSection = ({ deal, updateSection, readOnly = false }) => {
+export const MaintenanceSection = ({ deal, updateSection, readOnly = false, onEdit }) => {
   const { t } = useLanguage();
 
   // Safely extract maintenance data
@@ -130,11 +131,26 @@ export const MaintenanceSection = ({ deal, updateSection, readOnly = false }) =>
     if (!activeServices.length && Number(totalExpense) === 0) {
       return (
         <section className="wizard-group" data-testid="deal-view-maintenance-empty">
-          <div className="section-title">
-            <h2>Mechanical Maintenance Cost</h2>
+          <div className="section-title" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              <Wrench size={18} className="text-amber-400" />
+              <h2>Mechanical Maintenance Cost</h2>
+            </div>
+            {onEdit && (
+              <button
+                type="button"
+                className="button button-secondary"
+                onClick={onEdit}
+                style={{ padding: "6px 12px", fontSize: "12px", height: "36px" }}
+                data-testid="deal-view-add-maintenance"
+              >
+                <Plus size={13} />
+                <span>Add / Manage Maintenance</span>
+              </button>
+            )}
           </div>
           <p className="local-notes" style={{ color: "var(--local-muted)" }}>
-            No mechanical refurbishment expenses recorded for this deal.
+            No mechanical refurbishment expenses recorded for this deal yet. Click &quot;Add / Manage Maintenance&quot; to select services like LOF, brakes, battery, tires, or add custom services.
           </p>
         </section>
       );
@@ -142,14 +158,28 @@ export const MaintenanceSection = ({ deal, updateSection, readOnly = false }) =>
 
     return (
       <section className="wizard-group" data-testid="deal-view-maintenance">
-        <div className="section-title">
+        <div className="section-title" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "10px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
             <Wrench size={18} className="text-amber-400" />
             <h2>Mechanical Maintenance & Refurbishment Cost</h2>
           </div>
-          <div className="maintenance-total-pill">
-            <span>Total Expense:</span>
-            <strong>{money(totalExpense)}</strong>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <div className="maintenance-total-pill">
+              <span>Total Expense:</span>
+              <strong>{money(totalExpense)}</strong>
+            </div>
+            {onEdit && (
+              <button
+                type="button"
+                className="button button-secondary"
+                onClick={onEdit}
+                style={{ padding: "6px 12px", fontSize: "12px", height: "36px" }}
+                data-testid="deal-view-edit-maintenance"
+              >
+                <Pencil size={13} />
+                <span>Edit Services</span>
+              </button>
+            )}
           </div>
         </div>
 

@@ -161,7 +161,7 @@ export default function DealView() {
             </div>
           ))}
           <ReadGroup title={t("step.payments", "Payments")} fields={paymentFields} value={deal.payments} prefix="payments"/>
-          <MaintenanceSection deal={deal} readOnly />
+          <MaintenanceSection deal={deal} readOnly onEdit={() => navigate(`/new-deal/${deal.id}?step=payments`)} />
           {deal.agent?.name && (
             <div id="deal-agent-section">
               <ReadGroup

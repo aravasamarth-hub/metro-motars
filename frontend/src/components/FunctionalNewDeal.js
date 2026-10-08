@@ -44,7 +44,10 @@ export default function FunctionalNewDeal() {
   const { dealId } = useParams();
 
   const stepQuery = searchParams.get("step") || (location.hash === "#agent" ? "agent" : "");
-  const targetInitialStep = stepQuery === "agent" ? 3 : (stepQuery && !isNaN(stepQuery) ? parseInt(stepQuery, 10) : 0);
+  let targetInitialStep = 0;
+  if (stepQuery === "agent") targetInitialStep = 3;
+  else if (stepQuery === "payments" || stepQuery === "maintenance") targetInitialStep = 4;
+  else if (stepQuery && !isNaN(stepQuery)) targetInitialStep = parseInt(stepQuery, 10);
 
   const [discardTarget, setDiscardTarget] = useState("");
   const wizard = useDealWizard(
