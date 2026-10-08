@@ -613,7 +613,15 @@ export default function AgentsView() {
                   >
                     {/* Card Top: Bill No, Vehicle, Client */}
                     <div className="agent-deal-card-header">
-                      <div className="agent-deal-title-block">
+                      <div
+                        className="agent-deal-title-block clickable"
+                        onClick={() => {
+                          setSelectedAgentName(null);
+                          navigate(`/new-deal/${deal.id}?step=agent`);
+                        }}
+                        style={{ cursor: "pointer" }}
+                        title="Open Deal Agent Workspace"
+                      >
                         <span className="agent-deal-bill-number">
                           {deal.bill_number || deal.id.slice(0, 8)}
                         </span>
@@ -706,10 +714,10 @@ export default function AgentsView() {
                           className="button button-primary agent-deal-go-btn"
                           onClick={() => {
                             setSelectedAgentName(null);
-                            navigate(`/deals/${deal.id}#agent`);
+                            navigate(`/new-deal/${deal.id}?step=agent`);
                           }}
                           data-testid={`agent-deal-goto-${deal.id}`}
-                          title="Open Deal Page and view Agent Section"
+                          title="Open Deal Agent Workspace"
                         >
                           <span>{t("agents.go_to_deal", "View Deal Agent Page")}</span>
                           <ArrowUpRight size={14} />

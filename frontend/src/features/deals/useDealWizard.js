@@ -2,9 +2,9 @@ import { useEffect, useRef, useState } from "react";
 import { dealRepository } from "@/data/dealRepository";
 import { emptyDeal, isStepFilled, localDay, STEPS, validateDeal, validateStep } from "./dealModel";
 
-export const useDealWizard = (dealId, onSaved) => {
+export const useDealWizard = (dealId, onSaved, initialStep = 0) => {
   const [deal, setDeal] = useState(emptyDeal);
-  const [step, setStep] = useState(0);
+  const [step, setStep] = useState(initialStep);
   const [errors, setErrors] = useState({});
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(true);
@@ -12,10 +12,12 @@ export const useDealWizard = (dealId, onSaved) => {
   const [dirty, setDirty] = useState(false);
   const [loadError, setLoadError] = useState("");
   const saving = useRef(false);
+  const initialStepRef = useRef(initialStep);
+  initialStepRef.current = initialStep;
 
   useEffect(() => {
     let active = true;
-    setLoading(true); setLoadError(""); setDirty(false); setStep(0); setErrors({}); setMessage("");
+    setLoading(true); setLoadError(""); setDirty(false); setStep(initialStepRef.current || 0); setErrors({}); setMessage("");
     (async () => {
       try {
         const value = dealId ? await dealRepository.get(dealId) : { ...emptyDeal(), bill_number: await dealRepository.nextBillNumber() };
@@ -25,6 +27,12 @@ export const useDealWizard = (dealId, onSaved) => {
     })();
     return () => { active = false; };
   }, [dealId]);
+
+  useEffect(() => {
+    if (initialStep != null && initialStep >= 0 && initialStep < STEPS.length) {
+      setStep(initialStep);
+    }
+  }, [initialStep]);
 
   useEffect(() => { const warn = e => { if (dirty) { e.preventDefault(); e.returnValue = ""; } }; window.addEventListener("beforeunload", warn); return () => window.removeEventListener("beforeunload", warn); }, [dirty]);
 

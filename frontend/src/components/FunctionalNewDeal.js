@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useLocation, useSearchParams } from "react-router-dom";
 import {
   ArrowLeft,
   ArrowRight,
@@ -38,11 +38,19 @@ const STEP_TRANSLATION_KEYS = [
 
 export default function FunctionalNewDeal() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const [searchParams] = useSearchParams();
   const { t } = useLanguage();
   const { dealId } = useParams();
+
+  const stepQuery = searchParams.get("step") || (location.hash === "#agent" ? "agent" : "");
+  const targetInitialStep = stepQuery === "agent" ? 3 : (stepQuery && !isNaN(stepQuery) ? parseInt(stepQuery, 10) : 0);
+
   const [discardTarget, setDiscardTarget] = useState("");
-  const wizard = useDealWizard(dealId, (saved) =>
-    navigate(`/deals/${saved.id}`, { state: { saved: saved.bill_number } })
+  const wizard = useDealWizard(
+    dealId,
+    (saved) => navigate(`/deals/${saved.id}`, { state: { saved: saved.bill_number } }),
+    targetInitialStep
   );
   const {
     deal,
