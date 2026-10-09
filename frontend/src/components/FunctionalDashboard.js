@@ -86,7 +86,29 @@ export default function FunctionalDashboard() {
           </p>
         </div>
 
-        <div className="dashboard-header-ctas">
+        <div className="dashboard-header-ctas" style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+          <button
+            type="button"
+            className="button button-secondary dashboard-cta-showcase"
+            onClick={() => navigate("/showcase")}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "8px",
+              background: "linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(56, 189, 248, 0.15))",
+              border: "1px solid rgba(245, 158, 11, 0.35)",
+              color: "#f59e0b",
+              fontWeight: "600",
+              padding: "9px 16px",
+              borderRadius: "8px",
+              cursor: "pointer",
+            }}
+            data-testid="dashboard-vip-showcase-button"
+            title="Open 5-Library VIP Automotive Showcase Portal"
+          >
+            <Sparkles size={16} />
+            <span>VIP Showcase</span>
+          </button>
           <button
             type="button"
             className="button button-primary dashboard-cta-new-deal"
@@ -104,6 +126,56 @@ export default function FunctionalDashboard() {
           {error}
         </div>
       )}
+
+      {/* VIP Showcase Portal Quick Access Banner */}
+      <div
+        className="showcase-banner"
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          padding: "14px 20px",
+          background: "linear-gradient(90deg, rgba(245, 158, 11, 0.08), rgba(56, 189, 248, 0.08))",
+          border: "1px solid rgba(245, 158, 11, 0.22)",
+          borderRadius: "12px",
+          marginBottom: "20px",
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+          <div style={{ padding: "8px", background: "rgba(245, 158, 11, 0.15)", borderRadius: "8px", color: "#f59e0b" }}>
+            <Sparkles size={20} />
+          </div>
+          <div>
+            <div style={{ fontWeight: 700, fontSize: "14px", color: "inherit" }}>
+              Metro Motors VIP Showcase Portal
+            </div>
+            <div style={{ fontSize: "12px", opacity: 0.75 }}>
+              Public luxury client portal powered by shadcn/ui, KokonutUI, Motion, Anime.js v4 &amp; Bklit Charts.
+            </div>
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={() => navigate("/showcase")}
+          style={{
+            padding: "7px 16px",
+            fontSize: "12px",
+            fontWeight: 600,
+            borderRadius: "6px",
+            background: "#f59e0b",
+            color: "#000",
+            border: "none",
+            cursor: "pointer",
+            display: "inline-flex",
+            alignItems: "center",
+            gap: "6px",
+          }}
+          data-testid="dashboard-banner-showcase-btn"
+        >
+          <span>View Showcase</span>
+          <ArrowUpRight size={14} />
+        </button>
+      </div>
 
       {/* 4-Card Luxury Automotive Metric Cockpit */}
       <div className="metric-grid local-dashboard-metrics luxury-dashboard-metrics">

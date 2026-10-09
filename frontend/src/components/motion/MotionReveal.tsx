@@ -1,5 +1,5 @@
 import React from "react";
-import { motion } from "motion/react";
+import { motion, useReducedMotion } from "motion/react";
 
 interface MotionRevealProps {
   children: React.ReactNode;
@@ -16,7 +16,10 @@ export function MotionReveal({
   className = "",
   duration = 0.65,
 }: MotionRevealProps) {
+  const shouldReduceMotion = useReducedMotion();
+
   const getInitialPosition = () => {
+    if (shouldReduceMotion) return { opacity: 1 };
     switch (direction) {
       case "up":
         return { opacity: 0, y: 32 };
@@ -30,6 +33,10 @@ export function MotionReveal({
         return { opacity: 0 };
     }
   };
+
+  if (shouldReduceMotion) {
+    return <div className={className}>{children}</div>;
+  }
 
   return (
     <motion.div

@@ -1,5 +1,5 @@
 import React, { memo, useMemo } from "react";
-import { motion } from "motion/react";
+import { motion, useReducedMotion } from "motion/react";
 
 interface Point {
   x: number;
@@ -112,6 +112,8 @@ export const FloatingPaths = memo(function FloatingPaths({
     [position]
   );
 
+  const shouldReduceMotion = useReducedMotion();
+
   const sharedAnimationProps = {
     opacity: 1,
     scale: 1,
@@ -141,26 +143,34 @@ export const FloatingPaths = memo(function FloatingPaths({
         <g className="primary-waves">
           {primaryPaths.map((path) => (
             <motion.path
-              animate={{
-                ...sharedAnimationProps,
-                y: [0, -18, 0],
-              }}
+              animate={
+                shouldReduceMotion
+                  ? { opacity: path.opacity, scale: 1 }
+                  : {
+                      ...sharedAnimationProps,
+                      y: [0, -18, 0],
+                    }
+              }
               d={path.d}
-              initial={{ opacity: 0, scale: 0.85 }}
+              initial={shouldReduceMotion ? { opacity: path.opacity, scale: 1 } : { opacity: 0, scale: 0.85 }}
               key={path.id}
               stroke="url(#metroGoldCyanGradient)"
               strokeLinecap="round"
               strokeWidth={path.width}
               style={{ opacity: path.opacity }}
-              transition={{
-                ...sharedAnimationProps.transition,
-                y: {
-                  duration: 8,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                  repeatType: "reverse",
-                },
-              }}
+              transition={
+                shouldReduceMotion
+                  ? { duration: 0 }
+                  : {
+                      ...sharedAnimationProps.transition,
+                      y: {
+                        duration: 8,
+                        repeat: Infinity,
+                        ease: "easeInOut",
+                        repeatType: "reverse",
+                      },
+                    }
+              }
             />
           ))}
         </g>

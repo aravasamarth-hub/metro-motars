@@ -156,9 +156,34 @@ export default function LoginPage() {
                 <p>Reselling Showroom Enterprise</p>
               </div>
             </div>
-            <div className="system-live-pill" title="Local Vault & Cloudflare Connected">
-              <span className="live-dot" />
-              <span>AI VAULT ONLINE</span>
+            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+              <button
+                type="button"
+                onClick={() => navigate("/showcase")}
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  background: "linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(56, 189, 248, 0.15))",
+                  border: "1px solid rgba(245, 158, 11, 0.35)",
+                  color: "#f59e0b",
+                  fontSize: "11.5px",
+                  fontWeight: 600,
+                  padding: "5px 12px",
+                  borderRadius: "9999px",
+                  cursor: "pointer",
+                }}
+                data-testid="login-vip-showcase-pill"
+                title="Explore the Public 5-Library VIP Automotive Showcase"
+              >
+                <Sparkles size={13} />
+                <span>VIP Showcase</span>
+                <ArrowRight size={12} />
+              </button>
+              <div className="system-live-pill" title="Local Vault & Cloudflare Connected">
+                <span className="live-dot" />
+                <span>AI VAULT ONLINE</span>
+              </div>
             </div>
           </div>
 
@@ -364,6 +389,29 @@ export default function LoginPage() {
             <span>Cloud Storage Synced</span>
             <span>·</span>
             <span>Zero Egress</span>
+          </div>
+
+          <div style={{ marginTop: 14, textAlign: "center", paddingTop: 12, borderTop: "1px solid rgba(255, 255, 255, 0.08)" }}>
+            <span style={{ fontSize: "11.5px", color: "#94a3b8" }}>Looking for the public showroom? </span>
+            <button
+              type="button"
+              onClick={() => navigate("/showcase")}
+              style={{
+                background: "none",
+                border: "none",
+                color: "#f59e0b",
+                fontWeight: 600,
+                fontSize: "11.5px",
+                cursor: "pointer",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 4,
+                textDecoration: "underline",
+              }}
+              data-testid="login-public-showcase-link"
+            >
+              Explore VIP Showcase <ArrowRight size={11} />
+            </button>
           </div>
         </motion.div>
 
