@@ -31,6 +31,7 @@ function makeDevServerV5Compatible(devServerConfig) {
     ...compatibleConfig.headers,
     "Cross-Origin-Resource-Policy": "same-origin",
   };
+  compatibleConfig.historyApiFallback = true;
 
   if (onBeforeSetupMiddleware || setupMiddlewares) {
     compatibleConfig.setupMiddlewares = (middlewares, devServer) => {
@@ -133,6 +134,15 @@ let webpackConfig = {
         webpackConfig.plugins.push(emergentOverlay.webpackPlugin);
       }
       return webpackConfig;
+    },
+  },
+  jest: {
+    configure: (jestConfig) => {
+      jestConfig.moduleNameMapper = {
+        ...jestConfig.moduleNameMapper,
+        "^@/(.*)$": "<rootDir>/src/$1",
+      };
+      return jestConfig;
     },
   },
 };

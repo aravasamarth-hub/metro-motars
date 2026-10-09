@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { BrowserRouter, NavLink, Route, Routes, useLocation, useNavigate, Navigate } from "react-router-dom";
-import { ArrowLeft, ArrowUpRight, Bike, BriefcaseBusiness, CalendarDays, Camera, Check, ChevronDown, CircleDollarSign, ClipboardList, Clock, CreditCard, LayoutDashboard, LogOut, Menu, MoreHorizontal, Moon, Pencil, Phone, Plus, Printer, RefreshCw, Search, Settings as SettingsIcon, ShieldCheck, Sun, Trash2, UserCheck, UsersRound, WalletCards, X, Zap } from "lucide-react";
+import { ArrowLeft, ArrowUpRight, Bike, BriefcaseBusiness, CalendarDays, Camera, Check, ChevronDown, CircleDollarSign, ClipboardList, Clock, CreditCard, LayoutDashboard, LogOut, Menu, MoreHorizontal, Moon, Pencil, Phone, Plus, Printer, RefreshCw, Search, Settings as SettingsIcon, ShieldCheck, Sparkles, Sun, Trash2, UserCheck, UsersRound, WalletCards, X, Zap } from "lucide-react";
 import "@/App.css";
 import FunctionalNewDeal from "@/components/FunctionalNewDeal";
 import FunctionalDashboard from "@/components/FunctionalDashboard";
@@ -12,12 +12,14 @@ import { dealRepository } from "@/data/dealRepository";
 import AgentsView from "@/features/deals/AgentsView";
 import FollowUpsView from "@/features/deals/FollowUpsView";
 import LoginPage from "@/features/auth/LoginPage";
+import ShowcasePage from "@/features/showcase/ShowcasePage";
 import { AuthProvider, useAuth } from "@/context/AuthContext";
 
 import { LanguageProvider, useLanguage } from "@/features/i18n/LanguageContext";
 import { LanguageSwitcher } from "@/features/i18n/LanguageSwitcher";
 
 const navItems = [
+  ["nav.showcase", "VIP Showcase", "/portal", Sparkles],
   ["nav.dashboard", "Dashboard", "/", LayoutDashboard],
   ["nav.deals", "Deals", "/deals", BriefcaseBusiness],
   ["nav.new_deal", "New Deal", "/new-deal", Plus],
@@ -34,8 +36,8 @@ function AppShell({ children, dark, setDark }) {
   const { user, logout } = useAuth();
   const [mobileNav, setMobileNav] = useState(false);
 
-  if (location.pathname === "/login") {
-    return <div className={`login-page-wrapper ${dark ? "theme-dark dark" : "theme-light"}`}>{children}</div>;
+  if (location.pathname === "/login" || location.pathname === "/portal" || location.pathname === "/showcase") {
+    return <div className={`showcase-fullscreen-wrapper ${dark ? "theme-dark dark" : "theme-light"}`}>{children}</div>;
   }
 
   const currentNav = navItems.find(([, , path]) => path === location.pathname);
@@ -360,7 +362,7 @@ function LocalModeLabel() {
   const location = useLocation();
   const [reloading, setReloading] = useState(false);
 
-  if (location.pathname === "/login") return null;
+  if (location.pathname === "/login" || location.pathname === "/portal" || location.pathname === "/showcase") return null;
 
   const handleReload = async () => {
     setReloading(true);
@@ -417,6 +419,8 @@ function App() {
           <AppShell dark={dark} setDark={setDark}>
             <LocalModeLabel />
             <Routes>
+              <Route path="/portal" element={<ShowcasePage dark={dark} setDark={setDark} />} />
+              <Route path="/showcase" element={<ShowcasePage dark={dark} setDark={setDark} />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/" element={<FunctionalDashboard />} />
               <Route path="/deals" element={<FunctionalDeals />} />

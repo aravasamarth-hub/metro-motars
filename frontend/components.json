@@ -17,5 +17,9 @@
     "lib": "@/lib",
     "hooks": "@/hooks"
   },
+  "registries": {
+    "@kokonutui": "https://kokonutui.com/r/{name}.json",
+    "@bklit": "https://ui.bklit.com/r/{name}.json"
+  },
   "iconLibrary": "lucide"
 }
