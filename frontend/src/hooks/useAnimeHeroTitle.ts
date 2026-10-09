@@ -27,7 +27,7 @@ export function useAnimeHeroTitle() {
     // Build timeline using Anime.js v4
     const tl = createTimeline({
       defaults: {
-        ease: "easeOutExpo",
+        ease: "outExpo",
       },
     });
 

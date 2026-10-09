@@ -40,7 +40,7 @@ export function useAnimeRoadmap() {
     tl.add(path, {
       strokeDashoffset: [pathLength, 0],
       duration: 2200,
-      ease: "easeInOutQuad",
+      ease: "inOutQuad",
     });
 
     // 2. Pulse step node indicators in sequence as line passes them
@@ -52,7 +52,7 @@ export function useAnimeRoadmap() {
             scale: [1, 1.25, 1],
             opacity: [0.7, 1, 0.9],
             duration: 450,
-            ease: "easeOutBack",
+            ease: "outBack",
           },
           index * 480 + 300
         );
