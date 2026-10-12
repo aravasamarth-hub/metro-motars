@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import {
   Printer,
   FileDown,
@@ -19,9 +20,13 @@ import {
   Sparkles,
   SlidersHorizontal,
   Eye,
+  FileText,
+  AlertTriangle,
+  CheckCircle2,
 } from "lucide-react";
-import SaleAgreementBill from "./SaleAgreementBill";
-import { downloadSellerAgreementPDF } from "@/hooks/useSellerAgreement";
+import SellerBillDocument from "./SellerBillDocument";
+import "./SaleAgreementBill.css";
+import { downloadSellerBillPDF, printSellerBillPDF } from "@/hooks/useSellerBill";
 import { dealRepository } from "@/data/dealRepository";
 import { useLanguage } from "@/features/i18n/LanguageContext";
 
@@ -30,6 +35,7 @@ export default function BillModal({
   isOpen,
   onClose,
   onDealUpdate = undefined,
+  initialDocument = "seller-bill",
 }) {
   const { t } = useLanguage();
   const [editableDeal, setEditableDeal] = useState(null);
@@ -45,7 +51,11 @@ export default function BillModal({
     if (isOpen && deal) {
       // Create a clean deep clone so changes are isolated to this session
       try {
-        setEditableDeal(JSON.parse(JSON.stringify(deal)));
+        const cloned = JSON.parse(JSON.stringify(deal));
+        if (deal.photos) {
+          cloned.photos = { ...deal.photos };
+        }
+        setEditableDeal(cloned);
       } catch (e) {
         setEditableDeal({ ...deal });
       }
@@ -130,7 +140,11 @@ export default function BillModal({
   const handleReset = () => {
     if (deal) {
       try {
-        setEditableDeal(JSON.parse(JSON.stringify(deal)));
+        const cloned = JSON.parse(JSON.stringify(deal));
+        if (deal.photos) {
+          cloned.photos = { ...deal.photos };
+        }
+        setEditableDeal(cloned);
       } catch (e) {
         setEditableDeal({ ...deal });
       }
@@ -161,15 +175,19 @@ export default function BillModal({
     }
   };
 
-  const handlePrint = () => {
-    window.print();
+  const handlePrint = async () => {
+    try {
+      await printSellerBillPDF(editableDeal);
+    } catch (err) {
+      window.print();
+    }
   };
 
   const handleDownloadPDF = async () => {
     setDownloading(true);
     setDownloadSuccess("");
     try {
-      const fileName = await downloadSellerAgreementPDF(editableDeal);
+      const fileName = await downloadSellerBillPDF(editableDeal);
       setDownloadSuccess(fileName);
       setTimeout(() => setDownloadSuccess(""), 4000);
     } catch (err) {
@@ -181,7 +199,7 @@ export default function BillModal({
   };
 
   const billNumber =
-    editableDeal.bill_number || editableDeal.billNumber || "MM-26-0002";
+    editableDeal.bill_number || editableDeal.billNumber || "Bill-001";
 
   const seller = editableDeal.seller || {};
   const vehicle = editableDeal.vehicle || {};
@@ -190,7 +208,17 @@ export default function BillModal({
   const witness1 =
     editableDeal.witness1 || (editableDeal.witnesses && editableDeal.witnesses[0]) || {};
 
-  return (
+  const missingFields = [];
+  if (!seller.name) missingFields.push("Seller Name");
+  if (!seller.phone && !seller.mobile) missingFields.push("Mobile");
+  if (!seller.id_number && !seller.aadhaar) missingFields.push("Aadhaar");
+  if (!vehicle.vehicle_name) missingFields.push("Vehicle Name");
+  if (!vehicle.registration_number && !vehicle.vehicle_number) missingFields.push("Reg Number");
+  if (!vehicle.engine_number && !vehicle.engineNumber) missingFields.push("Engine No");
+  if (!vehicle.chassis_number && !vehicle.chassisNumber) missingFields.push("Chassis No");
+  if (!payments.purchase_price) missingFields.push("Purchase Amount");
+
+  const modalContent = (
     <div
       className="bill-modal-backdrop"
       role="dialog"
@@ -206,8 +234,8 @@ export default function BillModal({
         {/* Top Control Bar (hidden in print) */}
         <div className="bill-modal-bar no-print">
           <div className="bill-modal-title">
-            <span className="bill-modal-badge">
-              {t("legal.strip_title", "Sale Agreement & Delivery Note")}
+            <span className="bill-modal-badge" data-testid="bill-modal-doc-title">
+              Vehicle Handover Agreement
             </span>
             <span className="bill-modal-separator">·</span>
             <strong className="bill-modal-number">{billNumber}</strong>
@@ -328,6 +356,19 @@ export default function BillModal({
                   {t("common.live_sync_hint", "Updates live on bill")}
                 </span>
               </div>
+
+              {/* Missing Fields Indicator for Seller Bill */}
+              {missingFields.length > 0 ? (
+                <div className="bill-missing-warning" data-testid="sb-missing-warning">
+                  <AlertTriangle size={14} style={{ flexShrink: 0, marginTop: 1 }} />
+                  <span>Missing saved fields: <strong>{missingFields.join(", ")}</strong> (printed blank on receipt)</span>
+                </div>
+              ) : (
+                <div className="bill-all-present" data-testid="sb-all-present">
+                  <CheckCircle2 size={14} style={{ flexShrink: 0 }} />
+                  <span>All essential seller & vehicle fields recorded</span>
+                </div>
+              )}
 
               {/* Navigation Tabs */}
               <div className="bill-editor-tabs" role="tablist">
@@ -479,6 +520,25 @@ export default function BillModal({
                 {/* 2. VEHICLE TAB */}
                 {activeTab === "vehicle" && (
                   <div className="bill-form-section">
+                    <div className="bill-field-group">
+                      <label>Vehicle Category / Segment</label>
+                      <select
+                        value={vehicle.vehicle_type || "4 Wheeler Car"}
+                        onChange={(e) => updateVehicle("vehicle_type", e.target.value)}
+                        data-testid="edit-vehicle-category"
+                        className="w-full bg-slate-900/80 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-100"
+                      >
+                        <option value="2 Wheeler with Gear">🏍️ 2 Wheeler with Gear</option>
+                        <option value="2 Wheeler without Gear">🛵 2 Wheeler without Gear</option>
+                        <option value="4 Wheeler Car">🚗 4 Wheeler Car</option>
+                        <option value="Bus">🚌 Bus</option>
+                        <option value="Truck">🚛 Truck</option>
+                        <option value="Auto Rickshaws">🛺 Auto Rickshaws</option>
+                        <option value="E-Rickshaws">⚡🛺 E-Rickshaws</option>
+                        <option value="Tractors">🚜 Tractors</option>
+                      </select>
+                    </div>
+
                     <div className="bill-field-group">
                       <label>Vehicle Make & Model</label>
                       <input
@@ -796,7 +856,7 @@ export default function BillModal({
                           updateGeneral("bill_number", e.target.value);
                           updateGeneral("billNumber", e.target.value);
                         }}
-                        placeholder="e.g. MM-26-0002"
+                        placeholder="e.g. Bill-001"
                         data-testid="edit-bill-number"
                       />
                     </div>
@@ -924,11 +984,13 @@ export default function BillModal({
                 transformOrigin: "top center",
               }}
             >
-              <SaleAgreementBill deal={editableDeal} />
+              <SellerBillDocument deal={editableDeal} />
             </div>
           </main>
         </div>
       </div>
     </div>
   );
+
+  return typeof document !== "undefined" ? createPortal(modalContent, document.body) : modalContent;
 }

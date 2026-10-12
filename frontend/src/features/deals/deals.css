@@ -229,25 +229,40 @@
   font-size: 11px;
   color: var(--muted, #91a2b7);
 }
-/* Outlined toggle-style button — matches Take/Upload Photo aesthetic */
+/* Outlined & Primary toggle-style buttons — highly visible */
 .agreement-toggle-btn {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 9px 18px;
+  padding: 10px 20px;
   border-radius: 8px;
-  border: 1px solid #e5b94c55;
-  background: transparent;
-  color: var(--gold, #e5b94c);
+  border: 1px solid rgba(229, 185, 76, 0.65);
+  background: rgba(229, 185, 76, 0.15);
+  color: #fbbf24;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
-  transition: background .18s, border-color .18s;
+  transition: all .2s ease;
   white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
-.agreement-toggle-btn:hover { background: #e5b94c12; border-color: #e5b94c99; }
+.agreement-toggle-btn:hover {
+  background: rgba(229, 185, 76, 0.28);
+  border-color: #fbbf24;
+  color: #ffffff;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(229, 185, 76, 0.25);
+}
 .agreement-toggle-btn:disabled { opacity: .45; cursor: not-allowed; }
-.theme-light .agreement-toggle-btn { border-color: #c99e28aa; color: #86631c; }
+.theme-light .agreement-toggle-btn {
+  background: #fef3c7;
+  border-color: #f59e0b;
+  color: #92400e;
+}
+.theme-light .agreement-toggle-btn:hover {
+  background: #fde68a;
+  color: #78350f;
+}
 
 /* Seller status messages */
 .seller-msg {
@@ -1102,6 +1117,13 @@
 
 .party-identity-section {
   margin-bottom: 24px;
+}
+
+.party-identity-section.embedded {
+  margin-top: 24px;
+  margin-bottom: 8px;
+  border-top: 1px solid var(--local-border, #1f3147);
+  padding-top: 20px;
 }
 
 .identity-section-title {
@@ -2553,7 +2575,7 @@
 .vehicle-hud-eyebrow {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.1em;
@@ -2561,19 +2583,69 @@
   text-transform: uppercase;
 }
 
-.vehicle-hud-model {
+.hud-interactive-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 7px;
+  border-radius: 9999px;
+  background: rgba(229, 185, 76, 0.15);
+  border: 1px solid rgba(229, 185, 76, 0.35);
+  color: var(--gold, #e5b94c);
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.vehicle-hud-model-wrap {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.vehicle-hud-model-input {
   font-size: 22px;
   font-weight: 800;
   color: var(--text, #ffffff);
   letter-spacing: -0.01em;
   line-height: 1.2;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  padding: 4px 8px 4px 0;
+  outline: none;
+  width: 100%;
+  max-width: 520px;
+  transition: all 0.2s ease;
+  font-family: inherit;
 }
 
-.theme-light .vehicle-hud-model {
+.vehicle-hud-model-input:hover {
+  border-color: rgba(229, 185, 76, 0.3);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.vehicle-hud-model-input:focus {
+  border-color: var(--gold, #e5b94c);
+  background: rgba(229, 185, 76, 0.06);
+  box-shadow: 0 0 12px rgba(229, 185, 76, 0.2);
+}
+
+.vehicle-hud-model-input::placeholder {
+  color: rgba(255, 255, 255, 0.35);
+  font-weight: 600;
+}
+
+.theme-light .vehicle-hud-model-input {
   color: #0f172a;
 }
 
-/* Stamped Indian Number Plate Graphic */
+.theme-light .vehicle-hud-model-input::placeholder {
+  color: #94a3b8;
+}
+
+/* Stamped Indian Number Plate Graphic — Editable */
 .vehicle-hud-plate {
   display: inline-flex;
   align-items: center;
@@ -2581,11 +2653,16 @@
   color: #111827;
   border: 2px solid #000000;
   border-radius: 6px;
-  height: 40px;
-  padding: 0 14px 0 0;
+  height: 42px;
+  padding: 0;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
-  font-family: 'SF Pro Display', -apple-system, 'Manrope', sans-serif;
+  font-family: 'SF Pro Display', -apple-system, 'Manrope', monospace, sans-serif;
   overflow: hidden;
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.vehicle-hud-plate:focus-within {
+  box-shadow: 0 0 0 2px #e5b94c, 0 4px 14px rgba(0, 0, 0, 0.35);
 }
 
 .hud-plate-blue-band {
@@ -2600,23 +2677,42 @@
   font-size: 9px;
   font-weight: 900;
   letter-spacing: 0.05em;
-  border-right: 1.5px solid #000000;
+  border-right: 2px solid #000000;
+  user-select: none;
 }
 
-.hud-plate-number {
-  font-size: 17px;
+.hud-plate-input {
+  font-family: 'SF Pro Display', -apple-system, 'Manrope', monospace, sans-serif;
+  font-size: 16.5px;
   font-weight: 900;
   letter-spacing: 0.12em;
-  padding-left: 12px;
+  padding: 0 12px;
   text-transform: uppercase;
   color: #000000;
+  background: transparent;
+  border: none;
+  outline: none;
+  width: 170px;
+  height: 100%;
 }
 
-/* HUD Metric Capsules */
+.hud-plate-input::placeholder {
+  color: rgba(0, 0, 0, 0.35);
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+/* HUD Metric Capsules (5 Column Grid) */
 .vehicle-hud-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   gap: 12px;
+}
+
+@media (max-width: 1180px) {
+  .vehicle-hud-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
 }
 
 @media (max-width: 768px) {
@@ -2625,19 +2721,45 @@
   }
 }
 
+@media (max-width: 480px) {
+  .vehicle-hud-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 .hud-metric-pill {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px 14px;
+  gap: 10px;
+  padding: 10px 12px;
   border-radius: 10px;
   background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  transition: all 0.2s ease;
+  min-width: 0;
+}
+
+.hud-metric-pill.editable {
+  cursor: pointer;
+}
+
+.hud-metric-pill.editable:hover,
+.hud-metric-pill.editable:focus-within {
+  background: rgba(229, 185, 76, 0.06);
+  border-color: rgba(229, 185, 76, 0.4);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+  transform: translateY(-1px);
 }
 
 .theme-light .hud-metric-pill {
   background: #f8fafc;
   border-color: #e2e8f0;
+}
+
+.theme-light .hud-metric-pill.editable:hover,
+.theme-light .hud-metric-pill.editable:focus-within {
+  background: #fffbeb;
+  border-color: #f59e0b;
 }
 
 .hud-metric-icon {
@@ -2651,10 +2773,16 @@
   flex-shrink: 0;
 }
 
+.hud-condition-icon {
+  background: rgba(16, 185, 129, 0.12);
+  color: #10b981;
+}
+
 .hud-metric-details {
   display: flex;
   flex-direction: column;
   min-width: 0;
+  width: 100%;
 }
 
 .hud-metric-label {
@@ -2663,19 +2791,100 @@
   color: var(--local-muted, #94a3b8);
   text-transform: uppercase;
   letter-spacing: 0.06em;
+  margin-bottom: 2px;
 }
 
-.hud-metric-val {
-  font-size: 14px;
-  font-weight: 700;
+.hud-metric-val-wrap {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  position: relative;
+}
+
+.hud-metric-select {
+  background: transparent;
+  border: none;
+  outline: none;
   color: var(--text, #f1f5f9);
+  font-size: 13.5px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  padding: 0;
+  width: 100%;
+  appearance: none;
+  -webkit-appearance: none;
+  text-overflow: ellipsis;
   white-space: nowrap;
   overflow: hidden;
-  text-overflow: ellipsis;
 }
 
-.theme-light .hud-metric-val {
+.hud-metric-select option {
+  background: #0f172a;
+  color: #f1f5f9;
+  font-weight: 600;
+  padding: 8px;
+}
+
+.theme-light .hud-metric-select {
   color: #1e293b;
+}
+
+.theme-light .hud-metric-select option {
+  background: #ffffff;
+  color: #0f172a;
+}
+
+.hud-select-chevron {
+  color: var(--gold, #e5b94c);
+  opacity: 0.6;
+  flex-shrink: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
+.hud-metric-pill:hover .hud-select-chevron {
+  opacity: 1;
+}
+
+.hud-metric-input {
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--text, #f1f5f9);
+  font-size: 13.5px;
+  font-weight: 700;
+  font-family: inherit;
+  width: 100%;
+  max-width: 75px;
+  padding: 0;
+}
+
+.theme-light .hud-metric-input {
+  color: #1e293b;
+}
+
+.hud-km-suffix {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--local-muted, #94a3b8);
+}
+
+.condition-val-excellent {
+  color: #10b981 !important;
+}
+
+.condition-val-good {
+  color: #38bdf8 !important;
+}
+
+.condition-val-fair {
+  color: #f59e0b !important;
+}
+
+.condition-val-needs-repair {
+  color: #f43f5e !important;
 }
 
 /* Interactive Quick Selection Chips */

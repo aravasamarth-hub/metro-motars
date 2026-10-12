@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { motion } from "motion/react";
 import {
   Users,
   UserCheck,
@@ -20,10 +21,29 @@ import {
   FileCheck,
   ExternalLink,
   MessageCircle,
+  Sparkles,
 } from "lucide-react";
 import { useDeals } from "./useDeals";
 import { money } from "./dealModel";
 import { useLanguage } from "@/features/i18n/LanguageContext";
+
+// 1. shadcn/ui
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+
+// 2. KokonutUI
+import FloatingPaths from "@/components/kokonut/BackgroundPaths";
+import SpotlightCard from "@/components/kokonut/SpotlightCard";
+import ParticleButton from "@/components/kokonut/ParticleButton";
+
+// 3. Motion (motion.dev)
+import { MotionCounter } from "@/components/motion/MotionCounter";
+
+// 4. Anime.js v4
+import AnimePulseBeacon from "@/components/anime/AnimePulseBeacon";
+
+// 5. Bklit data visualizations
+import { FollowUpResolutionGauge } from "@/components/bklit/FollowUpResolutionGauge";
 
 const DEFAULT_FOLLOWUPS = [
   // Buyer follow-ups
@@ -393,57 +413,125 @@ export default function FollowUpsView() {
     }
   };
 
-  return (
-    <div className="followups-page-luxury" data-testid="followups-page">
-      {/* Header bar */}
-      <div className="page-header followups-luxury-header no-print">
-        <div>
-          <div className="eyebrow followups-eyebrow">
-            <span className="eyebrow-beacon" />
-            <span>{t("followups.eyebrow", "CUSTOMER & AGENT RELATIONSHIPS · ACTIVE PIPELINE")}</span>
-          </div>
-          <h1 data-testid="page-title" className="followups-hero-title">
-            {t("followups.title", "Follow-ups")}
-          </h1>
-          <p className="followups-hero-subtitle">
-            {t(
-              "followups.subtitle",
-              "Dedicated pipelines for Buyers, Sellers, and RTO Agents to ensure timely collections, document handovers, and task clearances."
-            )}
-          </p>
-        </div>
+  const completedFollowUps = combinedItems.filter((i) => i.status === "completed").length;
 
-        <button
-          className="button button-primary followups-add-btn"
-          onClick={() => setIsModalOpen(true)}
-          data-testid="add-follow-up-button"
-        >
-          <Plus size={18} strokeWidth={2.4} />
-          <span>{t("followups.add_button", "Add follow-up")}</span>
-        </button>
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 14 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.35, ease: "easeOut" }}
+      className="followups-page-luxury"
+      data-testid="followups-page"
+    >
+      {/* ── Luxury Follow-ups Hero (With KokonutUI FloatingPaths) ── */}
+      <div className="luxury-hero-container relative mb-6">
+        <FloatingPaths position={-1} />
+
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-5">
+          <div>
+            <div className="flex items-center gap-2.5 mb-2 flex-wrap">
+              <AnimePulseBeacon color="amber" size="sm" label="ACTIVE RELATIONSHIPS PIPELINE" />
+              <Badge variant="outline" className="border-amber-500/30 bg-amber-500/10 text-amber-400 font-mono text-[10px]">
+                {totalDueToday} Due Today
+              </Badge>
+              <Badge variant="outline" className="border-emerald-500/30 bg-emerald-500/10 text-emerald-400 text-[10px]">
+                {completedFollowUps} Resolved
+              </Badge>
+            </div>
+
+            <h1 data-testid="page-title" className="text-2xl sm:text-3xl font-extrabold text-white font-manrope">
+              {t("followups.title", "Follow-ups")}
+            </h1>
+            <p className="text-xs sm:text-sm text-neutral-400 mt-1 max-w-xl">
+              Dedicated pipelines for Buyers, Sellers, and RTO Agents to ensure timely collections, document handovers, and task clearances.
+            </p>
+          </div>
+
+          <div className="relative z-10 flex items-center gap-3">
+            <ParticleButton
+              onClick={() => setIsModalOpen(true)}
+              data-testid="add-follow-up-button"
+              className="luxury-particle-cta px-4 py-2.5 text-xs font-bold"
+            >
+              <Plus size={16} strokeWidth={2.5} />
+              <span>{t("followups.add_button", "Add follow-up")}</span>
+            </ParticleButton>
+          </div>
+        </div>
       </div>
 
-      {/* CRM Urgency Metrics Strip */}
-      <div className="crm-urgency-strip">
-        <div className="crm-urgency-pill crm-urgent" data-testid="metric-due-today">
-          <Clock size={13} />
-          <span>{totalDueToday} Due Today & Overdue</span>
+      {/* ── Bklit Gauge + KokonutUI SpotlightCards Grid ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-6">
+        {/* 5. Bklit Resolution Gauge */}
+        <div className="lg:col-span-1">
+          <FollowUpResolutionGauge
+            completed={completedFollowUps}
+            total={combinedItems.length || 8}
+            urgentPending={totalDueToday}
+          />
         </div>
-        <div className="crm-urgency-pill crm-upcoming" data-testid="metric-buyers">
-          <Users size={13} />
-          <span>{totalBuyerCount} Buyer Deliveries & Balances</span>
-        </div>
-        <div className="crm-urgency-pill" style={{ background: "rgba(245, 158, 11, 0.12)", color: "#fbbf24", border: "1px solid rgba(245, 158, 11, 0.3)" }} data-testid="metric-sellers">
-          <FileCheck size={13} />
-          <span>{totalSellerCount} Seller Clearances</span>
-        </div>
-        <div className="crm-urgency-pill" style={{ background: "rgba(168, 85, 247, 0.12)", color: "#c084fc", border: "1px solid rgba(168, 85, 247, 0.3)" }} data-testid="metric-agents">
-          <UserCheck size={13} />
-          <span>{totalAgentCount} Agent RTO Tasks</span>
-        </div>
-        <div className="crm-urgency-pill crm-inflow" data-testid="metric-inflow">
-          <WalletCards size={13} />
-          <span>{money(totalCollectionQueue)} Collection Queue</span>
+
+        {/* 2. KokonutUI SpotlightCards + Motion Counters */}
+        <div className="lg:col-span-3 grid grid-cols-2 sm:grid-cols-4 gap-3.5">
+          <SpotlightCard
+            spotlightColor="rgba(239, 68, 68, 0.18)"
+            className="p-4 border-neutral-800 bg-neutral-900/80 shadow-xl"
+            data-testid="metric-due-today"
+          >
+            <div className="flex items-center justify-between text-neutral-400 text-xs font-semibold">
+              <span>Due Today</span>
+              <Clock size={16} className="text-rose-400" />
+            </div>
+            <div className="text-2xl font-extrabold text-rose-400 font-manrope mt-2">
+              <MotionCounter to={totalDueToday} />
+            </div>
+            <span className="text-[10px] text-neutral-400 mt-1 block">Urgent Action Required</span>
+          </SpotlightCard>
+
+          <SpotlightCard
+            spotlightColor="rgba(56, 189, 248, 0.15)"
+            className="p-4 border-neutral-800 bg-neutral-900/80 shadow-xl"
+            data-testid="metric-buyers"
+          >
+            <div className="flex items-center justify-between text-neutral-400 text-xs font-semibold">
+              <span>Buyer Pipeline</span>
+              <Users size={16} className="text-sky-400" />
+            </div>
+            <div className="text-2xl font-extrabold text-white font-manrope mt-2">
+              <MotionCounter to={totalBuyerCount} />
+            </div>
+            <span className="text-[10px] text-sky-400 mt-1 block">Deliveries &amp; Balances</span>
+          </SpotlightCard>
+
+          <SpotlightCard
+            spotlightColor="rgba(245, 158, 11, 0.15)"
+            className="p-4 border-neutral-800 bg-neutral-900/80 shadow-xl"
+            data-testid="metric-sellers"
+          >
+            <div className="flex items-center justify-between text-neutral-400 text-xs font-semibold">
+              <span>Seller Clearances</span>
+              <FileCheck size={16} className="text-amber-400" />
+            </div>
+            <div className="text-2xl font-extrabold text-white font-manrope mt-2">
+              <MotionCounter to={totalSellerCount} />
+            </div>
+            <span className="text-[10px] text-amber-400 mt-1 block">Bank NOC &amp; Forms</span>
+          </SpotlightCard>
+
+          <SpotlightCard
+            spotlightColor="rgba(168, 85, 247, 0.15)"
+            className="p-4 border-neutral-800 bg-neutral-900/80 shadow-xl"
+            data-testid="metric-agents"
+          >
+            <div className="flex items-center justify-between text-neutral-400 text-xs font-semibold">
+              <span>RTO Agent Tasks</span>
+              <UserCheck size={16} className="text-purple-400" />
+            </div>
+            <div className="text-2xl font-extrabold text-white font-manrope mt-2">
+              <MotionCounter to={totalAgentCount} />
+            </div>
+            <span className="text-[10px] text-purple-400 mt-1 block">RC Transfer Follow-up</span>
+          </SpotlightCard>
         </div>
       </div>
 
@@ -669,7 +757,7 @@ export default function FollowUpsView() {
           deals={deals}
         />
       )}
-    </div>
+    </motion.div>
   );
 }
 

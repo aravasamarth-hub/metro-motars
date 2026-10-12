@@ -131,6 +131,8 @@ export function LiveCameraModal({
       type: "image/jpeg",
       size: capturedBlob.size,
       blob: capturedBlob,
+      dataUrl: capturedUrl,
+      url: capturedUrl,
     };
     onClose();
     setTimeout(() => {
@@ -145,16 +147,28 @@ export function LiveCameraModal({
   };
 
   // Fallback file chooser
-  const handleFallbackFile = (e) => {
+  const handleFallbackFile = async (e) => {
     const file = e.target.files?.[0];
     e.target.value = "";
     if (!file) return;
+
+    let dataUrl = null;
+    try {
+      dataUrl = await new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = () => resolve(null);
+        reader.readAsDataURL(file);
+      });
+    } catch {}
 
     onCapture({
       name: file.name,
       type: file.type || "image/jpeg",
       size: file.size,
       blob: file,
+      dataUrl: dataUrl || URL.createObjectURL(file),
+      url: dataUrl || URL.createObjectURL(file),
     });
     onClose();
   };

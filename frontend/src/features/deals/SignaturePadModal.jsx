@@ -257,11 +257,14 @@ export function SignaturePadModal({
 
     trimmedCanvas.toBlob((blob) => {
       if (!blob) return;
+      const dataUrl = trimmedCanvas.toDataURL("image/png");
       const photoObj = {
         name: `signature-${Date.now()}.png`,
         type: "image/png",
         size: blob.size,
         blob: blob,
+        dataUrl: dataUrl,
+        url: dataUrl,
       };
       onClose();
       setTimeout(() => {

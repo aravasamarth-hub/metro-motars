@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
+import { motion } from "motion/react";
 import {
   UserCheck,
   Users,
@@ -20,12 +21,33 @@ import {
   Eye,
   Check,
   AlertCircle,
+  BarChart2,
+  Sparkles,
 } from "lucide-react";
 import { useDeals } from "./useDeals";
 import { money } from "./dealModel";
 import { dealRepository } from "@/data/dealRepository";
 import { useLanguage } from "@/features/i18n/LanguageContext";
 import { AgentWhatsAppModal } from "./AgentWhatsAppModal";
+
+// 1. shadcn/ui
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+
+// 2. KokonutUI
+import FloatingPaths from "@/components/kokonut/BackgroundPaths";
+import SpotlightCard from "@/components/kokonut/SpotlightCard";
+import ParticleButton from "@/components/kokonut/ParticleButton";
+
+// 3. Motion (motion.dev)
+import { MotionCounter } from "@/components/motion/MotionCounter";
+import { MotionReveal } from "@/components/motion/MotionReveal";
+
+// 4. Anime.js v4
+import AnimePulseBeacon from "@/components/anime/AnimePulseBeacon";
+
+// 5. Bklit data visualizations
+import { AgentCommissionChart } from "@/components/bklit/AgentCommissionChart";
 
 export default function AgentsView() {
   const navigate = useNavigate();
@@ -183,89 +205,139 @@ export default function AgentsView() {
     }
   };
 
-  return (
-    <div className="agents-page-container" data-testid="agents-page">
-      {/* Page Header */}
-      <div className="page-header agents-page-header no-print">
-        <div>
-          <div className="eyebrow agents-eyebrow">
-            <span className="eyebrow-beacon" />
-            <span>{t("agents.eyebrow", "RTO & SERVICE COLLABORATORS · WORK HANDOVER")}</span>
-          </div>
-          <h1 data-testid="page-title" className="agents-hero-title">
-            {t("agents.title", "Agent Management")}
-          </h1>
-          <p className="agents-hero-subtitle">
-            {t(
-              "agents.subtitle",
-              "Track client deals handed over to RTO and service agents, progress, and pending tasks."
-            )}
-          </p>
-        </div>
+  const agentChartData = useMemo(() => {
+    if (!agentGroups.length) return [];
+    return agentGroups.slice(0, 6).map((a) => ({
+      name: a.name,
+      deals: a.totalClients,
+      commission: Math.round(a.totalAmount / 1000) || 12,
+      payoutStatus: a.amountBalance === 0 ? "settled" : "pending",
+    }));
+  }, [agentGroups]);
 
-        <button
-          className="button button-primary agents-assign-deal-btn"
-          onClick={() => navigate("/new-deal")}
-          data-testid="agents-create-deal-btn"
-        >
-          <Plus size={18} strokeWidth={2.4} />
-          <span>{t("agents.assign_new", "Assign New Deal")}</span>
-        </button>
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 14 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.35, ease: "easeOut" }}
+      className="agents-page-container"
+      data-testid="agents-page"
+    >
+      {/* ── Luxury Agent Command Hero (With KokonutUI FloatingPaths) ── */}
+      <div className="luxury-hero-container relative mb-6">
+        <FloatingPaths position={1} />
+
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-5">
+          <div>
+            <div className="flex items-center gap-2.5 mb-2 flex-wrap">
+              <AnimePulseBeacon color="gold" size="sm" label="RTO & SERVICE NETWORK" />
+              <Badge variant="outline" className="border-amber-500/30 bg-amber-500/10 text-amber-400 font-mono text-[10px]">
+                {totalAgents} Active Liaisons
+              </Badge>
+              <Badge variant="outline" className="border-emerald-500/30 bg-emerald-500/10 text-emerald-400 text-[10px]">
+                {totalCompleted} Completed Handovers
+              </Badge>
+            </div>
+
+            <h1 data-testid="page-title" className="text-2xl sm:text-3xl font-extrabold text-white font-manrope">
+              {t("agents.title", "Agent Management")}
+            </h1>
+            <p className="text-xs sm:text-sm text-neutral-400 mt-1 max-w-xl">
+              Track client deals handed over to RTO and service agents, progress, commissions, and pending tasks.
+            </p>
+          </div>
+
+          <div className="relative z-10 flex items-center gap-3">
+            <ParticleButton
+              onClick={() => navigate("/new-deal")}
+              data-testid="agents-create-deal-btn"
+              className="luxury-particle-cta px-4 py-2.5 text-xs font-bold"
+            >
+              <Plus size={16} strokeWidth={2.5} />
+              <span>{t("agents.assign_new", "Assign New Deal")}</span>
+            </ParticleButton>
+          </div>
+        </div>
       </div>
 
-      {/* KPI Cockpit Metrics */}
-      <div className="agents-kpi-grid">
-        <div className="agents-kpi-card" data-testid="kpi-total-agents">
-          <div className="agents-kpi-icon-wrap blue">
-            <UserCheck size={22} />
+      {/* ── KokonutUI SpotlightCard KPI Grid + Motion Counters ── */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3.5 mb-6">
+        <SpotlightCard
+          spotlightColor="rgba(56, 189, 248, 0.15)"
+          className="p-4 border-neutral-800 bg-neutral-900/80 shadow-xl"
+          data-testid="kpi-total-agents"
+        >
+          <div className="flex items-center justify-between text-neutral-400 text-xs font-semibold">
+            <span>{t("agents.total_agents", "Total Agents")}</span>
+            <div className="w-8 h-8 rounded-lg bg-sky-500/15 text-sky-400 flex items-center justify-center">
+              <UserCheck size={18} />
+            </div>
           </div>
-          <div className="agents-kpi-info">
-            <span className="agents-kpi-label">{t("agents.total_agents", "Total Agents")}</span>
-            <strong className="agents-kpi-value">{totalAgents}</strong>
-            <small className="agents-kpi-sub">Collaborating Showroom Agents</small>
+          <div className="text-2xl font-extrabold text-white font-manrope mt-2">
+            <MotionCounter to={totalAgents} />
           </div>
-        </div>
+          <span className="text-[10px] text-neutral-400 mt-1 block">Collaborating Liaisons</span>
+        </SpotlightCard>
 
-        <div className="agents-kpi-card" data-testid="kpi-total-clients">
-          <div className="agents-kpi-icon-wrap cyan">
-            <Users size={22} />
+        <SpotlightCard
+          spotlightColor="rgba(245, 158, 11, 0.15)"
+          className="p-4 border-neutral-800 bg-neutral-900/80 shadow-xl"
+          data-testid="kpi-total-clients"
+        >
+          <div className="flex items-center justify-between text-neutral-400 text-xs font-semibold">
+            <span>{t("agents.total_clients", "Total Clients")}</span>
+            <div className="w-8 h-8 rounded-lg bg-amber-500/15 text-amber-400 flex items-center justify-center">
+              <Users size={18} />
+            </div>
           </div>
-          <div className="agents-kpi-info">
-            <span className="agents-kpi-label">{t("agents.total_clients", "Total Clients")}</span>
-            <strong className="agents-kpi-value">{totalClients}</strong>
-            <small className="agents-kpi-sub">Deals Handed Over</small>
+          <div className="text-2xl font-extrabold text-white font-manrope mt-2">
+            <MotionCounter to={totalClients} />
           </div>
-        </div>
+          <span className="text-[10px] text-neutral-400 mt-1 block">Deals Handed Over</span>
+        </SpotlightCard>
 
-        <div className="agents-kpi-card" data-testid="kpi-completed-tasks">
-          <div className="agents-kpi-icon-wrap green">
-            <CheckCircle2 size={22} />
+        <SpotlightCard
+          spotlightColor="rgba(16, 185, 129, 0.15)"
+          className="p-4 border-neutral-800 bg-neutral-900/80 shadow-xl"
+          data-testid="kpi-completed-tasks"
+        >
+          <div className="flex items-center justify-between text-neutral-400 text-xs font-semibold">
+            <span>{t("agents.completed_tasks", "Completed Work")}</span>
+            <div className="w-8 h-8 rounded-lg bg-emerald-500/15 text-emerald-400 flex items-center justify-center">
+              <CheckCircle2 size={18} />
+            </div>
           </div>
-          <div className="agents-kpi-info">
-            <span className="agents-kpi-label">{t("agents.completed_tasks", "Completed Work")}</span>
-            <strong className="agents-kpi-value" style={{ color: "#4ade80" }}>
-              {totalCompleted}
-            </strong>
-            <small className="agents-kpi-sub">
-              {totalClients > 0 ? `${Math.round((totalCompleted / totalClients) * 100)}% Completed` : "0% Completed"}
-            </small>
+          <div className="text-2xl font-extrabold text-emerald-400 font-manrope mt-2">
+            <MotionCounter to={totalCompleted} />
           </div>
-        </div>
+          <span className="text-[10px] text-emerald-400 mt-1 block">
+            {totalClients > 0 ? `${Math.round((totalCompleted / totalClients) * 100)}% Cleared` : "All Handed Over"}
+          </span>
+        </SpotlightCard>
 
-        <div className="agents-kpi-card" data-testid="kpi-pending-tasks">
-          <div className="agents-kpi-icon-wrap gold">
-            <Clock size={22} />
+        <SpotlightCard
+          spotlightColor="rgba(245, 158, 11, 0.15)"
+          className="p-4 border-neutral-800 bg-neutral-900/80 shadow-xl"
+          data-testid="kpi-pending-tasks"
+        >
+          <div className="flex items-center justify-between text-neutral-400 text-xs font-semibold">
+            <span>{t("agents.pending_tasks", "Pending Work")}</span>
+            <div className="w-8 h-8 rounded-lg bg-amber-500/15 text-amber-400 flex items-center justify-center">
+              <Clock size={18} />
+            </div>
           </div>
-          <div className="agents-kpi-info">
-            <span className="agents-kpi-label">{t("agents.pending_tasks", "Pending Work")}</span>
-            <strong className="agents-kpi-value" style={{ color: "#fbbf24" }}>
-              {totalPending}
-            </strong>
-            <small className="agents-kpi-sub">
-              Balance: <strong style={{ color: "var(--gold)" }}>{money(totalBalanceDue)}</strong>
-            </small>
+          <div className="text-2xl font-extrabold text-amber-400 font-manrope mt-2">
+            <MotionCounter to={totalPending} />
           </div>
-        </div>
+          <span className="text-[10px] text-amber-400 mt-1 block">
+            Balance: {money(totalBalanceDue)}
+          </span>
+        </SpotlightCard>
+      </div>
+
+      {/* ── Bklit Agent Commission & Volume Chart ── */}
+      <div className="mb-6">
+        <AgentCommissionChart data={agentChartData.length ? agentChartData : undefined} />
       </div>
 
       {/* Search and Tabs Toolbar */}
@@ -751,6 +823,6 @@ export default function AgentsView() {
           customAssignedAt={whatsAppModalDeal.agent?.assigned_at || ""}
         />
       )}
-    </div>
+    </motion.div>
   );
 }

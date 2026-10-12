@@ -1,8 +1,9 @@
-import { Car, Gauge, Fuel, ShieldCheck, Cog, Award, Sparkles } from "lucide-react";
+import { Car, Gauge, Fuel, ShieldCheck, Cog, Award, Sparkles, ChevronDown, Edit3 } from "lucide-react";
 import { FieldGrid } from "./DealField";
 import { vehicleGroups } from "./fieldConfig";
 import { PhotoSlots } from "./PhotoSlots";
 import { useLanguage } from "@/features/i18n/LanguageContext";
+import { VEHICLE_CATEGORIES } from "@/features/deals/dealModel";
 
 const groupTitleMap = {
   "Vehicle details": "section.vehicle_details",
@@ -10,32 +11,26 @@ const groupTitleMap = {
   "Documents & validity": "section.documents_validity",
 };
 
-const QUICK_CHIPS = [
-  {
-    key: "fuel_type",
-    label: "Fuel Type",
-    options: ["Petrol", "Diesel", "Electric", "CNG", "Hybrid"],
-  },
-  {
-    key: "transmission",
-    label: "Transmission",
-    options: ["Manual", "Automatic"],
-  },
-  {
-    key: "ownership",
-    label: "Ownership",
-    options: ["First Owner", "Second Owner", "Third Owner", "Fourth Owner or More"],
-  },
-  {
-    key: "condition",
-    label: "Condition",
-    options: ["Excellent", "Good", "Fair", "Needs Repair"],
-  },
-];
+const getCategoryIcon = (type) => {
+  switch (type) {
+    case "2 Wheeler with Gear": return "🏍️";
+    case "2 Wheeler without Gear": return "🛵";
+    case "4 Wheeler Car": return "🚗";
+    case "Bus": return "🚌";
+    case "Truck": return "🚛";
+    case "Auto Rickshaws": return "🛺";
+    case "E-Rickshaws": return "⚡🛺";
+    case "Tractors": return "🚜";
+    default: return "🚗";
+  }
+};
+
+
 
 export const VehicleStep = ({ deal, update, updateSection, setPhoto, errors }) => {
   const { t } = useLanguage();
   const v = deal?.vehicle || {};
+  const currentCategory = v.vehicle_type || "4 Wheeler Car";
 
   // Form dynamic display title
   const vehicleDisplayName =
@@ -43,108 +38,205 @@ export const VehicleStep = ({ deal, update, updateSection, setPhoto, errors }) =
     v.vehicle_name ||
     t("vehicle.unspecified", "Showroom Vehicle Unit");
 
-  const plateNumber = v.registration_number || v.vehicle_number || "REG NUMBER";
-  const odoDisplay = v.odometer ? `${Number(v.odometer).toLocaleString()} km` : "-- km";
+  const plateNumber = v.registration_number || v.vehicle_number || "";
 
   return (
     <div className="vehicle-step-container" data-testid="vehicle-step-container">
+      {/* 1-Click Vehicle Segment / Category Selector */}
+      <div className="vehicle-category-selector" data-testid="vehicle-category-selector">
+        <div className="chips-group-header flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <Sparkles size={14} className="text-amber-400" />
+            <span className="text-xs font-bold uppercase tracking-wider text-amber-300">
+              {t("field.vehicle_type", "Vehicle Category / Segment")}
+            </span>
+          </div>
+          <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30">
+            {getCategoryIcon(currentCategory)} {currentCategory}
+          </span>
+        </div>
+        <div className="vehicle-category-grid">
+          {VEHICLE_CATEGORIES.map((cat) => {
+            const isSelected = currentCategory === cat.label;
+            return (
+              <button
+                key={cat.id}
+                type="button"
+                className={`category-select-card ${isSelected ? "active" : ""}`}
+                onClick={() => updateSection("vehicle", "vehicle_type", cat.label)}
+                data-testid={`category-btn-${cat.id}`}
+              >
+                <span className="cat-card-icon">{cat.icon}</span>
+                <span className="cat-card-name">
+                  {t(`type.${cat.id.replace(/-/g, "_")}`, cat.label)}
+                </span>
+                {isSelected && <span className="cat-card-active-dot" />}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
       {/* Live Automotive Specification HUD */}
       <div className="vehicle-hud-container" data-testid="vehicle-hud-card">
         <div className="vehicle-hud-card">
           <div className="vehicle-hud-top">
             <div className="vehicle-hud-title-wrap">
               <div className="vehicle-hud-eyebrow">
-                <Car size={14} />
-                <span>{t("vehicle.hud_spec", "Live Vehicle Specification HUD")}</span>
+                <span className="text-base">{getCategoryIcon(currentCategory)}</span>
+                <span>{currentCategory} · {t("vehicle.hud_spec", "Specification HUD")}</span>
+                <span className="hud-interactive-badge" title="All values in this HUD are directly editable">
+                  <Edit3 size={10} /> Live Edit
+                </span>
               </div>
-              <div className="vehicle-hud-model" data-testid="vehicle-hud-display-name">
-                {vehicleDisplayName}
+              <div className="vehicle-hud-model-wrap">
+                <input
+                  type="text"
+                  className="vehicle-hud-model-input"
+                  data-testid="vehicle-hud-display-name"
+                  value={v.vehicle_name !== undefined ? v.vehicle_name : ([v.make, v.model].filter(Boolean).join(" "))}
+                  onChange={(e) => updateSection("vehicle", "vehicle_name", e.target.value)}
+                  placeholder={vehicleDisplayName || "Enter Vehicle Make & Model..."}
+                  title="Click to edit vehicle name / model directly"
+                />
               </div>
             </div>
 
-            {/* Stamped Indian Number Plate Graphic */}
-            <div className="vehicle-hud-plate" title="Vehicle Registration Plate">
+            {/* Stamped Indian Number Plate Graphic — Directly Editable */}
+            <div className="vehicle-hud-plate" title="Click to edit Registration Number">
               <div className="hud-plate-blue-band">
                 <span>IND</span>
               </div>
-              <span className="hud-plate-number" data-testid="vehicle-hud-plate">
-                {plateNumber}
-              </span>
+              <input
+                type="text"
+                className="hud-plate-input"
+                data-testid="vehicle-hud-plate"
+                value={plateNumber}
+                onChange={(e) => {
+                  const val = e.target.value.toUpperCase();
+                  updateSection("vehicle", "registration_number", val);
+                  updateSection("vehicle", "vehicle_number", val);
+                }}
+                placeholder="REG NUMBER"
+                title="Type registration number (e.g. KA-17-EX-2456)"
+              />
             </div>
           </div>
 
-          {/* 4 Core Metric Capsules */}
+          {/* 5 Core Metric Capsules (Fuel, Gearbox, Odometer, Ownership, Condition) */}
           <div className="vehicle-hud-grid">
-            <div className="hud-metric-pill">
+            {/* 1. Fuel */}
+            <div className="hud-metric-pill editable" title="Click to change Fuel Type">
               <div className="hud-metric-icon">
                 <Fuel size={18} />
               </div>
               <div className="hud-metric-details">
                 <span className="hud-metric-label">{t("vehicle.fuel", "Fuel")}</span>
-                <span className="hud-metric-val">{v.fuel_type || "Petrol"}</span>
+                <div className="hud-metric-val-wrap">
+                  <select
+                    className="hud-metric-select"
+                    value={v.fuel_type || "Petrol"}
+                    onChange={(e) => updateSection("vehicle", "fuel_type", e.target.value)}
+                  >
+                    {["Petrol", "Diesel", "Electric", "CNG", "Hybrid"].map((opt) => (
+                      <option key={opt} value={opt}>{opt}</option>
+                    ))}
+                  </select>
+                  <ChevronDown size={11} className="hud-select-chevron" />
+                </div>
               </div>
             </div>
 
-            <div className="hud-metric-pill">
+            {/* 2. Gearbox / Transmission */}
+            <div className="hud-metric-pill editable" title="Click to change Gearbox / Transmission">
               <div className="hud-metric-icon">
                 <Cog size={18} />
               </div>
               <div className="hud-metric-details">
                 <span className="hud-metric-label">{t("vehicle.transmission", "Gearbox")}</span>
-                <span className="hud-metric-val">{v.transmission || "Manual"}</span>
+                <div className="hud-metric-val-wrap">
+                  <select
+                    className="hud-metric-select"
+                    value={v.transmission || "Manual"}
+                    onChange={(e) => updateSection("vehicle", "transmission", e.target.value)}
+                  >
+                    {["Manual", "Automatic"].map((opt) => (
+                      <option key={opt} value={opt}>{opt}</option>
+                    ))}
+                  </select>
+                  <ChevronDown size={11} className="hud-select-chevron" />
+                </div>
               </div>
             </div>
 
-            <div className="hud-metric-pill">
+            {/* 3. Odometer */}
+            <div className="hud-metric-pill editable" title="Click to edit Odometer mileage">
               <div className="hud-metric-icon">
                 <Gauge size={18} />
               </div>
               <div className="hud-metric-details">
                 <span className="hud-metric-label">{t("vehicle.odometer", "Odometer")}</span>
-                <span className="hud-metric-val">{odoDisplay}</span>
+                <div className="hud-metric-val-wrap">
+                  <input
+                    type="number"
+                    className="hud-metric-input"
+                    value={v.odometer !== undefined && v.odometer !== null ? v.odometer : ""}
+                    onChange={(e) => updateSection("vehicle", "odometer", e.target.value)}
+                    placeholder="0"
+                  />
+                  <span className="hud-km-suffix">km</span>
+                </div>
               </div>
             </div>
 
-            <div className="hud-metric-pill">
+            {/* 4. Ownership */}
+            <div className="hud-metric-pill editable" title="Click to change Ownership">
               <div className="hud-metric-icon">
                 <Award size={18} />
               </div>
               <div className="hud-metric-details">
                 <span className="hud-metric-label">{t("vehicle.ownership", "Ownership")}</span>
-                <span className="hud-metric-val">{v.ownership || "First Owner"}</span>
+                <div className="hud-metric-val-wrap">
+                  <select
+                    className="hud-metric-select"
+                    value={v.ownership || "First Owner"}
+                    onChange={(e) => updateSection("vehicle", "ownership", e.target.value)}
+                  >
+                    {["First Owner", "Second Owner", "Third Owner", "Fourth Owner or More"].map((opt) => (
+                      <option key={opt} value={opt}>{opt}</option>
+                    ))}
+                  </select>
+                  <ChevronDown size={11} className="hud-select-chevron" />
+                </div>
+              </div>
+            </div>
+
+            {/* 5. Condition (New!) */}
+            <div className="hud-metric-pill editable" title="Click to change Vehicle Condition">
+              <div className="hud-metric-icon hud-condition-icon">
+                <ShieldCheck size={18} />
+              </div>
+              <div className="hud-metric-details">
+                <span className="hud-metric-label">{t("vehicle.condition", "Condition")}</span>
+                <div className="hud-metric-val-wrap">
+                  <select
+                    className={`hud-metric-select condition-val-${(v.condition || "Excellent").toLowerCase().replace(/\s+/g, "-")}`}
+                    value={v.condition || "Excellent"}
+                    onChange={(e) => updateSection("vehicle", "condition", e.target.value)}
+                  >
+                    {["Excellent", "Good", "Fair", "Needs Repair"].map((opt) => (
+                      <option key={opt} value={opt}>{opt}</option>
+                    ))}
+                  </select>
+                  <ChevronDown size={11} className="hud-select-chevron" />
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Interactive Quick-Select Chips */}
-      <div className="vehicle-chips-section">
-        {QUICK_CHIPS.map((group) => (
-          <div className="vehicle-chips-group" key={group.key}>
-            <div className="chips-group-header">
-              <Sparkles size={12} className="text-amber-400" />
-              <span>{group.label}</span>
-            </div>
-            <div className="chips-row">
-              {group.options.map((opt) => {
-                const isSelected = v[group.key] === opt;
-                return (
-                  <button
-                    type="button"
-                    key={opt}
-                    className={`quick-chip ${isSelected ? "active" : ""}`}
-                    onClick={() => updateSection("vehicle", group.key, opt)}
-                    data-testid={`quick-chip-${group.key}-${opt.toLowerCase().replace(/\s+/g, "-")}`}
-                  >
-                    {opt}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        ))}
-      </div>
+
 
       {/* Vehicle main photo on top with stock and RC transfer buttons beside it */}
       <PhotoSlots

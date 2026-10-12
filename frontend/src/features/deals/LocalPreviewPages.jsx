@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
+import { motion } from "motion/react";
 import {
   ArrowUpRight,
   FilePlus2,
@@ -14,12 +15,33 @@ import {
   Building2,
   CheckCircle2,
   ShieldCheck,
+  Download,
+  BarChart3,
 } from "lucide-react";
 import { useDeals } from "./useDeals";
 import { commission, calculateMaintenanceTotal, money, localDay } from "./dealModel";
 import BillDocument from "@/components/BillDocument";
 import BillModal from "@/components/BillModal";
 import { useLanguage } from "@/features/i18n/LanguageContext";
+
+// 1. shadcn/ui
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+
+// 2. KokonutUI
+import FloatingPaths from "@/components/kokonut/BackgroundPaths";
+import SpotlightCard from "@/components/kokonut/SpotlightCard";
+import ParticleButton from "@/components/kokonut/ParticleButton";
+
+// 3. Motion (motion.dev)
+import { MotionCounter } from "@/components/motion/MotionCounter";
+
+// 4. Anime.js v4
+import AnimePulseBeacon from "@/components/anime/AnimePulseBeacon";
+import AnimeCashflowFlow from "@/components/anime/AnimeCashflowFlow";
+
+// 5. Bklit data visualizations
+import { FleetValuationAreaChart } from "@/components/bklit/FleetValuationAreaChart";
 
 // ── constants ────────────────────────────────────────────────────────────────
 const BILL_TYPES = ["Seller → Buyer", "Seller → Intermediate"];
@@ -74,7 +96,7 @@ function buildBillDoc(deal, billType) {
   return {
     bill: {
       bill_id:      "LOCAL-" + (deal.id||"").slice(0,8),
-      bill_number:  deal.bill_number || "MM-00-0001",
+      bill_number:  deal.bill_number || "Bill-001",
       bill_type:    billType,
       created_date: new Date().toISOString(),
     },
@@ -223,6 +245,7 @@ export const LocalBills = () => {
             <label className="form-field">
               <span>{t("bills.bill_type", "Bill type")}</span>
               <select value={billType} onChange={e => setBillType(e.target.value)} data-testid="deal-picker-bill-type">
+                <option value="Seller Bill (Purchase Receipt)">{t("bills.seller_bill", "Seller Bill (Purchase Receipt)")}</option>
                 <option value="Seller → Buyer">{t("bills.seller_to_buyer", "Seller → Buyer")}</option>
                 <option value="Seller → Intermediate">{t("bills.seller_to_intermediate", "Seller → Intermediate")}</option>
               </select>
@@ -262,6 +285,7 @@ export const LocalBills = () => {
         deal={preview?.deal || preview?.doc?.deal}
         isOpen={!!preview}
         onClose={() => setPreview(null)}
+        initialDocument={billType.includes("Intermediate") || billType.includes("Buyer") ? "sale-agreement" : "seller-bill"}
       />
     </>
   );
@@ -312,30 +336,50 @@ export const LocalFinances = () => {
   ];
 
   return (
-    <div className="local-page finances-page-luxury">
-      {/* Luxury Treasury Header */}
-      <div className="page-header finances-luxury-header">
-        <div>
-          <div className="eyebrow finances-eyebrow">
-            <span className="eyebrow-beacon" />
-            <span>{t("finances.eyebrow", "EXECUTIVE FINANCIAL OVERVIEW · TREASURY COCKPIT")}</span>
-          </div>
-          <h1 data-testid="page-title" className="finances-hero-title">
-            {t("finances.title", "Finances")}
-          </h1>
-          <p className="finances-hero-subtitle">
-            Showroom Cashflow, Dealer Margins, Procurement & Receivables Registry
-          </p>
-        </div>
+    <motion.div
+      initial={{ opacity: 0, y: 14 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.35, ease: "easeOut" }}
+      className="local-page finances-page-luxury"
+    >
+      {/* ── Luxury Treasury Header (With KokonutUI FloatingPaths) ── */}
+      <div className="luxury-hero-container relative mb-6">
+        <FloatingPaths position={1} />
 
-        <div className="finances-header-badge">
-          <ShieldCheck size={16} className="text-emerald-400" />
-          <span>Local Vault Encrypted · IndexedDB Storage</span>
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-5">
+          <div>
+            <div className="flex items-center gap-2.5 mb-2 flex-wrap">
+              <AnimePulseBeacon color="emerald" size="sm" label="TREASURY ACTIVE" />
+              <Badge variant="outline" className="border-emerald-500/30 bg-emerald-500/10 text-emerald-400 font-mono text-[10px]">
+                IndexedDB Local Vault
+              </Badge>
+              <Badge variant="outline" className="border-amber-500/30 bg-amber-500/10 text-amber-400 text-[10px]">
+                {deals.length} Deals Analyzed
+              </Badge>
+            </div>
+
+            <h1 data-testid="page-title" className="text-2xl sm:text-3xl font-extrabold text-white font-manrope">
+              {t("finances.title", "Finances")}
+            </h1>
+            <p className="text-xs sm:text-sm text-neutral-400 mt-1 max-w-xl">
+              Showroom Cashflow, Dealer Margins, Procurement &amp; Receivables Registry
+            </p>
+          </div>
+
+          <div className="relative z-10 flex items-center gap-3">
+            <ParticleButton
+              onClick={() => window.print()}
+              className="luxury-particle-cta px-4 py-2.5 text-xs font-bold inline-flex items-center gap-2"
+            >
+              <Download size={15} />
+              <span>Export Treasury Snapshot</span>
+            </ParticleButton>
+          </div>
         </div>
       </div>
 
       <div
-        className="workflow-message luxury-finances-notice"
+        className="workflow-message luxury-finances-notice mb-6"
         data-testid="local-finances-notice"
       >
         <Sparkles size={15} className="text-amber-400" />
@@ -348,88 +392,106 @@ export const LocalFinances = () => {
         </p>
       )}
 
-      {/* 5-Card Luxury Financial Treasury Grid */}
-      <div className="finances-treasury-grid">
-        {/* Card 1: Selling Total (Gold) */}
-        <div className="finances-card card-gold">
-          <div className="finances-card-top">
-            <span className="finances-card-label">{t("finances.selling_total", "Selling Total")}</span>
-            <div className="finances-orb orb-gold">
-              <TrendingUp size={20} />
+      {/* ── 5-Card KokonutUI SpotlightCard Grid + Motion Counters ── */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5 mb-6">
+        {/* Card 1: Selling Total */}
+        <SpotlightCard
+          spotlightColor="rgba(245, 158, 11, 0.15)"
+          className="p-4 border-neutral-800 bg-neutral-900/80 shadow-xl"
+        >
+          <div className="flex items-center justify-between text-neutral-400 text-xs font-semibold">
+            <span>{t("finances.selling_total", "Selling Total")}</span>
+            <div className="w-8 h-8 rounded-lg bg-amber-500/15 text-amber-400 flex items-center justify-center">
+              <TrendingUp size={16} />
             </div>
           </div>
-          <div className="finances-val gold-val">
+          <div className="text-2xl font-extrabold text-white font-manrope mt-2">
             {loading ? "…" : money(sellingTotal)}
           </div>
-          <div className="finances-chip gold-chip">
-            <span>Gross Sales Volume</span>
-          </div>
-        </div>
+          <span className="text-[10px] text-amber-400 mt-1 block font-medium">Gross Sales Volume</span>
+        </SpotlightCard>
 
-        {/* Card 2: Purchase Total (Blue) */}
-        <div className="finances-card card-blue">
-          <div className="finances-card-top">
-            <span className="finances-card-label">{t("finances.purchase_total", "Purchase Total")}</span>
-            <div className="finances-orb orb-blue">
-              <ArrowDownLeft size={20} />
+        {/* Card 2: Purchase Total */}
+        <SpotlightCard
+          spotlightColor="rgba(56, 189, 248, 0.15)"
+          className="p-4 border-neutral-800 bg-neutral-900/80 shadow-xl"
+        >
+          <div className="flex items-center justify-between text-neutral-400 text-xs font-semibold">
+            <span>{t("finances.purchase_total", "Purchase Total")}</span>
+            <div className="w-8 h-8 rounded-lg bg-sky-500/15 text-sky-400 flex items-center justify-center">
+              <ArrowDownLeft size={16} />
             </div>
           </div>
-          <div className="finances-val">
+          <div className="text-2xl font-extrabold text-white font-manrope mt-2">
             {loading ? "…" : money(purchaseTotal)}
           </div>
-          <div className="finances-chip blue-chip">
-            <span>Fleet Procurement Cost</span>
-          </div>
-        </div>
+          <span className="text-[10px] text-sky-400 mt-1 block font-medium">Fleet Procurement Cost</span>
+        </SpotlightCard>
 
-        {/* Card 3: Realized Commission (Emerald) */}
-        <div className="finances-card card-emerald">
-          <div className="finances-card-top">
-            <span className="finances-card-label">{t("finances.commission", "Net Margin")}</span>
-            <div className="finances-orb orb-emerald">
-              <CircleDollarSign size={20} />
+        {/* Card 3: Realized Commission */}
+        <SpotlightCard
+          spotlightColor="rgba(16, 185, 129, 0.18)"
+          className="p-4 border-neutral-800 bg-neutral-900/80 shadow-xl"
+        >
+          <div className="flex items-center justify-between text-neutral-400 text-xs font-semibold">
+            <span>{t("finances.commission", "Net Margin")}</span>
+            <div className="w-8 h-8 rounded-lg bg-emerald-500/15 text-emerald-400 flex items-center justify-center">
+              <CircleDollarSign size={16} />
             </div>
           </div>
-          <div className="finances-val emerald-val">
+          <div className="text-2xl font-extrabold text-emerald-400 font-manrope mt-2">
             {loading ? "…" : money(totalCommission)}
           </div>
-          <div className="finances-chip emerald-chip">
-            <CheckCircle2 size={12} />
-            <span>{`+${marginPercent}% Profit Margin`}</span>
-          </div>
-        </div>
+          <span className="text-[10px] text-emerald-400 mt-1 block font-medium">+{marginPercent}% Profit Yield</span>
+        </SpotlightCard>
 
-        {/* Card 4: Received from Buyers (Cyan) */}
-        <div className="finances-card card-cyan">
-          <div className="finances-card-top">
-            <span className="finances-card-label">{t("finances.received_from_buyers", "Received From Buyers")}</span>
-            <div className="finances-orb orb-cyan">
-              <WalletCards size={20} />
+        {/* Card 4: Received from Buyers */}
+        <SpotlightCard
+          spotlightColor="rgba(14, 165, 233, 0.15)"
+          className="p-4 border-neutral-800 bg-neutral-900/80 shadow-xl"
+        >
+          <div className="flex items-center justify-between text-neutral-400 text-xs font-semibold">
+            <span>{t("finances.received_from_buyers", "Buyer Inflows")}</span>
+            <div className="w-8 h-8 rounded-lg bg-cyan-500/15 text-cyan-400 flex items-center justify-center">
+              <WalletCards size={16} />
             </div>
           </div>
-          <div className="finances-val cyan-val">
+          <div className="text-2xl font-extrabold text-white font-manrope mt-2">
             {loading ? "…" : money(receivedFromBuyers)}
           </div>
-          <div className="finances-chip cyan-chip">
-            <span>{`${collectionRatio}% Inflow Recovered`}</span>
-          </div>
-        </div>
+          <span className="text-[10px] text-cyan-400 mt-1 block font-medium">{collectionRatio}% Inflow Recovered</span>
+        </SpotlightCard>
 
-        {/* Card 5: Paid to Sellers (Purple) */}
-        <div className="finances-card card-purple">
-          <div className="finances-card-top">
-            <span className="finances-card-label">{t("finances.paid_to_sellers", "Paid To Sellers")}</span>
-            <div className="finances-orb orb-purple">
-              <Building2 size={20} />
+        {/* Card 5: Paid to Sellers */}
+        <SpotlightCard
+          spotlightColor="rgba(168, 85, 247, 0.15)"
+          className="p-4 border-neutral-800 bg-neutral-900/80 shadow-xl"
+        >
+          <div className="flex items-center justify-between text-neutral-400 text-xs font-semibold">
+            <span>{t("finances.paid_to_sellers", "Seller Payouts")}</span>
+            <div className="w-8 h-8 rounded-lg bg-purple-500/15 text-purple-400 flex items-center justify-center">
+              <Building2 size={16} />
             </div>
           </div>
-          <div className="finances-val">
+          <div className="text-2xl font-extrabold text-white font-manrope mt-2">
             {loading ? "…" : money(paidToSellers)}
           </div>
-          <div className="finances-chip purple-chip">
-            <span>{`${sellerPaymentRatio}% Disbursed`}</span>
-          </div>
-        </div>
+          <span className="text-[10px] text-purple-400 mt-1 block font-medium">{sellerPaymentRatio}% Disbursed</span>
+        </SpotlightCard>
+      </div>
+
+      {/* ── 4. Anime.js v4 Real-Time Liquidity Trajectory ── */}
+      <div className="mb-6">
+        <AnimeCashflowFlow
+          inflow={receivedFromBuyers}
+          outflow={paidToSellers + maintenanceTotal}
+          margin={totalCommission}
+        />
+      </div>
+
+      {/* ── 5. Bklit Fleet Valuation & Sales Velocity Chart ── */}
+      <div className="mb-6">
+        <FleetValuationAreaChart />
       </div>
 
       {/* Cashflow Recovery & Balance Analysis Card */}
@@ -502,6 +564,6 @@ export const LocalFinances = () => {
           ))}
         </dl>
       </div>
-    </div>
+    </motion.div>
   );
 };

@@ -493,7 +493,7 @@ export default function LoginPage() {
                 </div>
                 <div>
                   <div className="floating-card-title">Royal Enfield Hunter 350</div>
-                  <div className="floating-card-sub">Deal #MM-26-0042 · Handed Over</div>
+                  <div className="floating-card-sub">Deal #Bill-042 · Handed Over</div>
                 </div>
               </div>
               <div className="floating-card-detail">

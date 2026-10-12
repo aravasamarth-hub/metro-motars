@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { BrowserRouter, NavLink, Route, Routes, useLocation, useNavigate, Navigate } from "react-router-dom";
 import { ArrowLeft, ArrowUpRight, Bike, BriefcaseBusiness, CalendarDays, Camera, Check, ChevronDown, CircleDollarSign, ClipboardList, Clock, CreditCard, LayoutDashboard, LogOut, Menu, MoreHorizontal, Moon, Pencil, Phone, Plus, Printer, RefreshCw, Search, Settings as SettingsIcon, ShieldCheck, Sparkles, Sun, Trash2, UserCheck, UsersRound, WalletCards, X, Zap } from "lucide-react";
 import "@/App.css";
+import "@/styles/luxury-design.css";
 import FunctionalNewDeal from "@/components/FunctionalNewDeal";
 import FunctionalDashboard from "@/components/FunctionalDashboard";
 import FunctionalDeals from "@/components/FunctionalDeals";
@@ -18,8 +19,25 @@ import { AuthProvider, useAuth } from "@/context/AuthContext";
 import { LanguageProvider, useLanguage } from "@/features/i18n/LanguageContext";
 import { LanguageSwitcher } from "@/features/i18n/LanguageSwitcher";
 
+// 1. shadcn/ui
+import { Badge } from "@/components/ui/badge";
+
+// 2. KokonutUI
+import FloatingPaths from "@/components/kokonut/BackgroundPaths";
+import SpotlightCard from "@/components/kokonut/SpotlightCard";
+import ParticleButton from "@/components/kokonut/ParticleButton";
+
+// 3. Motion (motion.dev)
+import { motion } from "motion/react";
+import { MotionCounter } from "@/components/motion/MotionCounter";
+
+// 4. Anime.js v4
+import AnimePulseBeacon from "@/components/anime/AnimePulseBeacon";
+
+// 5. Bklit data visualizations
+import { InspectionRadialGauge } from "@/components/bklit/InspectionRadialGauge";
+
 const navItems = [
-  ["nav.showcase", "VIP Showcase", "/portal", Sparkles],
   ["nav.dashboard", "Dashboard", "/", LayoutDashboard],
   ["nav.deals", "Deals", "/deals", BriefcaseBusiness],
   ["nav.new_deal", "New Deal", "/new-deal", Plus],
@@ -79,6 +97,19 @@ function AppShell({ children, dark, setDark }) {
           ))}
         </nav>
         <div className="sidebar-footer">
+          <button
+            type="button"
+            className="sidebar-vip-pill"
+            onClick={() => navigate("/showcase")}
+            title="Open 5-Library VIP Automotive Showcase"
+            data-testid="sidebar-vip-showcase"
+          >
+            <span style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+              <Sparkles size={14} className="text-amber-400" />
+              <span>VIP Showcase</span>
+            </span>
+            <span style={{ fontSize: "10px", background: "rgba(245, 158, 11, 0.2)", padding: "1px 6px", borderRadius: "4px" }}>5 Libs</span>
+          </button>
           <div className="support-card">
             <Zap size={17} />
             <div>
@@ -229,34 +260,66 @@ function Settings() {
   };
 
   return (
-    <div className="settings-page-luxury">
-      <div className="page-header settings-luxury-header">
-        <div>
-          <div className="eyebrow settings-eyebrow">
-            <span className="eyebrow-beacon" />
-            <span>{t("settings.eyebrow", "SHOWROOM PREFERENCES & PROFILE ATELIER")}</span>
+    <motion.div
+      initial={{ opacity: 0, y: 14 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.35, ease: "easeOut" }}
+      className="settings-page-luxury"
+    >
+      {/* ── Luxury Preferences Hero (With KokonutUI FloatingPaths) ── */}
+      <div className="luxury-hero-container relative mb-6">
+        <FloatingPaths position={1} />
+
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-5">
+          <div>
+            <div className="flex items-center gap-2.5 mb-2 flex-wrap">
+              <AnimePulseBeacon color="gold" size="sm" label="SHOWROOM ATELIER" />
+              <Badge variant="outline" className="border-amber-500/30 bg-amber-500/10 text-amber-400 font-mono text-[10px]">
+                Owner Profile: Alex Kumar
+              </Badge>
+              <Badge variant="outline" className="border-emerald-500/30 bg-emerald-500/10 text-emerald-400 text-[10px]">
+                Verified Operator
+              </Badge>
+            </div>
+
+            <h1 data-testid="page-title" className="text-2xl sm:text-3xl font-extrabold text-white font-manrope">
+              {t("settings.title", "Settings")}
+            </h1>
+            <p className="text-xs sm:text-sm text-neutral-400 mt-1 max-w-xl">
+              Showroom preferences, operator authentication, and local database storage management.
+            </p>
           </div>
-          <h1 data-testid="page-title" className="settings-hero-title">
-            {t("settings.title", "Settings")}
-          </h1>
-          <p className="settings-hero-subtitle">
-            {t("settings.subtitle", "Manage your profile, showroom preferences, and local demo state.")}
-          </p>
+
+          <div className="relative z-10 flex items-center gap-3">
+            <ParticleButton
+              onClick={reloadDemo}
+              disabled={busy}
+              data-testid="reload-demo-data-top-btn"
+              className="luxury-particle-cta px-4 py-2.5 text-xs font-bold"
+            >
+              <RefreshCw size={14} className={busy ? "animate-spin" : ""} />
+              <span>{t("settings.reload_demo", "Reload Demo Data")}</span>
+            </ParticleButton>
+          </div>
         </div>
       </div>
 
-      <div className="settings-grid luxury-settings-grid">
-        <section className="settings-section luxury-settings-section">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        {/* Account Profile Card */}
+        <SpotlightCard
+          spotlightColor="rgba(245, 158, 11, 0.15)"
+          className="p-6 border-neutral-800 bg-neutral-900/80 shadow-xl"
+        >
           <SectionTitle title={t("settings.account", "Account Profile")} />
           <div className="profile-card luxury-profile-card">
             <div className="large-avatar luxury-avatar-large">AK</div>
             <div className="profile-info-block">
               <h3>Alex Kumar</h3>
               <p>alex@metromotors.in</p>
-              <div className="profile-badge-row">
+              <div className="profile-badge-row flex items-center gap-2 mt-1">
                 <StatusPill tone="gold">{t("settings.owner", "Owner")}</StatusPill>
-                <span className="verified-shield">
-                  <ShieldCheck size={12} className="text-emerald-400" />
+                <span className="verified-shield text-xs flex items-center gap-1 text-emerald-400">
+                  <ShieldCheck size={14} />
                   Verified Operator
                 </span>
               </div>
@@ -270,9 +333,13 @@ function Settings() {
             <SettingField label={t("settings.email_address", "Email address")} value="alex@metromotors.in" />
             <SettingField label={t("settings.role", "Role")} value={t("settings.owner", "Owner")} />
           </div>
-        </section>
+        </SpotlightCard>
 
-        <section className="settings-section luxury-settings-section">
+        {/* Active Sessions Card */}
+        <SpotlightCard
+          spotlightColor="rgba(56, 189, 248, 0.15)"
+          className="p-6 border-neutral-800 bg-neutral-900/80 shadow-xl"
+        >
           <SectionTitle
             title={t("settings.active_sessions", "Active Sessions")}
             action={<StatusPill tone="green">{t("settings.one_active", "1 active")}</StatusPill>}
@@ -285,63 +352,79 @@ function Settings() {
               <b>{t("settings.current_device", "Chrome on Windows")}</b>
               <span>{t("settings.current_location", "Bengaluru, India · Current session")}</span>
             </div>
-            <span className="current-dot">
-              <i />
+            <span className="current-dot flex items-center gap-1.5 text-xs text-emerald-400 font-semibold">
+              <i className="w-2 h-2 rounded-full bg-emerald-400 inline-block animate-ping" />
               {t("settings.active_status", "Active")}
             </span>
           </div>
-        </section>
 
-        <section className="settings-section luxury-settings-section">
-          <SectionTitle title={t("settings.showroom", "Showroom Identity")} />
-          <div className="settings-fields">
-            <SettingField label={t("settings.showroom_name", "Showroom name")} value="Metro Motors" />
-            <SettingField label={t("settings.currency", "Currency")} value={t("settings.currency_val", "Indian Rupee (₹)")} />
-            <SettingField label={t("settings.date_format", "Date format")} value="DD MMM YYYY" />
+          <div className="mt-6 pt-4 border-t border-neutral-800">
+            <SectionTitle title={t("settings.showroom", "Showroom Identity")} />
+            <div className="settings-fields">
+              <SettingField label={t("settings.showroom_name", "Showroom name")} value="Metro Motors" />
+              <SettingField label={t("settings.currency", "Currency")} value={t("settings.currency_val", "Indian Rupee (₹)")} />
+              <SettingField label={t("settings.date_format", "Date format")} value="DD MMM YYYY" />
+            </div>
+            <div className="mt-3">
+              <ParticleButton
+                testid="save-settings-button"
+                className="luxury-particle-cta text-xs px-4 py-2"
+              >
+                <Check size={14} />
+                <span>{t("settings.save_changes", "Save changes")}</span>
+              </ParticleButton>
+            </div>
           </div>
-          <Button primary icon={<Check size={16} />} testid="save-settings-button">
-            {t("settings.save_changes", "Save changes")}
-          </Button>
-        </section>
+        </SpotlightCard>
+      </div>
 
-        <section className="settings-section luxury-settings-section" style={{ gridColumn: "1 / -1" }}>
-          <SectionTitle title={t("settings.demo_data_header", "Showroom Storage & Demo Fleet Data")} />
-          <div className="demo-vault-box">
-            <p className="demo-vault-text">
+      {/* Database Vault & Demo Data Section with Bklit Gauge */}
+      <SpotlightCard
+        spotlightColor="rgba(245, 158, 11, 0.12)"
+        className="p-6 md:p-8 border-neutral-800 bg-neutral-900/80 shadow-2xl mb-6"
+      >
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
+          <div className="md:col-span-2">
+            <SectionTitle title={t("settings.demo_data_header", "Showroom Storage & Demo Fleet Data")} />
+            <p className="demo-vault-text text-sm text-neutral-400 leading-relaxed mt-2">
               {t("settings.demo_data_desc", "Metro Motors comes pre-configured with 7 rich demo vehicle deals (Royal Enfield, KTM Duke, Yamaha MT-15, Honda Activa, Apache RTR, Kawasaki Ninja, and Hero Splendor) complete with vehicle specs, parties, witness details, agent transfers, payments, and verified photo documentation.")}
             </p>
             {demoNotice && (
-              <div className="workflow-message" role="status" data-testid="settings-demo-message" style={{ margin: "4px 0" }}>
-                <Sparkles size={14} className="text-amber-400" />
+              <div className="workflow-message mt-4 flex items-center gap-2 p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs" role="status" data-testid="settings-demo-message">
+                <Sparkles size={16} className="text-amber-400 flex-shrink-0" />
                 <span>{demoNotice}</span>
               </div>
             )}
-            <div className="demo-vault-actions">
-              <button
-                type="button"
-                className="button button-primary"
+            <div className="demo-vault-actions flex gap-3 mt-5 flex-wrap">
+              <ParticleButton
                 onClick={reloadDemo}
                 disabled={busy}
                 data-testid="reload-demo-data-button"
+                className="luxury-particle-cta px-4 py-2 text-xs font-bold"
               >
-                <RefreshCw size={15} className={busy ? "animate-spin" : ""} />
+                <RefreshCw size={14} className={busy ? "animate-spin" : ""} />
                 <span>{t("settings.reload_demo", "Reload Complete Demo Details")}</span>
-              </button>
+              </ParticleButton>
               <button
                 type="button"
-                className="button button-secondary clear-data-btn"
+                className="px-4 py-2 rounded-xl text-xs font-semibold border border-rose-500/30 bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 transition-colors inline-flex items-center gap-2"
                 onClick={clearData}
                 disabled={busy}
                 data-testid="clear-all-data-button"
               >
-                <Trash2 size={15} />
+                <Trash2 size={14} />
                 <span>{t("settings.clear_all_data", "Clear All Records")}</span>
               </button>
             </div>
           </div>
-        </section>
-      </div>
-    </div>
+
+          {/* 5. Bklit Database Integrity & Health Radial Gauge */}
+          <div className="flex justify-center">
+            <InspectionRadialGauge score={100} />
+          </div>
+        </div>
+      </SpotlightCard>
+    </motion.div>
   );
 }
 

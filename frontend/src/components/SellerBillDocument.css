@@ -1,0 +1,603 @@
+/* ==========================================================================
+   METRO MOTORS - SELLER BILL / VEHICLE PURCHASE RECEIPT STYLES
+   Exact A4 Portrait Layout matching Metro Motors Reference Design
+   ========================================================================== */
+
+.seller-bill-wrapper {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 10px 0;
+  box-sizing: border-box;
+  background: transparent;
+}
+
+.seller-bill-sheet {
+  position: relative;
+  width: 794px;
+  min-width: 794px;
+  max-width: 794px;
+  min-height: 1123px;
+  height: 1123px;
+  background-color: #ffffff;
+  color: #0f172a;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+  border: 1.5px solid #0a2342;
+  box-sizing: border-box;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 12px 16px;
+  user-select: text;
+}
+
+/* ── Top Header ────────────────────────────────────────── */
+.sb-header {
+  display: flex;
+  align-items: stretch;
+  border: 1.5px solid #0a2342;
+  margin-bottom: 3px;
+  height: 66px;
+  background: #ffffff;
+  flex-shrink: 0;
+}
+
+.sb-header-logo-box {
+  flex: 0 0 280px;
+  background: #0a2342;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  padding: 5px 14px;
+  gap: 12px;
+}
+
+.sb-header-logo-icon {
+  width: 40px;
+  height: 40px;
+  color: #ffffff;
+  flex-shrink: 0;
+}
+
+.sb-header-brand-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.sb-brand-name {
+  font-size: 19.5px;
+  font-weight: 900;
+  letter-spacing: 1.2px;
+  line-height: 1.1;
+  color: #ffffff;
+}
+
+.sb-brand-tagline {
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  color: #facc15;
+  margin-top: 2px;
+  text-transform: uppercase;
+}
+
+.sb-header-title-box {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 3px 8px;
+  border-right: 1.5px solid #0a2342;
+}
+
+.sb-main-title {
+  font-size: 14px;
+  font-weight: 900;
+  color: #0a2342;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.sb-sub-title-1 {
+  font-size: 9.5px;
+  font-weight: 800;
+  color: #1e293b;
+  letter-spacing: 0.8px;
+  margin-top: 2px;
+  text-transform: uppercase;
+}
+
+.sb-sub-title-2 {
+  font-size: 8px;
+  font-weight: 700;
+  color: #475569;
+  letter-spacing: 0.5px;
+  margin-top: 1px;
+  text-transform: uppercase;
+}
+
+.sb-header-meta-box {
+  flex: 0 0 170px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 4px 10px;
+  font-size: 9px;
+  line-height: 1.45;
+  background: #f8fafc;
+}
+
+.sb-meta-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px;
+}
+
+.sb-meta-label {
+  font-weight: 700;
+  color: #475569;
+  white-space: nowrap;
+  font-size: 9px;
+}
+
+.sb-meta-val {
+  font-weight: 800;
+  color: #0a2342;
+  font-family: monospace;
+  font-size: 10px;
+  text-align: right;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Section Bars ────────────────────────────────────────── */
+.sb-section-bar {
+  background: #0a2342;
+  color: #ffffff;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  padding: 3.5px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 4px;
+  margin-bottom: 3px;
+  flex-shrink: 0;
+}
+
+.sb-section-subtext {
+  font-size: 9px;
+  font-weight: 600;
+  color: #93c5fd;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+/* ── Section 1: Owner Details ──────────────────────────── */
+.sb-owner-grid {
+  display: flex;
+  align-items: stretch;
+  gap: 10px;
+  border: 1px solid #cbd5e1;
+  padding: 6px;
+  background: #ffffff;
+}
+
+.sb-photo-cell {
+  width: 100px;
+  min-width: 100px;
+  height: 124px;
+  border: 1px solid #94a3b8;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #f8fafc;
+  overflow: hidden;
+  position: relative;
+}
+
+.sb-photo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.sb-photo-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  color: #94a3b8;
+}
+
+.sb-photo-caption {
+  font-size: 7.5px;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  margin-top: 2px;
+}
+
+.sb-table-fields {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2.5px;
+  justify-content: space-between;
+}
+
+.sb-field-line {
+  display: flex;
+  align-items: baseline;
+  font-size: 9.8px;
+  line-height: 1.32;
+}
+
+.sb-field-label {
+  width: 120px;
+  min-width: 120px;
+  font-weight: 700;
+  color: #1e293b;
+  white-space: nowrap;
+  font-size: 9.8px;
+}
+
+.sb-field-colon {
+  width: 10px;
+  font-weight: 700;
+  color: #64748b;
+  text-align: center;
+  font-size: 9.8px;
+}
+
+.sb-field-value {
+  flex: 1;
+  border-bottom: 1px solid #94a3b8;
+  font-weight: 700;
+  color: #0a2342;
+  padding: 0 4px 1px 4px;
+  min-height: 13.5px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 9.8px;
+}
+
+.sb-field-value.empty {
+  border-bottom: 1px solid #cbd5e1;
+  color: #94a3b8;
+}
+
+.sb-signatures-cell {
+  width: 118px;
+  min-width: 118px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.sb-sig-box {
+  flex: 1;
+  border: 1px solid #94a3b8;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 3px;
+  background: #f8fafc;
+  min-height: 56px;
+  position: relative;
+}
+
+.sb-sig-img {
+  max-width: 90%;
+  max-height: 38px;
+  object-fit: contain;
+  margin-bottom: 2px;
+}
+
+.sb-sig-label {
+  font-size: 7.5px;
+  font-weight: 700;
+  color: #475569;
+  text-transform: uppercase;
+  letter-spacing: 0.2px;
+  border-top: 1px dashed #cbd5e1;
+  width: 100%;
+  text-align: center;
+  padding-top: 2px;
+}
+
+/* ── Section 2: Amount Details ─────────────────────────── */
+.sb-amount-container {
+  border: 1px solid #cbd5e1;
+  padding: 6px 10px;
+  background: #ffffff;
+}
+
+.sb-amount-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
+}
+
+.sb-amount-card {
+  border: 1.5px solid #0a2342;
+  border-radius: 4px;
+  background: #f8fafc;
+  padding: 6px 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  min-height: 48px;
+}
+
+.sb-amount-card-title {
+  font-size: 9px;
+  font-weight: 800;
+  color: #1e293b;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  margin-bottom: 3px;
+}
+
+.sb-amount-card-val {
+  font-size: 17.5px;
+  font-weight: 900;
+  color: #0a2342;
+  letter-spacing: 0.3px;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.sb-amount-card-val.paid {
+  color: #047857;
+}
+
+.sb-amount-card-val.pending {
+  color: #b45309;
+}
+
+.sb-amount-meta-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 4px;
+  padding-top: 4px;
+  border-top: 1px solid #e2e8f0;
+  font-size: 9px;
+  color: #334155;
+}
+
+.sb-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 3px;
+  font-size: 8.5px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.sb-badge.paid {
+  background: #d1fae5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+}
+
+.sb-badge.partial {
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fde68a;
+}
+
+.sb-badge.pending {
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+}
+
+/* ── Section 3: Vehicle Details ────────────────────────── */
+.sb-vehicle-grid {
+  display: flex;
+  align-items: stretch;
+  gap: 10px;
+  border: 1px solid #cbd5e1;
+  padding: 6px;
+  background: #ffffff;
+}
+
+.sb-vehicle-photo-cell {
+  width: 105px;
+  min-width: 105px;
+  height: 102px;
+  border: 1px solid #94a3b8;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #f8fafc;
+  overflow: hidden;
+  position: relative;
+}
+
+.sb-vehicle-specs {
+  flex: 1.25;
+  display: flex;
+  flex-direction: column;
+  gap: 2.5px;
+  justify-content: space-between;
+}
+
+.sb-vehicle-compliance {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2.5px;
+  justify-content: space-between;
+  border-left: 1px dashed #cbd5e1;
+  padding-left: 10px;
+}
+
+/* ── Section 4: Witness Details ────────────────────────── */
+.sb-witness-grid {
+  display: flex;
+  align-items: stretch;
+  gap: 10px;
+  border: 1px solid #cbd5e1;
+  padding: 6px;
+  background: #ffffff;
+}
+
+.sb-witness-photo-cell {
+  width: 80px;
+  min-width: 80px;
+  height: 62px;
+  border: 1px solid #94a3b8;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #f8fafc;
+  overflow: hidden;
+}
+
+.sb-witness-fields {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  justify-content: center;
+}
+
+.sb-witness-sigs {
+  width: 180px;
+  min-width: 180px;
+  display: flex;
+  gap: 8px;
+}
+
+/* ── Section 5: Declaration ────────────────────────────── */
+.sb-declaration-container {
+  border: 1px solid #cbd5e1;
+  padding: 8px 12px;
+  background: #ffffff;
+  font-size: 11px;
+  line-height: 1.45;
+  color: #0f172a;
+}
+
+.sb-declaration-list {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.sb-declaration-list li {
+  margin-bottom: 3.5px;
+}
+
+.sb-declaration-list li:last-child {
+  margin-bottom: 0;
+}
+
+.sb-declaration-list li strong {
+  color: #0a2342;
+  font-weight: 800;
+}
+
+/* ── Bottom Signatures ─────────────────────────────────── */
+.sb-bottom-signatures {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 12px;
+  margin-top: 5px;
+  flex-shrink: 0;
+}
+
+.sb-bottom-sig-box {
+  border: 1px solid #94a3b8;
+  background: #ffffff;
+  height: 58px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 4px;
+  text-align: center;
+}
+
+.sb-bottom-sig-line {
+  width: 82%;
+  border-top: 1px solid #475569;
+  margin-bottom: 3px;
+}
+
+.sb-bottom-sig-title {
+  font-size: 9.2px;
+  font-weight: 800;
+  color: #0a2342;
+  text-transform: uppercase;
+}
+
+.sb-bottom-sig-sub {
+  font-size: 7.8px;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.sb-bottom-sig-img {
+  max-width: 90%;
+  max-height: 28px;
+  object-fit: contain;
+  margin-bottom: 2px;
+}
+
+/* ── Print Isolation ───────────────────────────────────── */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 0;
+  }
+
+  body {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+  }
+
+  .seller-bill-wrapper {
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 210mm !important;
+    height: 297mm !important;
+    display: block !important;
+  }
+
+  .seller-bill-sheet {
+    box-shadow: none !important;
+    width: 210mm !important;
+    height: 297mm !important;
+    min-width: 210mm !important;
+    min-height: 297mm !important;
+    border: none !important;
+    padding: 8mm 10mm !important;
+    page-break-after: avoid !important;
+    page-break-inside: avoid !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}

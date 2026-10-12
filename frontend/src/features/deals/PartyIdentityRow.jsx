@@ -41,24 +41,44 @@ export function PartyIdentityRow({
   onChange,
   readOnly = false,
   dealerToggle = null,
+  embedded = false,
+  showHeader = true,
+  title = null,
+  subtitle = null,
 }) {
   const { t } = useLanguage();
 
+  const isWitness = group.startsWith("witness");
+  const isSellerWitness = group === "witness-1" || group === "seller-witness";
+  const isBuyerWitness = group === "witness-2" || group === "buyer-witness";
+
   // Photo slot keys
   const portraitKey = `${group}-1`;
+  const portraitAltKey = isWitness ? group : null;
   const signatureKey = `${group}-signature`;
-  const signatureAltKey = `${group}-8`;
+  const signatureAltKey = isWitness ? `${group}-2` : `${group}-8`;
   const thumbKey = `${group}-thumb`;
-  const thumbAltKey = `${group}-thumb-impression`;
+  const thumbAltKey = isWitness ? `${group}-3` : `${group}-thumb-impression`;
 
   // Resolved media objects
-  const portraitPhoto = photos[portraitKey] || photos[`${group}-portrait`] || photos[`${group}_photo`];
-  const signaturePhoto = photos[signatureKey] || photos[signatureAltKey] || photos[`${group}_signature`];
-  const thumbPhoto = photos[thumbKey] || photos[thumbAltKey] || photos[`${group}_thumb`];
+  const portraitPhoto =
+    photos[portraitKey] ||
+    (portraitAltKey ? photos[portraitAltKey] : null) ||
+    photos[`${group}-portrait`] ||
+    photos[`${group}_photo`];
+  const signaturePhoto =
+    photos[signatureKey] ||
+    photos[signatureAltKey] ||
+    photos[`${group}_signature`];
+  const thumbPhoto =
+    photos[thumbKey] ||
+    photos[thumbAltKey] ||
+    photos[`${group}-thumb-impression`] ||
+    photos[`${group}_thumb`];
 
   // Modals state
   const [signaturePadOpen, setSignaturePadOpen] = useState(false);
-  const [cameraModalConfig, setCameraModalConfig] = useState(null); // { isOpen, title, targetKey, guideType }
+  const [cameraModalConfig, setCameraModalConfig] = useState(null); // { isOpen, title, targetKey, altKey, guideType }
   const [zoomPhoto, setZoomPhoto] = useState(null); // { photo, title }
 
   // Hidden file inputs
@@ -68,7 +88,54 @@ export function PartyIdentityRow({
   const thumbFileInput = useRef(null);
   const thumbCameraInput = useRef(null);
 
-  const groupLabel = group === "seller" ? t("step.seller", "Seller") : t("step.buyer", "Buyer");
+  const groupLabel = isWitness
+    ? (isSellerWitness
+        ? t("section.seller_witness", "Seller witness")
+        : isBuyerWitness
+        ? t("section.buyer_witness", "Buyer witness")
+        : t("section.witness_details", "Witness"))
+    : (group === "seller"
+        ? t("step.seller", "Seller")
+        : t("step.buyer", "Buyer"));
+
+  const defaultTitle = isWitness
+    ? (isSellerWitness
+        ? t("identity.seller_witness_title", "Witness verification & identity")
+        : isBuyerWitness
+        ? t("identity.buyer_witness_title", "Witness verification & identity")
+        : t("identity.witness_title", "Witness verification & identity"))
+    : (group === "seller"
+        ? t("identity.seller_title", "Seller Verification & Identity")
+        : t("identity.buyer_title", "Buyer Verification & Identity"));
+
+  const defaultSubtitle = isWitness
+    ? t("identity.witness_subtitle", "Photo, digital signature, and thumb impression")
+    : t("identity.row_subtitle", "Photo, digital signature, and thumb impression");
+
+  const displayTitle = title || defaultTitle;
+  const displaySubtitle = subtitle || defaultSubtitle;
+
+  const card1Title = isWitness
+    ? (isSellerWitness
+        ? t("slot.seller_witness_photo", "Witness Photo")
+        : isBuyerWitness
+        ? t("slot.buyer_witness_photo", "Witness Photo")
+        : t("photo.witness_photo", "Witness Photo"))
+    : (group === "seller"
+        ? t("photo.seller_photo", "Seller Photo")
+        : t("photo.buyer_photo", "Buyer Photo"));
+
+  const card2Title = isWitness
+    ? t("identity.witness_sig", "Witness Signature")
+    : (group === "seller"
+        ? t("identity.seller_sig", "Seller Signature")
+        : t("identity.buyer_sig", "Buyer Signature"));
+
+  const card3Title = isWitness
+    ? t("identity.witness_thumb", "Witness Fingerprint")
+    : (group === "seller"
+        ? t("identity.seller_thumb", "Seller Thumb")
+        : t("identity.buyer_thumb", "Buyer Thumb"));
 
   // Handle generic file selection
   const handleFileChoose = async (targetKey, file, altKey = null) => {
@@ -82,24 +149,42 @@ export function PartyIdentityRow({
       return;
     }
 
-    const photoObj = {
-      name: file.name,
-      type: file.type,
-      size: file.size,
-      blob: file,
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const dataUrl = e.target.result;
+      const photoObj = {
+        name: file.name,
+        type: file.type,
+        size: file.size,
+        blob: file,
+        dataUrl,
+        url: dataUrl,
+      };
+      onChange(targetKey, photoObj);
+      if (altKey) {
+        setTimeout(() => onChange(altKey, photoObj), 0);
+      }
     };
-
-    onChange(targetKey, photoObj);
-    if (altKey) {
-      setTimeout(() => onChange(altKey, photoObj), 0);
-    }
+    reader.readAsDataURL(file);
   };
 
   // Handle direct photo object (from canvas or webcam)
   const handleDirectSave = (targetKey, photoObj, altKey = null) => {
-    onChange(targetKey, photoObj);
+    if (!photoObj) return;
+    const prepared = { ...photoObj };
+    if (!prepared.dataUrl && !prepared.url && prepared.blob) {
+      try {
+        prepared.url = URL.createObjectURL(prepared.blob);
+      } catch (e) {
+        console.warn("Could not create object URL", e);
+      }
+    }
+    if (!prepared.dataUrl && prepared.url && prepared.url.startsWith("data:")) {
+      prepared.dataUrl = prepared.url;
+    }
+    onChange(targetKey, prepared);
     if (altKey) {
-      setTimeout(() => onChange(altKey, photoObj), 0);
+      setTimeout(() => onChange(altKey, prepared), 0);
     }
   };
 
@@ -111,24 +196,25 @@ export function PartyIdentityRow({
     }
   };
 
+  const RootContainer = embedded ? "div" : "section";
+  const rootClass = embedded
+    ? "party-identity-section embedded"
+    : "wizard-group party-identity-section";
+
   return (
-    <section className="wizard-group party-identity-section" data-testid={`${group}-identity-section`}>
+    <RootContainer className={rootClass} data-testid={`${group}-identity-section`}>
       {/* Header bar with title & dealer toggle */}
-      <div className="section-title identity-section-title">
-        <div className="identity-title-lockup">
-          <h2>
-            {group === "seller"
-              ? t("identity.seller_title", "Seller Verification & Identity")
-              : t("identity.buyer_title", "Buyer Verification & Identity")}
-          </h2>
-          <span className="identity-sub-label">
-            {t("identity.row_subtitle", "Photo, digital signature, and thumb impression")}
-          </span>
+      {showHeader && (
+        <div className="section-title identity-section-title">
+          <div className="identity-title-lockup">
+            <h2>{displayTitle}</h2>
+            <span className="identity-sub-label">{displaySubtitle}</span>
+          </div>
+          <div className="photo-section-actions">
+            {dealerToggle}
+          </div>
         </div>
-        <div className="photo-section-actions">
-          {dealerToggle}
-        </div>
-      </div>
+      )}
 
       {/* 3-Card Identity Grid */}
       <div className="party-identity-grid" data-testid={`${group}-identity-grid`}>
@@ -137,9 +223,7 @@ export function PartyIdentityRow({
           <div className="identity-card-header">
             <div className="identity-header-left">
               <User size={16} className="identity-header-icon" />
-              <span className="identity-card-title">
-                {group === "seller" ? t("photo.seller_photo", "Seller Photo") : t("photo.buyer_photo", "Buyer Photo")}
-              </span>
+              <span className="identity-card-title">{card1Title}</span>
             </div>
             <span className={`identity-badge ${portraitPhoto ? "badge-success" : "badge-optional"}`}>
               {portraitPhoto ? (
@@ -172,7 +256,9 @@ export function PartyIdentityRow({
                     <circle cx="21" cy="15" r="8" fill="#4d6070" />
                     <ellipse cx="21" cy="36" rx="13" ry="8" fill="#4d6070" />
                   </svg>
-                  <span className="identity-placeholder-hint">Passport / Photo</span>
+                  <span className="identity-placeholder-hint">
+                    {isWitness ? t("identity.witness_photo_hint", "Witness Photo") : t("identity.passport_hint", "Passport / Photo")}
+                  </span>
                 </div>
               )}
             </div>
@@ -188,6 +274,7 @@ export function PartyIdentityRow({
                       isOpen: true,
                       title: `${groupLabel} Photo`,
                       targetKey: portraitKey,
+                      altKey: portraitAltKey,
                       guideType: "portrait",
                     })
                   }
@@ -228,7 +315,7 @@ export function PartyIdentityRow({
                     <button
                       type="button"
                       className="identity-link-action danger"
-                      onClick={() => handleRemove(portraitKey)}
+                      onClick={() => handleRemove(portraitKey, portraitAltKey)}
                     >
                       <Trash2 size={12} /> {t("photo.remove", "Remove")}
                     </button>
@@ -256,9 +343,7 @@ export function PartyIdentityRow({
           <div className="identity-card-header">
             <div className="identity-header-left">
               <PenTool size={16} className="identity-header-icon gold-icon" />
-              <span className="identity-card-title">
-                {group === "seller" ? t("identity.seller_sig", "Seller Signature") : t("identity.buyer_sig", "Buyer Signature")}
-              </span>
+              <span className="identity-card-title">{card2Title}</span>
             </div>
             <span className={`identity-badge ${signaturePhoto ? "badge-success" : "badge-optional"}`}>
               {signaturePhoto ? (
@@ -393,9 +478,7 @@ export function PartyIdentityRow({
           <div className="identity-card-header">
             <div className="identity-header-left">
               <Fingerprint size={16} className="identity-header-icon blue-icon" />
-              <span className="identity-card-title">
-                {group === "seller" ? t("identity.seller_thumb", "Seller Thumb") : t("identity.buyer_thumb", "Buyer Thumb")}
-              </span>
+              <span className="identity-card-title">{card3Title}</span>
             </div>
             <span className={`identity-badge ${thumbPhoto ? "badge-success" : "badge-optional"}`}>
               {thumbPhoto ? (
@@ -429,7 +512,9 @@ export function PartyIdentityRow({
               ) : (
                 <div className="identity-thumb-placeholder">
                   <Fingerprint size={38} className="thumb-placeholder-icon" strokeWidth={1.5} />
-                  <span className="identity-placeholder-hint">{t("identity.thumb_box_hint", "Inked thumb impression")}</span>
+                  <span className="identity-placeholder-hint">
+                    {isWitness ? t("identity.fingerprint_hint", "Fingerprint / Inked Thumb") : t("identity.thumb_box_hint", "Inked thumb impression")}
+                  </span>
                 </div>
               )}
             </div>
@@ -443,7 +528,7 @@ export function PartyIdentityRow({
                   onClick={() =>
                     setCameraModalConfig({
                       isOpen: true,
-                      title: `${groupLabel} Thumb Impression`,
+                      title: isWitness ? `${groupLabel} Fingerprint` : `${groupLabel} Thumb Impression`,
                       targetKey: thumbKey,
                       altKey: thumbAltKey,
                       guideType: "thumb",
@@ -518,7 +603,7 @@ export function PartyIdentityRow({
             type="file"
             hidden
             accept="image/jpeg,image/png,image/webp"
-            onChange={(e) => handleFileChoose(portraitKey, e.target.files?.[0])}
+            onChange={(e) => handleFileChoose(portraitKey, e.target.files?.[0], portraitAltKey)}
             data-testid={`${group}-portrait-file-input`}
           />
           <input
@@ -588,6 +673,6 @@ export function PartyIdentityRow({
           </DialogContent>
         </Dialog>
       )}
-    </section>
+    </RootContainer>
   );
 }

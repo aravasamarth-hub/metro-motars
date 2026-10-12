@@ -46,10 +46,21 @@ export const grossCommission = (payments) =>
         (Number(payments.selling_price) - Number(payments.purchase_price)) * 100
       ) / 100;
 
+export const VEHICLE_CATEGORIES = [
+  { id: "2-wheeler-with-gear", label: "2 Wheeler with Gear", shortLabel: "2W Geared", icon: "🏍️", badge: "2W Geared" },
+  { id: "2-wheeler-without-gear", label: "2 Wheeler without Gear", shortLabel: "2W Auto", icon: "🛵", badge: "2W Auto" },
+  { id: "4-wheeler-car", label: "4 Wheeler Car", shortLabel: "Car", icon: "🚗", badge: "Car" },
+  { id: "bus", label: "Bus", shortLabel: "Bus", icon: "🚌", badge: "Bus" },
+  { id: "truck", label: "Truck", shortLabel: "Truck", icon: "🚛", badge: "Truck" },
+  { id: "auto-rickshaws", label: "Auto Rickshaws", shortLabel: "Auto", icon: "🛺", badge: "Auto" },
+  { id: "e-rickshaws", label: "E-Rickshaws", shortLabel: "E-Rickshaw", icon: "⚡🛺", badge: "E-Rickshaw" },
+  { id: "tractors", label: "Tractors", shortLabel: "Tractor", icon: "🚜", badge: "Tractor" },
+];
+
 const person = () => ({ name: "", phone: "", alternate_phone: "", father_name: "", email: "", address: "", city: "", state: "Karnataka", pincode: "", id_type: "Aadhaar", id_number: "", pan_number: "", is_dealer: false, dealer_name: "", gst_number: "", dealer_address: "" });
 export function emptyDeal() {
   return { schema_version: 1, id: null, bill_number: "", status: "In Stock", rc_status: "Pending",
-    vehicle: { vehicle_name: "", make: "", model: "", mfg_month: "", year: "", color: "", vehicle_number: "", registration_number: "", registration_date: "", engine_number: "", chassis_number: "", engine_cc: "", fuel_type: "Petrol", transmission: "Manual", odometer: "", ownership: "First Owner", condition: "Good", bought_date: localDay(), sold_date: "", tax: "Paid", tax_valid_until: "", fitness: "Valid", fitness_valid_until: "", insurance: "Active", insurance_policy: "", insurance_valid_until: "", puc_valid_until: "", hypothecation: "No", financier: "", noc: "Not Required", keys: "2", service_history: "" },
+    vehicle: { vehicle_type: "4 Wheeler Car", vehicle_name: "", make: "", model: "", mfg_month: "", year: "", color: "", vehicle_number: "", registration_number: "", registration_date: "", engine_number: "", chassis_number: "", engine_cc: "", fuel_type: "Petrol", transmission: "Manual", odometer: "", ownership: "First Owner", condition: "Good", bought_date: localDay(), sold_date: "", tax: "Paid", tax_valid_until: "", fitness: "Valid", fitness_valid_until: "", insurance: "Active", insurance_policy: "", insurance_valid_until: "", puc_valid_until: "", hypothecation: "No", financier: "", noc: "Not Required", keys: "2", service_history: "" },
     seller: person(), buyer: person(), witnesses: [person(), person()],
     payments: { purchase_price: "", selling_price: "", paid_to_seller: "", received_from_buyer: "", payment_method: "Cash", payment_date: localDay(), transaction_reference: "", notes: "" },
     agent: { name: "", phone: "", email: "", task: "", total_amount: "", amount_paid: "", amount_balance: "" },

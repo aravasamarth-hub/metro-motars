@@ -28,9 +28,10 @@ const slotKeyMap = {
   "Signature": "slot.signature",
   "Purchase agreement": "slot.purchase_agreement",
   "Sale agreement": "slot.sale_agreement",
-  "Additional document": "slot.additional_document",
   "Seller witness photo": "slot.seller_witness_photo",
   "Buyer witness photo": "slot.buyer_witness_photo",
+  "Witness signature": "identity.witness_sig",
+  "Witness thumb impression": "identity.witness_thumb",
 };
 
 export const PhotoPreview = ({ photo, alt, ...props }) => {
@@ -804,11 +805,25 @@ export const PhotoSlots = ({ group, photos, onChange, readOnly = false, dealerTo
     );
   }
 
-  // Witness / vehicle — original compact grid
+  // Witness group — 3-Card Identity Row: Photo | Signature | Fingerprint
+  if (group.startsWith("witness")) {
+    return (
+      <PartyIdentityRow
+        group={group}
+        photos={photos}
+        onChange={onChange}
+        readOnly={readOnly}
+        embedded={true}
+        showHeader={true}
+      />
+    );
+  }
+
+  // Vehicle photos & documents — original compact grid
   return (
     <section className="wizard-group photo-group">
       <div className="section-title">
-        <h2>{group.startsWith("witness") ? t("photo.witness_photo", "Photo") : t("photo.additional_docs", "Photos & documents")}</h2>
+        <h2>{t("photo.additional_docs", "Photos & documents")}</h2>
         <span className="slot-count" data-testid={`${group}-photo-count`}>{count} / {slots.length} {t("photo.photos_count", "photos")}</span>
       </div>
       <div className={`photo-slot-grid ${slots.length === 1 ? "single-photo" : ""}`}>

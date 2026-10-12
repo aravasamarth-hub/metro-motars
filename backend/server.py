@@ -7,7 +7,7 @@ import os
 import uuid
 
 from dotenv import load_dotenv
-from fastapi import APIRouter, FastAPI, HTTPException, status
+from fastapi import APIRouter, FastAPI, HTTPException, status, Response, Request
 from motor.motor_asyncio import AsyncIOMotorClient
 from pydantic import BaseModel, ConfigDict, Field
 from starlette.middleware.cors import CORSMiddleware
@@ -60,6 +60,7 @@ class DealUpdate(BaseModel):
 class VehicleCreate(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
+    vehicle_type: Optional[str] = "4 Wheeler Car"
     vehicle_name: str
     make: str
     model: str
@@ -76,6 +77,7 @@ class VehicleCreate(BaseModel):
 class VehicleUpdate(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
+    vehicle_type: Optional[str] = None
     vehicle_name: Optional[str] = None
     make: Optional[str] = None
     model: Optional[str] = None
@@ -661,6 +663,29 @@ async def finances_summary():
     ordered_months = sorted(monthly.items(), key=lambda item: datetime.strptime(item[0], "%b %Y"))[-12:]
     trend = [{"month": month, "value": round(value, 2)} for month, value in ordered_months]
     return {"total_revenue": round(revenue, 2), "this_month": round(this_month, 2), "pending_dues": round(pending, 2), "total_commission": round(commission, 2), "net_profit": round(revenue - purchase + commission, 2), "monthly_revenue": trend, "revenue_breakdown": {"sales": round(revenue, 2), "purchase_cost": round(purchase, 2), "commission": round(commission, 2)}, "revenue_trend": trend}
+
+
+@api_router.post("/download-pdf")
+async def download_pdf_stream(request: Request):
+    form = await request.form()
+    uploaded_file = form.get("file")
+    filename = form.get("filename", "Seller-Bill.pdf")
+    if not str(filename).endswith(".pdf"):
+        filename = f"{filename}.pdf"
+
+    if uploaded_file and hasattr(uploaded_file, "read"):
+        content = await uploaded_file.read()
+    else:
+        content = b""
+
+    return Response(
+        content=content,
+        media_type="application/pdf",
+        headers={
+            "Content-Disposition": f'attachment; filename="{filename}"',
+            "Content-Type": "application/pdf",
+        },
+    )
 
 
 register_simple_crud("vehicles", "vehicles", "vehicle_id", "VEH", VehicleCreate, VehicleUpdate)

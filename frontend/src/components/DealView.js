@@ -223,7 +223,7 @@ export default function DealView() {
           </section>
         </>
       )}
-      <BillModal deal={deal} isOpen={billOpen} onClose={() => setBillOpen(false)} />
+      <BillModal deal={deal} isOpen={billOpen} onClose={() => setBillOpen(false)} initialDocument="seller-bill" />
       <AgentWhatsAppModal
         isOpen={agentModalOpen}
         onClose={() => setAgentModalOpen(false)}

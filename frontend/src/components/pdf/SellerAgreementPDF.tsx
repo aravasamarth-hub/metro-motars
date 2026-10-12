@@ -277,7 +277,7 @@ function splitAddressLines(text: string, maxLen = 65, maxLines = 2): string[] {
 
 export function SellerAgreementPDF({ deal, resolvedImages }: SellerAgreementProps) {
   // 1. Header mapping
-  const slNo = deal.billNumber || deal.bill_number || "MM-26-0002";
+  const slNo = deal.billNumber || deal.bill_number || "Bill-001";
   const place = deal.place || (deal.seller?.city ? `${deal.seller.city}` : "Davangere");
   const dateValue = formatDisplayDate(
     deal.deliveryDate ||

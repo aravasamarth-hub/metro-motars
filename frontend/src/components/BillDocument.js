@@ -1,7 +1,7 @@
 import React from "react";
-import SaleAgreementBill from "./SaleAgreementBill";
+import SellerBillDocument from "./SellerBillDocument";
 
 export default function BillDocument({ doc, deal }) {
   if (!doc && !deal) return null;
-  return <SaleAgreementBill doc={doc} deal={deal || doc?.deal} />;
+  return <SellerBillDocument deal={deal || doc?.deal || doc} />;
 }

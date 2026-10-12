@@ -206,10 +206,10 @@ export function Seller({
             onClick={() => setPreviewOpen(true)}
             className="agreement-toggle-btn"
             data-testid="preview-seller-agreement-button"
-            title="Preview & Edit Bill"
+            title="Preview & Edit Seller Bill"
           >
             <Printer size={15} />
-            <span>{t("bills.preview_bill", "Preview & Edit Bill")}</span>
+            <span>{t("bills.preview_seller_bill", "Preview & Edit Seller Bill")}</span>
           </button>
 
           <button
@@ -217,10 +217,10 @@ export function Seller({
             onClick={() => setPreviewOpen(true)}
             className="agreement-toggle-btn"
             data-testid="generate-seller-agreement-button"
-            title="Preview, Edit & Download PDF Agreement"
+            title="Preview, Edit & Download Seller Bill PDF"
           >
             <FileDown size={15} />
-            <span>{t("legal.generate_btn", "Generate Bill & Download")}</span>
+            <span>{t("legal.generate_seller_bill_btn", "Generate Seller Bill & Download")}</span>
           </button>
         </div>
       </div>
@@ -237,7 +237,7 @@ export function Seller({
         </div>
       )}
 
-      <BillModal deal={deal} isOpen={previewOpen} onClose={() => setPreviewOpen(false)} />
+      <BillModal deal={deal} isOpen={previewOpen} onClose={() => setPreviewOpen(false)} initialDocument="seller-bill" />
     </div>
   );
 }

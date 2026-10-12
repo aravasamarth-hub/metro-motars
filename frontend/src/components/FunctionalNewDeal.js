@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate, useParams, useLocation, useSearchParams } from "react-router-dom";
+import { motion, AnimatePresence } from "motion/react";
 import {
   ArrowLeft,
   ArrowRight,
@@ -15,6 +16,7 @@ import {
   UserCheck,
   Users,
   Wrench,
+  ShieldCheck,
 } from "lucide-react";
 import { STEPS, getStepStatus } from "@/features/deals/dealModel";
 import { useDealWizard } from "@/features/deals/useDealWizard";
@@ -26,6 +28,25 @@ import { PaymentStep } from "@/features/deals/PaymentStep";
 import { ReviewStep } from "@/features/deals/DealSummary";
 import { ConfirmDialog } from "@/features/deals/LocalUI";
 import { useLanguage } from "@/features/i18n/LanguageContext";
+
+// 1. shadcn/ui
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+
+// 2. KokonutUI
+import FloatingPaths from "@/components/kokonut/BackgroundPaths";
+import SpotlightCard from "@/components/kokonut/SpotlightCard";
+import ParticleButton from "@/components/kokonut/ParticleButton";
+
+// 3. Motion (motion.dev)
+import { MotionCounter } from "@/components/motion/MotionCounter";
+
+// 4. Anime.js v4
+import AnimePulseBeacon from "@/components/anime/AnimePulseBeacon";
+import AnimeDealJourney from "@/components/anime/AnimeDealJourney";
+
+// 5. Bklit
+import { InspectionRadialGauge } from "@/components/bklit/InspectionRadialGauge";
 
 const STEP_ICONS = [Bike, UserCheck, Wrench, Users, Briefcase, CreditCard, FileCheck];
 
@@ -97,54 +118,69 @@ export default function FunctionalNewDeal() {
   }, [dirty]);
 
   return (
-    <div className="local-page wizard-page luxury-wizard">
-      <button className="back-link wizard-back" onClick={back} data-testid="new-deal-back">
-        <ArrowLeft size={16} /> {t("nav.deals", "Deals")}
+    <motion.div
+      initial={{ opacity: 0, y: 14 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.35, ease: "easeOut" }}
+      className="local-page wizard-page luxury-wizard"
+    >
+      <button className="back-link wizard-back mb-3" onClick={back} data-testid="new-deal-back">
+        <ArrowLeft size={16} /> {t("nav.deals", "Back to Deals")}
       </button>
 
-      {/* Header bar with luxury chassis plate & actions */}
-      <div className="page-header luxury-page-header">
-        <div>
-          <div className="eyebrow luxury-eyebrow">
-            <span className="eyebrow-dot" />
-            {t("deal.workspace", "DEAL WORKSPACE")}
-          </div>
-          <h1 data-testid="page-title" className="luxury-page-title">
-            {dealId ? t("deal.edit_deal", "Edit Deal") : t("deal.new_deal", "New Deal")}
-          </h1>
-        </div>
+      {/* ── Luxury Workspace Hero (With KokonutUI FloatingPaths) ── */}
+      <div className="luxury-hero-container relative mb-6">
+        <FloatingPaths position={-1} />
 
-        <div className="wizard-header-actions">
-          <button
-            type="button"
-            className="button button-secondary luxury-autofill-btn"
-            onClick={fillDemoText}
-            disabled={busy || loading}
-            data-testid="auto-fill-demo-text"
-            title="Fills realistic showroom demo records across all wizard steps"
-          >
-            <Sparkles size={15} className="autofill-sparkle-icon" />
-            <span>{t("wizard.fill_demo", "Auto-Fill Demo (No Photos)")}</span>
-          </button>
-
-          {/* Chassis-inspired Bill Number plate */}
-          <div className="chassis-bill-badge" data-testid="wizard-bill-badge">
-            <div className="chassis-bill-header">
-              <span className="chassis-pulse-dot" />
-              <span className="chassis-bill-sub">
-                {t("deal.bill_number", "Bill Sequence")}
-                {!dealId && ` · ${t("deal.preview", "Preview")}`}
-              </span>
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-5">
+          <div>
+            <div className="flex items-center gap-2.5 mb-2 flex-wrap">
+              <AnimePulseBeacon color="gold" size="sm" label="DEAL WORKSPACE CADENCE" />
+              <Badge variant="outline" className="border-amber-500/30 bg-amber-500/10 text-amber-400 font-mono text-[10px]">
+                Step 0{step + 1} of 0{STEPS.length}
+              </Badge>
+              <Badge variant="outline" className="border-emerald-500/30 bg-emerald-500/10 text-emerald-400 text-[10px]">
+                {completedCount} Sections Verified
+              </Badge>
             </div>
-            <strong data-testid="wizard-bill-number" className="chassis-bill-value">
-              {loading ? "…" : deal.bill_number || "MM-26-XXXX"}
-            </strong>
+
+            <h1 data-testid="page-title" className="text-2xl sm:text-3xl font-extrabold text-white font-manrope">
+              {dealId ? t("deal.edit_deal", "Edit Deal") : t("deal.new_deal", "New Deal Workflow")}
+            </h1>
+            <p className="text-xs sm:text-sm text-neutral-400 mt-1 max-w-xl">
+              Precision vehicle specification, legal transfer party records &amp; finance registry
+            </p>
+          </div>
+
+          <div className="relative z-10 flex items-center gap-3 flex-wrap">
+            <Button
+              type="button"
+              variant="outline"
+              className="border-neutral-700 hover:border-amber-500/40 text-xs font-semibold gap-1.5"
+              onClick={fillDemoText}
+              disabled={busy || loading}
+              data-testid="auto-fill-demo-text"
+              title="Fills realistic showroom demo records across all wizard steps"
+            >
+              <Sparkles size={14} className="text-amber-400" />
+              <span>{t("wizard.fill_demo", "Auto-Fill Demo")}</span>
+            </Button>
+
+            {/* Bill Number Plate Badge */}
+            <div className="p-2.5 px-4 rounded-xl border border-amber-500/30 bg-neutral-900/90 text-right shadow-lg">
+              <div className="text-[10px] text-neutral-400 font-semibold uppercase tracking-wider">
+                {t("deal.bill_number", "Bill Sequence")}
+              </div>
+              <div data-testid="wizard-bill-number" className="text-sm font-extrabold text-amber-400 font-mono">
+                {loading ? "…" : deal.bill_number || "Bill-XXX"}
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
       {loading ? (
-        <p role="status" data-testid="wizard-loading" className="luxury-loading">
+        <p role="status" data-testid="wizard-loading" className="luxury-loading text-neutral-400 p-8 text-center">
           {t("deal.opening", "Opening deal workspace…")}
         </p>
       ) : loadError ? (
@@ -153,16 +189,17 @@ export default function FunctionalNewDeal() {
         </div>
       ) : (
         <>
-          {/* Executive Stepper Navigation Track */}
-          <div className="luxury-stepper-container">
-            <div className="luxury-stepper-progress-bar">
-              <div
-                className="luxury-stepper-progress-fill"
-                style={{ width: `${progressPercent}%` }}
+          {/* ── Stepper Navigation Track ── */}
+          <div className="luxury-stepper-container mb-6 bg-neutral-900/60 p-2 rounded-2xl border border-neutral-800 backdrop-blur-xl">
+            <div className="w-full bg-neutral-800 h-1.5 rounded-full mb-3 overflow-hidden">
+              <motion.div
+                className="bg-gradient-to-r from-amber-500 to-amber-300 h-full rounded-full"
+                animate={{ width: `${progressPercent}%` }}
+                transition={{ duration: 0.3 }}
               />
             </div>
 
-            <nav className="wizard-steps-v2 luxury-steps-v2" aria-label="Deal steps" data-testid="wizard-steps">
+            <nav className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-1.5" aria-label="Deal steps" data-testid="wizard-steps">
               {STEPS.map((name, i) => {
                 const active = i === step;
                 const status = getStepStatus(deal, i);
@@ -175,26 +212,38 @@ export default function FunctionalNewDeal() {
                   <button
                     type="button"
                     key={name}
-                    className={`wsv2-item luxury-step-item ${active ? "wsv2-active" : ""} ${
-                      isComplete && !active ? "wsv2-done" : ""
-                    } ${isPartial && !active ? "wsv2-error" : ""}`}
+                    className={`flex items-center gap-2 p-2.5 rounded-xl text-left transition-all border ${
+                      active
+                        ? "bg-amber-500/15 border-amber-500/60 text-amber-400 shadow-md shadow-amber-500/10 font-bold"
+                        : isComplete
+                        ? "bg-emerald-500/5 border-emerald-500/30 text-emerald-400 hover:border-emerald-500/50"
+                        : "bg-transparent border-transparent text-neutral-400 hover:bg-neutral-800/50"
+                    }`}
                     onClick={() => go(i, false)}
                     disabled={busy}
                     aria-current={active ? "step" : undefined}
                     data-testid={`wizard-step-${i + 1}`}
                   >
-                    <span className="wsv2-circle luxury-step-circle">
+                    <div
+                      className={`w-7 h-7 rounded-lg flex items-center justify-center font-bold text-xs flex-shrink-0 ${
+                        active
+                          ? "bg-amber-500 text-neutral-950 font-bold shadow-sm"
+                          : isComplete
+                          ? "bg-emerald-500/20 text-emerald-400"
+                          : "bg-neutral-800 text-neutral-400"
+                      }`}
+                    >
                       {isComplete && !active ? (
-                        <Check size={16} strokeWidth={2.8} />
+                        <Check size={14} strokeWidth={2.8} />
                       ) : isPartial && !active ? (
-                        <AlertCircle size={16} strokeWidth={2.4} />
+                        <AlertCircle size={14} strokeWidth={2.4} />
                       ) : (
-                        <StepIcon size={16} strokeWidth={active ? 2.4 : 1.8} />
+                        <StepIcon size={14} strokeWidth={active ? 2.4 : 1.8} />
                       )}
-                    </span>
-                    <div className="luxury-step-text">
-                      <span className="luxury-step-idx">0{i + 1}</span>
-                      <span className="wsv2-label luxury-step-title">{stepLabel}</span>
+                    </div>
+                    <div className="truncate">
+                      <div className="text-[9px] font-mono opacity-60">0{i + 1}</div>
+                      <div className="text-xs font-semibold truncate">{stepLabel}</div>
                     </div>
                   </button>
                 );
@@ -204,15 +253,15 @@ export default function FunctionalNewDeal() {
 
           {message && (
             <div
-              className="workflow-message wizard-message luxury-msg-box"
+              className="workflow-message wizard-message luxury-msg-box mb-4 flex items-start gap-2.5 p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs"
               role="alert"
               data-testid="wizard-message"
             >
-              <AlertCircle size={18} className="text-amber-500" />
+              <AlertCircle size={18} className="text-amber-400 flex-shrink-0 mt-0.5" />
               <div>
                 <strong>{message}</strong>
                 {Object.keys(errors).length > 0 && (
-                  <ul>
+                  <ul className="list-disc pl-4 mt-1 space-y-0.5">
                     {Object.entries(errors).map(([field, error]) => (
                       <li key={field} data-testid={`error-summary-${field.replaceAll(".", "-")}`}>
                         {error}
@@ -232,32 +281,38 @@ export default function FunctionalNewDeal() {
               else go(step + 1);
             }}
           >
-            <fieldset disabled={busy} className="wizard-body luxury-wizard-body" key={step}>
-              {step === 0 && <VehicleStep {...wizard} />}
-              {step === 1 && <PersonStep group="seller" {...wizard} />}
-              {step === 2 && <MaintenanceStep {...wizard} />}
-              {step === 3 && <PersonStep group="buyer" {...wizard} />}
-              {step === 4 && <AgentStep {...wizard} />}
-              {step === 5 && <PaymentStep {...wizard} />}
-              {isReview && <ReviewStep deal={deal} update={wizard.update} edit={go} />}
-            </fieldset>
+            {/* KokonutUI SpotlightCard container wrapping step form */}
+            <SpotlightCard
+              spotlightColor="rgba(245, 158, 11, 0.12)"
+              className="p-6 md:p-8 rounded-2xl border-neutral-800 bg-neutral-900/70 backdrop-blur-xl shadow-2xl mb-6"
+            >
+              <fieldset disabled={busy} className="wizard-body luxury-wizard-body" key={step}>
+                {step === 0 && <VehicleStep {...wizard} />}
+                {step === 1 && <PersonStep group="seller" {...wizard} />}
+                {step === 2 && <MaintenanceStep {...wizard} />}
+                {step === 3 && <PersonStep group="buyer" {...wizard} />}
+                {step === 4 && <AgentStep {...wizard} />}
+                {step === 5 && <PaymentStep {...wizard} />}
+                {isReview && <ReviewStep deal={deal} update={wizard.update} edit={go} />}
+              </fieldset>
+            </SpotlightCard>
 
-            {/* Glassmorphic Floating Action Dock */}
-            <footer className="wizard-footer luxury-floating-dock">
+            {/* Glassmorphic Floating Action Dock with KokonutUI ParticleButton */}
+            <footer className="wizard-footer luxury-floating-dock flex items-center justify-between gap-4 p-4 rounded-2xl bg-neutral-900/90 border border-neutral-800 backdrop-blur-xl shadow-2xl sticky bottom-4 z-20">
               <button
                 type="button"
-                className="button button-secondary luxury-nav-btn prev-btn"
+                className="px-4 py-2.5 rounded-xl font-semibold text-xs text-neutral-300 hover:text-white hover:bg-neutral-800 transition-colors inline-flex items-center gap-2"
                 onClick={() => (step ? go(step - 1) : back())}
                 disabled={busy}
                 data-testid="wizard-previous"
               >
-                <ArrowLeft size={16} />
+                <ArrowLeft size={15} />
                 <span>{step ? t("wizard.previous", "Previous") : t("wizard.cancel", "Cancel")}</span>
               </button>
 
-              <div className="luxury-save-status">
-                <span className={`status-dot ${dirty ? "dot-dirty" : "dot-saved"}`} />
-                <span className="wizard-save-note" data-testid="wizard-save-note">
+              <div className="flex items-center gap-2 text-xs">
+                <span className={`w-2 h-2 rounded-full ${dirty ? "bg-amber-400 animate-pulse" : "bg-emerald-400"}`} />
+                <span className="text-neutral-400 text-[11px]" data-testid="wizard-save-note">
                   {dirty
                     ? t("wizard.unsaved_deal", "Unsaved changes in workspace")
                     : isReview
@@ -266,43 +321,46 @@ export default function FunctionalNewDeal() {
                 </span>
               </div>
 
-              <div className="wizard-footer-actions">
+              <div className="flex items-center gap-3">
                 {!isReview && (
-                  <button
+                  <Button
                     type="button"
-                    className="button button-secondary wizard-save-btn luxury-save-btn"
+                    variant="outline"
+                    className="border-neutral-700 text-xs font-semibold"
                     onClick={save}
                     disabled={busy}
                     data-testid="wizard-save-deal"
                   >
-                    <Save size={16} />
-                    <span>{busy ? t("wizard.saving", "Saving…") : t("wizard.save_deal", "Save Deal")}</span>
-                  </button>
+                    <Save size={15} className="mr-1.5" />
+                    <span>{busy ? t("wizard.saving", "Saving…") : t("wizard.save_deal", "Save Draft")}</span>
+                  </Button>
                 )}
 
-                <button
+                {/* ParticleButton for Continue / Finalize */}
+                <ParticleButton
                   type="submit"
-                  className="button button-primary luxury-continue-btn"
                   disabled={busy}
                   data-testid={isReview ? "save-deal-button" : "wizard-next"}
+                  className="luxury-particle-cta px-5 py-2.5 text-xs font-bold inline-flex items-center gap-2"
                 >
                   {isReview ? (
                     <>
-                      <Save size={16} />
+                      <Save size={15} />
                       <span>{busy ? t("wizard.saving", "Saving…") : t("wizard.save_deal", "Finalize & Save Deal")}</span>
                     </>
                   ) : (
                     <>
                       <span>{t("wizard.continue", "Continue")}</span>
-                      <ArrowRight size={16} className="btn-arrow-icon" />
+                      <ArrowRight size={15} />
                     </>
                   )}
-                </button>
+                </ParticleButton>
               </div>
             </footer>
           </form>
         </>
       )}
+
       <ConfirmDialog
         open={!!discardTarget}
         onOpenChange={(open) => !open && setDiscardTarget("")}
@@ -316,6 +374,6 @@ export default function FunctionalNewDeal() {
         cancelText={t("dialog.cancel", "Cancel")}
         testid="discard-deal"
       />
-    </div>
+    </motion.div>
   );
 }

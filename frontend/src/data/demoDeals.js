@@ -2,7 +2,7 @@
 // All vehicle details, seller & buyer profiles, witnesses, agent tasks,
 // payment breakdowns, and verified visual photo cards.
 
-const makePhotoSvg = (title, subtitle, iconText = "🏍️", accent = "#d97706") => {
+const makePhotoSvg = (title, subtitle, iconText = "ðŸï¸", accent = "#d97706") => {
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="480" height="340" viewBox="0 0 480 340">
     <defs>
       <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -55,7 +55,7 @@ export const getTextOnlyDemoDeal = () => {
     id: "deal-demo-hunter-350-no-photos",
     kind: "deal",
     schema_version: 1,
-    bill_number: "MM-26-0002",
+    bill_number: "Bill-002",
     status: "In Stock",
     rc_status: "Pending",
     commission: 19000,
@@ -164,7 +164,7 @@ export const getTextOnlyDemoDeal = () => {
       payment_method: "UPI",
       payment_date: todayStr,
       transaction_reference: "UPI-GPAY-981245012",
-      notes: "Token advance ₹30,000 received via UPI. Remaining balance ₹1,24,000 due upon physical vehicle handover.",
+      notes: "Token advance â‚¹30,000 received via UPI. Remaining balance â‚¹1,24,000 due upon physical vehicle handover.",
     },
     photos: {}, // STRICTLY ZERO PHOTOS
     notes: "Demo deal created with all text details completely filled (vehicle specs, seller, buyer, agent, payments). Zero photos attached as requested.",
@@ -177,12 +177,12 @@ export const getDemoDeals = () => {
   const nowIso = now.toISOString();
 
   return [
-    // ── 1. Royal Enfield Classic 350 (Sold, Transferred) ──────────────────────
+    // â”€â”€ 1. Royal Enfield Classic 350 (Sold, Transferred) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     {
       id: "deal-demo-re-classic-350",
       kind: "deal",
       schema_version: 1,
-      bill_number: "MM-26-0001",
+      bill_number: "Bill-001",
       status: "Sold",
       rc_status: "Transferred",
       commission: 23000,
@@ -291,29 +291,29 @@ export const getDemoDeals = () => {
         payment_method: "Bank Transfer",
         payment_date: "2026-09-27",
         transaction_reference: "NEFT-HDFC-910283741",
-        notes: "Token ₹25,000 via UPI on 22nd Sep; balance ₹1,60,000 NEFT cleared on delivery. Handover complete.",
+        notes: "Token â‚¹25,000 via UPI on 22nd Sep; balance â‚¹1,60,000 NEFT cleared on delivery. Handover complete.",
       },
       photos: {
-        "vehicle-1": createPhoto("vehicle-1", "Front View", "Royal Enfield Classic 350 · KA-03-JJ-4521", "🏍️", "#d97706"),
-        "vehicle-2": createPhoto("vehicle-2", "Rear View", "Exhaust, tail light & plate intact", "🏍️", "#d97706"),
-        "vehicle-5": createPhoto("vehicle-5", "Odometer: 8,450 km", "Analog-digital display reading verified", "⏱️", "#3b82f6"),
-        "vehicle-8": createPhoto("vehicle-8", "RC Smartcard (Front)", "Government of Karnataka Transport Dept", "📄", "#10b981"),
-        "seller-1": createPhoto("seller-1", "Seller Portrait", "Vikram R. Shetty", "👤", "#8b5cf6"),
-        "seller-2": createPhoto("seller-2", "Seller Aadhaar Card", "UIDAI Verified Copy", "🪪", "#6366f1"),
-        "buyer-1": createPhoto("buyer-1", "Buyer Portrait", "Aditya Mohan", "👤", "#06b6d4"),
-        "buyer-2": createPhoto("buyer-2", "Buyer Aadhaar Card", "UIDAI Verified Copy", "🪪", "#14b8a6"),
-        "witness-1-1": createPhoto("witness-1-1", "Seller Witness Photo", "Deepak S. Nair", "🤝", "#f59e0b"),
-        "witness-2-1": createPhoto("witness-2-1", "Buyer Witness Photo", "Pranav Varma", "🤝", "#ec4899"),
+        "vehicle-1": createPhoto("vehicle-1", "Front View", "Royal Enfield Classic 350 Â· KA-03-JJ-4521", "ðŸï¸", "#d97706"),
+        "vehicle-2": createPhoto("vehicle-2", "Rear View", "Exhaust, tail light & plate intact", "ðŸï¸", "#d97706"),
+        "vehicle-5": createPhoto("vehicle-5", "Odometer: 8,450 km", "Analog-digital display reading verified", "â±ï¸", "#3b82f6"),
+        "vehicle-8": createPhoto("vehicle-8", "RC Smartcard (Front)", "Government of Karnataka Transport Dept", "ðŸ“„", "#10b981"),
+        "seller-1": createPhoto("seller-1", "Seller Portrait", "Vikram R. Shetty", "ðŸ‘¤", "#8b5cf6"),
+        "seller-2": createPhoto("seller-2", "Seller Aadhaar Card", "UIDAI Verified Copy", "ðŸªª", "#6366f1"),
+        "buyer-1": createPhoto("buyer-1", "Buyer Portrait", "Aditya Mohan", "ðŸ‘¤", "#06b6d4"),
+        "buyer-2": createPhoto("buyer-2", "Buyer Aadhaar Card", "UIDAI Verified Copy", "ðŸªª", "#14b8a6"),
+        "witness-1-1": createPhoto("witness-1-1", "Seller Witness Photo", "Deepak S. Nair", "ðŸ¤", "#f59e0b"),
+        "witness-2-1": createPhoto("witness-2-1", "Buyer Witness Photo", "Pranav Varma", "ðŸ¤", "#ec4899"),
       },
       notes: "Clean single-owner flagship cruiser. Immediate buyer turnaround with zero repair cost.",
     },
 
-    // ── 2. KTM Duke 390 (In Stock, RC Pending) ────────────────────────────────
+    // â”€â”€ 2. KTM Duke 390 (In Stock, RC Pending) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     {
       id: "deal-demo-ktm-duke-390",
       kind: "deal",
       schema_version: 1,
-      bill_number: "MM-26-0002",
+      bill_number: "Bill-002",
       status: "In Stock",
       rc_status: "Pending",
       commission: 30000,
@@ -419,21 +419,21 @@ export const getDemoDeals = () => {
         notes: "Purchased from first owner moving abroad. Displayed on showroom front stage.",
       },
       photos: {
-        "vehicle-1": createPhoto("vehicle-1", "Front View", "KTM Duke 390 · KA-01-MJ-8821", "🏍️", "#f97316"),
-        "vehicle-3": createPhoto("vehicle-3", "Left Profile", "Trellis frame & WP Apex suspension", "🏍️", "#f97316"),
-        "vehicle-5": createPhoto("vehicle-5", "TFT Dash: 4,200 km", "5-inch color TFT console with Bluetooth", "⏱️", "#3b82f6"),
-        "seller-1": createPhoto("seller-1", "Seller Portrait", "Arjun N. Mehta", "👤", "#8b5cf6"),
-        "witness-1-1": createPhoto("witness-1-1", "Seller Witness", "Kunal Bansal", "🤝", "#f59e0b"),
+        "vehicle-1": createPhoto("vehicle-1", "Front View", "KTM Duke 390 Â· KA-01-MJ-8821", "ðŸï¸", "#f97316"),
+        "vehicle-3": createPhoto("vehicle-3", "Left Profile", "Trellis frame & WP Apex suspension", "ðŸï¸", "#f97316"),
+        "vehicle-5": createPhoto("vehicle-5", "TFT Dash: 4,200 km", "5-inch color TFT console with Bluetooth", "â±ï¸", "#3b82f6"),
+        "seller-1": createPhoto("seller-1", "Seller Portrait", "Arjun N. Mehta", "ðŸ‘¤", "#8b5cf6"),
+        "witness-1-1": createPhoto("witness-1-1", "Seller Witness", "Kunal Bansal", "ðŸ¤", "#f59e0b"),
       },
       notes: "Pristine Gen 3 Duke 390. High inquiry volume; expected booking within 48 hours.",
     },
 
-    // ── 3. Yamaha MT-15 V2 (Today's Deal! In Stock, RC Pending) ───────────────
+    // â”€â”€ 3. Yamaha MT-15 V2 (Today's Deal! In Stock, RC Pending) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     {
       id: "deal-demo-yamaha-mt15",
       kind: "deal",
       schema_version: 1,
-      bill_number: "MM-26-0003",
+      bill_number: "Bill-003",
       status: "In Stock",
       rc_status: "Pending",
       commission: 17000,
@@ -542,24 +542,24 @@ export const getDemoDeals = () => {
         payment_method: "UPI",
         payment_date: todayStr,
         transaction_reference: "UPI-PAYTM-992147102",
-        notes: "Token advance ₹25,000 received today. Buyer collecting bike tomorrow afternoon upon paying remaining ₹1,10,000.",
+        notes: "Token advance â‚¹25,000 received today. Buyer collecting bike tomorrow afternoon upon paying remaining â‚¹1,10,000.",
       },
       photos: {
-        "vehicle-1": createPhoto("vehicle-1", "Front Mask", "Yamaha MT-15 V2 · KA-05-NL-6672", "🏍️", "#06b6d4"),
-        "vehicle-4": createPhoto("vehicle-4", "Right Profile", "Cyan Storm wheels & golden USD forks", "🏍️", "#06b6d4"),
-        "vehicle-5": createPhoto("vehicle-5", "Odometer: 11,200 km", "Negative LCD screen checked", "⏱️", "#3b82f6"),
-        "seller-1": createPhoto("seller-1", "Seller Portrait", "Syed Farooq", "👤", "#8b5cf6"),
-        "buyer-1": createPhoto("buyer-1", "Buyer Portrait", "Chirag Hegde", "👤", "#10b981"),
+        "vehicle-1": createPhoto("vehicle-1", "Front Mask", "Yamaha MT-15 V2 Â· KA-05-NL-6672", "ðŸï¸", "#06b6d4"),
+        "vehicle-4": createPhoto("vehicle-4", "Right Profile", "Cyan Storm wheels & golden USD forks", "ðŸï¸", "#06b6d4"),
+        "vehicle-5": createPhoto("vehicle-5", "Odometer: 11,200 km", "Negative LCD screen checked", "â±ï¸", "#3b82f6"),
+        "seller-1": createPhoto("seller-1", "Seller Portrait", "Syed Farooq", "ðŸ‘¤", "#8b5cf6"),
+        "buyer-1": createPhoto("buyer-1", "Buyer Portrait", "Chirag Hegde", "ðŸ‘¤", "#10b981"),
       },
-      notes: "Acquired today morning; token advance taken within 4 hours. Pending balance ₹1,10,000 due on handover.",
+      notes: "Acquired today morning; token advance taken within 4 hours. Pending balance â‚¹1,10,000 due on handover.",
     },
 
-    // ── 4. Honda Activa 6G (Sold, RC Completed) ───────────────────────────────
+    // â”€â”€ 4. Honda Activa 6G (Sold, RC Completed) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     {
       id: "deal-demo-honda-activa-6g",
       kind: "deal",
       schema_version: 1,
-      bill_number: "MM-26-0004",
+      bill_number: "Bill-004",
       status: "Sold",
       rc_status: "Completed",
       commission: 11500,
@@ -671,20 +671,20 @@ export const getDemoDeals = () => {
         notes: "Full settlement in cash upon delivery. Official delivery note and gate pass issued.",
       },
       photos: {
-        "vehicle-1": createPhoto("vehicle-1", "Front Apron", "Honda Activa 6G · KA-04-KQ-3319", "🛵", "#64748b"),
-        "vehicle-2": createPhoto("vehicle-2", "Rear & Number Plate", "External fuel cap & badging intact", "🛵", "#64748b"),
-        "seller-1": createPhoto("seller-1", "Seller Portrait", "Lakshmi Narayanan", "👤", "#8b5cf6"),
-        "buyer-1": createPhoto("buyer-1", "Buyer Portrait", "Pooja Deshmukh", "👤", "#ec4899"),
+        "vehicle-1": createPhoto("vehicle-1", "Front Apron", "Honda Activa 6G Â· KA-04-KQ-3319", "ðŸ›µ", "#64748b"),
+        "vehicle-2": createPhoto("vehicle-2", "Rear & Number Plate", "External fuel cap & badging intact", "ðŸ›µ", "#64748b"),
+        "seller-1": createPhoto("seller-1", "Seller Portrait", "Lakshmi Narayanan", "ðŸ‘¤", "#8b5cf6"),
+        "buyer-1": createPhoto("buyer-1", "Buyer Portrait", "Pooja Deshmukh", "ðŸ‘¤", "#ec4899"),
       },
       notes: "Top-selling family scooter. 100% genuine vehicle with complete service records.",
     },
 
-    // ── 5. TVS Apache RTR 200 4V (Today's Deal! In Stock, RC Pending) ─────────
+    // â”€â”€ 5. TVS Apache RTR 200 4V (Today's Deal! In Stock, RC Pending) â”€â”€â”€â”€â”€â”€â”€â”€â”€
     {
       id: "deal-demo-apache-rtr-200",
       kind: "deal",
       schema_version: 1,
-      bill_number: "MM-26-0005",
+      bill_number: "Bill-005",
       status: "In Stock",
       rc_status: "Pending",
       commission: 17000,
@@ -793,24 +793,24 @@ export const getDemoDeals = () => {
         payment_method: "UPI",
         payment_date: todayStr,
         transaction_reference: "UPI-GPAY-991204812",
-        notes: "Bought today. Booked by Naveen Reddy within 3 hours with ₹30,000 advance. Delivery scheduled for Saturday.",
+        notes: "Bought today. Booked by Naveen Reddy within 3 hours with â‚¹30,000 advance. Delivery scheduled for Saturday.",
       },
       photos: {
-        "vehicle-1": createPhoto("vehicle-1", "Headlamp & Visor", "TVS Apache RTR 200 · KA-03-MR-1904", "🏍️", "#ef4444"),
-        "vehicle-3": createPhoto("vehicle-3", "Side Profile & Tank", "Race Tuned Fuel Injection (RT-Fi)", "🏍️", "#ef4444"),
-        "vehicle-5": createPhoto("vehicle-5", "Odometer: 9,800 km", "Digital speedometer with top speed recorder", "⏱️", "#3b82f6"),
-        "seller-1": createPhoto("seller-1", "Seller Portrait", "Harish Gowda", "👤", "#8b5cf6"),
-        "buyer-1": createPhoto("buyer-1", "Buyer Portrait", "Naveen Reddy", "👤", "#10b981"),
+        "vehicle-1": createPhoto("vehicle-1", "Headlamp & Visor", "TVS Apache RTR 200 Â· KA-03-MR-1904", "ðŸï¸", "#ef4444"),
+        "vehicle-3": createPhoto("vehicle-3", "Side Profile & Tank", "Race Tuned Fuel Injection (RT-Fi)", "ðŸï¸", "#ef4444"),
+        "vehicle-5": createPhoto("vehicle-5", "Odometer: 9,800 km", "Digital speedometer with top speed recorder", "â±ï¸", "#3b82f6"),
+        "seller-1": createPhoto("seller-1", "Seller Portrait", "Harish Gowda", "ðŸ‘¤", "#8b5cf6"),
+        "buyer-1": createPhoto("buyer-1", "Buyer Portrait", "Naveen Reddy", "ðŸ‘¤", "#10b981"),
       },
       notes: "Sporty 200cc commuter with race modes. Verified fast moving stock.",
     },
 
-    // ── 6. Kawasaki Ninja 300 (Sold, RC Completed) ────────────────────────────
+    // â”€â”€ 6. Kawasaki Ninja 300 (Sold, RC Completed) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     {
       id: "deal-demo-kawasaki-ninja-300",
       kind: "deal",
       schema_version: 1,
-      bill_number: "MM-26-0006",
+      bill_number: "Bill-006",
       status: "Sold",
       rc_status: "Completed",
       commission: 32000,
@@ -922,20 +922,20 @@ export const getDemoDeals = () => {
         notes: "Full payment via RTGS. High value twin-cylinder motorcycle handover completed smoothly.",
       },
       photos: {
-        "vehicle-1": createPhoto("vehicle-1", "Front Fairing", "Kawasaki Ninja 300 · KA-51-EF-2020", "🏍️", "#22c55e"),
-        "vehicle-4": createPhoto("vehicle-4", "Twin-Cylinder Engine & Exhaust", "DOHC 8-valve liquid cooled parallel twin", "🏍️", "#22c55e"),
-        "seller-1": createPhoto("seller-1", "Seller Portrait", "Rahul S. Kulkarni", "👤", "#8b5cf6"),
-        "buyer-1": createPhoto("buyer-1", "Buyer Portrait", "Tanmay Bhatia", "👤", "#10b981"),
+        "vehicle-1": createPhoto("vehicle-1", "Front Fairing", "Kawasaki Ninja 300 Â· KA-51-EF-2020", "ðŸï¸", "#22c55e"),
+        "vehicle-4": createPhoto("vehicle-4", "Twin-Cylinder Engine & Exhaust", "DOHC 8-valve liquid cooled parallel twin", "ðŸï¸", "#22c55e"),
+        "seller-1": createPhoto("seller-1", "Seller Portrait", "Rahul S. Kulkarni", "ðŸ‘¤", "#8b5cf6"),
+        "buyer-1": createPhoto("buyer-1", "Buyer Portrait", "Tanmay Bhatia", "ðŸ‘¤", "#10b981"),
       },
-      notes: "Flagship super-sport sale. High gross margin of ₹32,000.",
+      notes: "Flagship super-sport sale. High gross margin of â‚¹32,000.",
     },
 
-    // ── 7. Hero Splendor Plus XTEC (In Stock, Details Pending) ────────────────
+    // â”€â”€ 7. Hero Splendor Plus XTEC (In Stock, Details Pending) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     {
       id: "deal-demo-hero-splendor-xtec",
       kind: "deal",
       schema_version: 1,
-      bill_number: "MM-26-0007",
+      bill_number: "Bill-007",
       status: "In Stock",
       rc_status: "Pending",
       commission: 9000,
@@ -1035,7 +1035,7 @@ export const getDemoDeals = () => {
         notes: "Advance purchase from owner. Smart card physical copy awaited from RTO duplicate application.",
       },
       photos: {
-        "vehicle-1": createPhoto("vehicle-1", "Front Angle", "Hero Splendor Plus XTEC", "🏍️", "#374151"),
+        "vehicle-1": createPhoto("vehicle-1", "Front Angle", "Hero Splendor Plus XTEC", "ðŸï¸", "#374151"),
       },
       notes: "High mileage commuter. Excellent resale liquidity once RC plate details are verified.",
     },

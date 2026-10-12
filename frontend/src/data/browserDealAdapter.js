@@ -25,8 +25,8 @@ async function transaction(mode, operation) {
   });
 }
 
-const prefix = () => `MM-${String(new Date().getFullYear()).slice(-2)}-`;
-const billNumber = count => `${prefix()}${String(count).padStart(4, "0")}`;
+const prefix = () => "Bill-";
+const billNumber = count => `${prefix()}${String(count).padStart(3, "0")}`;
 
 export const browserDealAdapter = {
   list: () => transaction("readwrite", (store, done) => {
@@ -78,7 +78,7 @@ export const browserDealAdapter = {
       const request = store.get(deal.id);
       request.onsuccess = () => {
         if (!request.result) {
-          store.transaction.abort();
+          persist(null);
           return;
         }
         persist(request.result);

@@ -18,6 +18,18 @@ async function resolveImageToDataUrl(imageInput: any): Promise<string | null> {
     return trimmed.length > 0 ? trimmed : null;
   }
 
+  if (typeof imageInput.dataUrl === "string" && imageInput.dataUrl.trim().length > 0) {
+    return imageInput.dataUrl;
+  }
+
+  if (typeof imageInput.url === "string" && imageInput.url.trim().length > 0) {
+    return imageInput.url;
+  }
+
+  if (typeof imageInput.src === "string" && imageInput.src.trim().length > 0) {
+    return imageInput.src;
+  }
+
   const blob =
     imageInput.blob ||
     (imageInput instanceof Blob || imageInput instanceof File ? imageInput : null);
@@ -37,16 +49,12 @@ async function resolveImageToDataUrl(imageInput: any): Promise<string | null> {
     }
   }
 
-  if (typeof imageInput.url === "string" && imageInput.url.trim().length > 0) {
-    return imageInput.url;
-  }
-
   return null;
 }
 
 /**
  * Directly generates and triggers automatic download of the Seller Agreement PDF.
- * Name format: MM-26-0001-Seller-Agreement.pdf
+ * Name format: Bill-001-Seller-Agreement.pdf
  */
 export async function downloadSellerAgreementPDF(deal: SellerAgreementDeal): Promise<string> {
   // Pre-resolve all photos safely
@@ -59,32 +67,39 @@ export async function downloadSellerAgreementPDF(deal: SellerAgreementDeal): Pro
     buyerThumb,
     witnessPhoto,
     witnessSignature,
+    witnessThumb,
   ] = await Promise.all([
     resolveImageToDataUrl(
-      deal.seller?.photo || deal.photos?.["seller-1"] || deal.photos?.["seller_photo"]
+      deal.seller?.photo || deal.photos?.["seller-1"] || deal.photos?.["seller-portrait"] || deal.photos?.["seller_photo"]
     ),
     resolveImageToDataUrl(
-      deal.seller?.signature || deal.photos?.["seller-8"] || deal.photos?.["seller_signature"]
+      deal.seller?.signature || deal.photos?.["seller-signature"] || deal.photos?.["seller-8"] || deal.photos?.["seller_signature"]
     ),
     resolveImageToDataUrl(
-      deal.seller?.thumb || deal.photos?.["seller-thumb"] || deal.photos?.["seller-2"]
+      deal.seller?.thumb || deal.photos?.["seller-thumb"] || deal.photos?.["seller-thumb-impression"] || deal.photos?.["seller-2"]
     ),
     resolveImageToDataUrl(
-      deal.buyer?.photo || deal.photos?.["buyer-1"] || deal.photos?.["buyer_photo"]
+      deal.buyer?.photo || deal.photos?.["buyer-1"] || deal.photos?.["buyer-portrait"] || deal.photos?.["buyer_photo"]
     ),
     resolveImageToDataUrl(
-      deal.buyer?.signature || deal.photos?.["buyer-8"] || deal.photos?.["buyer_signature"]
+      deal.buyer?.signature || deal.photos?.["buyer-signature"] || deal.photos?.["buyer-8"] || deal.photos?.["buyer_signature"]
     ),
     resolveImageToDataUrl(
-      deal.buyer?.thumb || deal.photos?.["buyer-thumb"] || deal.photos?.["buyer-2"]
+      deal.buyer?.thumb || deal.photos?.["buyer-thumb"] || deal.photos?.["buyer-thumb-impression"] || deal.photos?.["buyer-2"]
     ),
     resolveImageToDataUrl(
       deal.witness1?.photo || deal.photos?.["witness-1-1"] || deal.photos?.["witness-1"]
     ),
     resolveImageToDataUrl(
       deal.witness1?.signature ||
-        deal.photos?.["witness-1-2"] ||
-        deal.photos?.["witness-1-signature"]
+        deal.photos?.["witness-1-signature"] ||
+        deal.photos?.["witness-1-2"]
+    ),
+    resolveImageToDataUrl(
+      deal.witness1?.thumb ||
+        deal.photos?.["witness-1-thumb"] ||
+        deal.photos?.["witness-1-thumb-impression"] ||
+        deal.photos?.["witness-1-3"]
     ),
   ]);
 
@@ -97,13 +112,14 @@ export async function downloadSellerAgreementPDF(deal: SellerAgreementDeal): Pro
     buyerThumb,
     witnessPhoto,
     witnessSignature,
+    witnessThumb,
   };
 
   const doc = React.createElement(SellerAgreementPDF, { deal, resolvedImages }) as any;
   const instance = pdf(doc);
   const blob = await instance.toBlob();
 
-  const rawBillNumber = deal.billNumber || deal.bill_number || "MM-26-0001";
+  const rawBillNumber = deal.billNumber || deal.bill_number || "Bill-001";
   const cleanBillNumber = rawBillNumber.replace(/[^a-zA-Z0-9_-]/g, "-");
   const fileName = `${cleanBillNumber}-Seller-Agreement.pdf`;
 

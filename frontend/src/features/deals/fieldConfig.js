@@ -1,7 +1,19 @@
 const field = (key, label, type = "text", extra = {}) => ({ key, label, type, ...extra });
 const select = (key, label, options) => field(key, label, "select", { options });
+
+export const vehicleCategoriesList = [
+  "2 Wheeler with Gear",
+  "2 Wheeler without Gear",
+  "4 Wheeler Car",
+  "Bus",
+  "Truck",
+  "Auto Rickshaws",
+  "E-Rickshaws",
+  "Tractors",
+];
+
 export const vehicleGroups = [
-  { title: "Vehicle details", fields: [field("vehicle_name", "Vehicle name", "text", { required: true }), field("make", "Make / Brand"), field("model", "Model"), field("year", "Month & Year of manufacture", "month", { wide: true }), field("color", "Color"), field("registration_number", "Registration number", "text", { wide: true }), field("registration_date", "Registration date", "date"), field("engine_number", "Engine number"), field("chassis_number", "Chassis number"), field("engine_cc", "Engine capacity (cc)", "number"), select("fuel_type", "Fuel type", ["Petrol", "Electric", "Diesel", "Other"]), select("transmission", "Transmission", ["Manual", "Automatic"]), field("odometer", "Odometer (km)", "number")] },
+  { title: "Vehicle details", fields: [select("vehicle_type", "Vehicle category", vehicleCategoriesList), field("vehicle_name", "Vehicle name", "text", { required: true }), field("make", "Make / Brand"), field("model", "Model"), field("year", "Month & Year of manufacture", "month", { wide: true }), field("color", "Color"), field("registration_number", "Registration number", "text", { wide: true }), field("registration_date", "Registration date", "date"), field("engine_number", "Engine number"), field("chassis_number", "Chassis number"), field("engine_cc", "Engine capacity (cc)", "number")] },
   { title: "Ownership & condition", fields: [field("bought_date", "Bought date", "date"), field("sold_date", "Sold date", "date"), select("keys", "Number of keys", ["0", "1", "2", "3"]), field("service_history", "Service history", "text", { wide: true })] },
   { title: "Documents & validity", fields: [select("tax", "Tax", ["Paid", "Pending", "Expired", "Lifetime"]), field("tax_valid_until", "Tax valid until", "date"), select("fitness", "Fitness", ["Valid", "Expired", "Pending"]), field("fitness_valid_until", "Fitness valid until", "date"), select("insurance", "Insurance", ["Active", "Expired", "Not Available"]), field("insurance_policy", "Insurance policy number"), field("insurance_valid_until", "Insurance valid until", "date"), field("puc_valid_until", "PUC valid until", "date"), select("hypothecation", "Hypothecation / Loan", ["No", "Yes", "Closed"]), field("financier", "Financier"), select("noc", "NOC", ["Not Required", "Available", "Pending"])] },
 ];
@@ -11,8 +23,9 @@ export const witnessFields = [field("name", "Full name"), field("phone", "Mobile
 export const paymentFields = [field("purchase_price", "Purchase price (₹)", "number", { step: "0.01", required: true }), field("selling_price", "Selling price (₹)", "number", { step: "0.01", required: true }), field("paid_to_seller", "Paid to seller (₹)", "number", { step: "0.01" }), field("received_from_buyer", "Received from buyer (₹)", "number", { step: "0.01" }), select("payment_method", "Payment method", ["Cash", "UPI", "Bank Transfer", "Cheque", "Mixed"]), field("payment_date", "Payment date", "date"), field("transaction_reference", "Transaction reference"), field("notes", "Payment notes", "textarea")];
 export const agentFields = [field("name", "Agent name"), field("phone", "Phone number", "tel"), field("email", "Email ID (Optional)", "email"), field("task", "Task / Work details", "textarea"), field("total_amount", "Total amount (₹)", "number", { step: "0.01" }), field("amount_paid", "Amount paid (₹)", "number", { step: "0.01" }), field("amount_balance", "Amount balance (₹)", "number", { step: "0.01" })];
 export const photoSlots = {
-  vehicle: ["Front view", "Rear view", "Left side", "Right side", "Odometer", "Engine number", "Chassis number", "RC front", "RC back", "Insurance document"],
-  seller: ["Seller portrait", "Aadhaar front", "Aadhaar back", "PAN card", "Driving licence front", "Driving licence back", "Address proof", "Signature", "Purchase agreement", "Additional document"],
-  buyer: ["Buyer portrait", "Aadhaar front", "Aadhaar back", "PAN card", "Driving licence front", "Driving licence back", "Address proof", "Signature", "Sale agreement", "Additional document"],
-  "witness-1": ["Seller witness photo"], "witness-2": ["Buyer witness photo"],
+  vehicle: ["Front view", "Rear view", "Left side", "Right side", "Odometer", "Engine number", "Chassis number", "Insurance document"],
+  seller: ["Seller portrait", "Aadhaar front", "Aadhaar back", "PAN card", "Driving licence front", "Driving licence back", "Address proof", "RC front", "RC back", "Signature", "Purchase agreement", "Additional document"],
+  buyer: ["Buyer portrait", "Aadhaar front", "Aadhaar back", "PAN card", "Driving licence front", "Driving licence back", "Address proof", "RC front", "RC back", "Signature", "Sale agreement", "Additional document"],
+  "witness-1": ["Seller witness photo", "Witness signature", "Witness thumb impression"],
+  "witness-2": ["Buyer witness photo", "Witness signature", "Witness thumb impression"],
 };

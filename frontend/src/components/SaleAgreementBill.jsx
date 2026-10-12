@@ -106,7 +106,7 @@ export default function SaleAgreementBill({ deal = {}, doc = null }) {
     photos: deal.photos || {}
   } : deal;
 
-  const billNo = d.bill_number || d.billNumber || "MM-26-0002";
+  const billNo = d.bill_number || d.billNumber || "Bill-001";
   const place = d.place || d.seller?.city || "Davangere";
   const dateStr = formatDisplayDate(d.deliveryDate || d.payments?.payment_date || d.created_at);
   const dateParts = dateStr.includes("/") ? dateStr.split("/").map(s => s.trim()) : [dateStr, "", ""];
@@ -126,7 +126,9 @@ export default function SaleAgreementBill({ deal = {}, doc = null }) {
   // Seller
   const s = d.seller || {};
   const sellerName = s.name || "Ramesh Kumar";
-  const rawSellerAddr = s.address || [s.address, s.city, s.state, s.pincode].filter(Boolean).join(", ") || "#12, 2nd Cross, Vinayaka Nagar, Davangere, Karnataka - 577004";
+  const rawSellerAddr = (s.address && (s.city || s.state || s.pincode))
+    ? [s.address, s.city, s.state, s.pincode].filter(Boolean).join(", ")
+    : (s.address || [s.city, s.state, s.pincode].filter(Boolean).join(", ") || "#12, 2nd Cross, Vinayaka Nagar, Davangere, Karnataka - 577004");
   const [sellerAddr1, sellerAddr2, sellerAddr3] = (s.address1 !== undefined || s.address2 !== undefined || s.address3 !== undefined)
     ? [s.address1 || "", s.address2 || "", s.address3 || ""]
     : splitAddress3(rawSellerAddr, 30, 42, 42);
@@ -134,7 +136,8 @@ export default function SaleAgreementBill({ deal = {}, doc = null }) {
   const sellerAadhaar = s.id_number || s.aadhaar || "1234 5678 9012";
 
   // Purchaser (default METRO MOTORS, or custom buyer name if edited)
-  const buyerName = d.buyerName || d.buyer?.name || "METRO MOTORS";
+  const b = d.buyer || {};
+  const buyerName = d.buyerName || b.name || "METRO MOTORS";
 
   // Witness 1
   const w1 = d.witness1 || (d.witnesses && d.witnesses[0]) || {};
@@ -185,7 +188,9 @@ export default function SaleAgreementBill({ deal = {}, doc = null }) {
   const resolveMediaUrl = (item) => {
     if (!item) return null;
     if (typeof item === "string") return item;
+    if (item.dataUrl) return item.dataUrl;
     if (item.url) return item.url;
+    if (item.src) return item.src;
     if (item.blob) {
       try {
         return URL.createObjectURL(item.blob);
@@ -204,9 +209,9 @@ export default function SaleAgreementBill({ deal = {}, doc = null }) {
   const buyerThumb = resolveMediaUrl(photos["buyer-thumb"] || photos["buyer-thumb-impression"] || photos["buyer-2"] || b.thumb);
   const buyerSig = resolveMediaUrl(photos["buyer-signature"] || photos["buyer-8"] || photos["buyer_signature"] || b.signature);
 
-  const witnessPhoto = resolveMediaUrl(photos["witness-1-1"] || photos["witness-1"] || w1.photo);
-  const witnessThumb = resolveMediaUrl(photos["witness-1-thumb"] || photos["witness-1-2"] || w1.thumb);
-  const witnessSig = resolveMediaUrl(photos["witness-1-signature"] || w1.signature);
+  const witnessPhoto = resolveMediaUrl(photos["witness-1-1"] || photos["witness-1"] || photos["witness_photo"] || w1.photo);
+  const witnessThumb = resolveMediaUrl(photos["witness-1-thumb"] || photos["witness-1-thumb-impression"] || photos["witness-1-3"] || photos["witness-1-2"] || w1.thumb);
+  const witnessSig = resolveMediaUrl(photos["witness-1-signature"] || photos["witness-1-2"] || photos["witness_signature"] || w1.signature);
 
   return (
     <div className="sale-agreement-container" data-testid="sale-agreement-container">
