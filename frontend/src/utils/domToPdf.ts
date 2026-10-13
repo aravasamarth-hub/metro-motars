@@ -46,23 +46,31 @@ export async function exportPreviewToPdf(
   try {
     for (let i = 0; i < targets.length; i++) {
       const pageEl = targets[i];
+      const originalShadow = pageEl.style.boxShadow;
+      pageEl.style.boxShadow = "none";
 
-      const canvas = await html2canvas(pageEl, {
-        scale: 2.5, // 2.5x resolution for ultra-sharp typography and borders
-        useCORS: true,
-        allowTaint: true,
-        backgroundColor: "#ffffff",
-        logging: false,
-        windowWidth: 1280,
-      });
+      try {
+        const canvas = await html2canvas(pageEl, {
+          scale: 2.5, // 2.5x resolution for ultra-sharp typography and borders
+          useCORS: true,
+          allowTaint: true,
+          backgroundColor: "#ffffff",
+          logging: false,
+          windowWidth: 1280,
+          scrollX: 0,
+          scrollY: 0,
+        });
 
-      const imgData = canvas.toDataURL("image/jpeg", 0.98);
+        const imgData = canvas.toDataURL("image/jpeg", 0.98);
 
-      if (i > 0) {
-        pdf.addPage("a4", "portrait");
+        if (i > 0) {
+          pdf.addPage("a4", "portrait");
+        }
+
+        pdf.addImage(imgData, "JPEG", 0, 0, a4WidthMm, a4HeightMm, undefined, "FAST");
+      } finally {
+        pageEl.style.boxShadow = originalShadow;
       }
-
-      pdf.addImage(imgData, "JPEG", 0, 0, a4WidthMm, a4HeightMm, undefined, "FAST");
     }
 
     // Try Windows File System Access API if available, else standard jsPDF save

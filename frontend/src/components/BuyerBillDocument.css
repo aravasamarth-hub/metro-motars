@@ -717,7 +717,7 @@
 
   .buyer-bill-sheet {
     box-shadow: none !important;
-    border: none !important;
+    border: 1.5px solid #0a2342 !important;
     width: 100% !important;
     height: 100% !important;
     page-break-after: avoid !important;

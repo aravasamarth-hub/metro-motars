@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowUpRight, FilePlus2, Pencil, Printer, Search, X } from "lucide-react";
+import { ArrowUpRight, Download, FilePlus2, Pencil, Printer, Search, X } from "lucide-react";
 import { generateBill, getBillDocument, listBills, listDealsOverview, updateBill } from "@/metroApi";
 import BillDocument from "@/components/BillDocument";
+import { exportPreviewToPdf } from "@/utils/domToPdf";
 
 const money = value => `₹${Number(value || 0).toLocaleString("en-IN")}`;
 const BILL_TYPES = ["Seller → Intermediate", "Seller → Buyer"];
@@ -55,6 +56,17 @@ export default function FunctionalBills() {
     } catch (errorValue) { setError(errorValue.message); }
   };
 
+  const handleDownloadPdf = async () => {
+    try {
+      const regNo = (preview?.deal?.vehicle?.registration_number || preview?.bill?.bill_number || "Bill")
+        .replace(/[^a-zA-Z0-9_-]/g, "_");
+      const defaultFileName = `${preview?.bill?.bill_type?.includes("Buyer") ? "Buyer_Bill" : "Seller_Agreement"}_${regNo}.pdf`;
+      await exportPreviewToPdf("#print-area", defaultFileName);
+    } catch (e) {
+      window.print();
+    }
+  };
+
   return <>
     <div className="page-header no-print"><div><div className="eyebrow">Billing & records</div><h1 data-testid="page-title">Customer Bills</h1><p>Generated from saved deals. Existing bills stay unchanged until explicitly edited.</p></div>
       <button className="button button-primary" onClick={() => setPicker(true)} data-testid="generate-bill-button"><FilePlus2 size={17}/> Generate Bill</button></div>
@@ -99,7 +111,7 @@ export default function FunctionalBills() {
           <span>{preview.bill.bill_type} · {preview.bill.bill_number}</span>
           <div className="deal-actions">
             <button className="button button-secondary" onClick={() => window.print()} data-testid="bill-print-action"><Printer size={15}/> Print</button>
-            <button className="button button-primary" onClick={() => window.print()} data-testid="generate-bill-pdf"><Printer size={15}/> Save as PDF</button>
+            <button className="button button-primary" onClick={handleDownloadPdf} data-testid="generate-bill-pdf"><Download size={15}/> Save as PDF</button>
             <button className="icon-button" onClick={() => setPreview(null)} aria-label="Close bill preview" data-testid="close-bill-preview"><X size={18}/></button>
           </div>
         </div>

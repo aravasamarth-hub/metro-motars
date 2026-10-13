@@ -1,6 +1,7 @@
 import React, { useState, useCallback } from "react";
 import { pdf } from "@react-pdf/renderer";
 import { BondAgreementPDF } from "@/components/pdf/BondAgreementPDF";
+import { exportPreviewToPdf } from "@/utils/domToPdf";
 
 /**
  * Downloads the official 7-page Bond Agreement PDF.
@@ -9,6 +10,10 @@ export async function downloadBondAgreementPDF(deal: any): Promise<string> {
   const regNo = (deal?.vehicle?.reg_number || deal?.vehicle?.regNo || deal?.id || "deal")
     .replace(/[^a-zA-Z0-9_-]/g, "_");
   const fileName = `Bond_Agreement_${regNo}.pdf`;
+
+  if (typeof document !== "undefined" && document.querySelector("#print-area")) {
+    return await exportPreviewToPdf("#print-area", fileName);
+  }
 
   // Pre-resolve raster signatures
   const resolvedImages = {

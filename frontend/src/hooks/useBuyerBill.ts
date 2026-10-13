@@ -1,6 +1,7 @@
 import React, { useState, useCallback } from "react";
 import { pdf } from "@react-pdf/renderer";
 import { BuyerBillPDF } from "@/components/pdf/BuyerBillPDF";
+import { exportPreviewToPdf } from "@/utils/domToPdf";
 
 /**
  * Converts an SVG data URL to a clean PNG data URL via an off-screen HTML canvas.
@@ -121,6 +122,12 @@ async function resolveImageToDataUrl(imageInput: any): Promise<string | null> {
  * Generates and downloads the official Buyer Bill as a genuine A4 PDF.
  */
 export async function downloadBuyerBillPDF(deal: any): Promise<string> {
+  if (typeof document !== "undefined" && document.querySelector("#print-area")) {
+    const regNo = (deal?.vehicle?.registration_number || deal?.buyer_bill_number || deal?.bill_number || "Bill").replace(/[^a-zA-Z0-9_-]/g, "_");
+    const defaultFileName = `Buyer_Bill_${regNo}.pdf`;
+    return await exportPreviewToPdf("#print-area", defaultFileName);
+  }
+
   const photos = deal?.photos || {};
   const seller = deal?.seller || {};
   const buyer = deal?.buyer || {};
@@ -259,94 +266,7 @@ export async function downloadBuyerBillPDF(deal: any): Promise<string> {
  * Prints the isolated genuine A4 Buyer Bill PDF without printing surrounding UI.
  */
 export async function printBuyerBillPDF(deal: any): Promise<void> {
-  if (typeof window === "undefined") return;
-
-  try {
-    const photos = deal?.photos || {};
-    const seller = deal?.seller || {};
-    const buyer = deal?.buyer || {};
-    const vehicle = deal?.vehicle || {};
-
-    const [
-      buyerPhoto,
-      buyerSignature,
-      buyerThumb,
-      sellerPhoto,
-      sellerSignature,
-      sellerThumb,
-      vehiclePhoto,
-    ] = await Promise.all([
-      resolveImageToDataUrl(
-        photos["buyer-1"] || photos["buyer-portrait"] || photos["buyer_photo"] || buyer.photo
-      ),
-      resolveImageToDataUrl(
-        photos["buyer-signature"] || photos["buyer-8"] || photos["buyer_signature"] || buyer.signature
-      ),
-      resolveImageToDataUrl(
-        photos["buyer-thumb"] || photos["buyer-thumb-impression"] || photos["buyer-2"] || buyer.thumb
-      ),
-      resolveImageToDataUrl(
-        photos["seller-1"] || photos["seller-portrait"] || photos["seller_photo"] || seller.photo
-      ),
-      resolveImageToDataUrl(
-        photos["seller-signature"] || photos["seller-8"] || photos["seller_signature"] || seller.signature
-      ),
-      resolveImageToDataUrl(
-        photos["seller-thumb"] || photos["seller-thumb-impression"] || photos["seller-2"] || seller.thumb
-      ),
-      resolveImageToDataUrl(
-        photos["vehicle-1"] || photos["vehicle_front"] || vehicle.photo
-      ),
-    ]);
-
-    const resolvedImages = {
-      buyerPhoto,
-      buyerSignature,
-      buyerThumb,
-      sellerPhoto,
-      sellerSignature,
-      sellerThumb,
-      vehiclePhoto,
-    };
-
-    const doc = React.createElement(BuyerBillPDF, { deal, resolvedImages }) as any;
-    const instance = pdf(doc);
-    const pdfBlob = await instance.toBlob();
-    const blobUrl = URL.createObjectURL(pdfBlob);
-
-    // Create an invisible iframe to print ONLY the genuine PDF document
-    const iframe = document.createElement("iframe");
-    iframe.style.position = "fixed";
-    iframe.style.right = "0";
-    iframe.style.bottom = "0";
-    iframe.style.width = "0";
-    iframe.style.height = "0";
-    iframe.style.border = "none";
-    iframe.src = blobUrl;
-
-    document.body.appendChild(iframe);
-
-    iframe.onload = () => {
-      setTimeout(() => {
-        try {
-          iframe.contentWindow?.focus();
-          iframe.contentWindow?.print();
-        } catch {
-          window.print();
-        } finally {
-          setTimeout(() => {
-            try {
-              document.body.removeChild(iframe);
-              URL.revokeObjectURL(blobUrl);
-            } catch {
-              // Ignore
-            }
-          }, 3000);
-        }
-      }, 500);
-    };
-  } catch (err) {
-    console.error("Dedicated PDF print failed, using standard print fallback:", err);
+  if (typeof window !== "undefined") {
     window.print();
   }
 }

@@ -1,6 +1,7 @@
 import React, { useState, useCallback } from "react";
 import { pdf } from "@react-pdf/renderer";
 import { SellerBillPDF } from "@/components/pdf/SellerBillPDF";
+import { exportPreviewToPdf } from "@/utils/domToPdf";
 
 /**
  * Converts an SVG data URL to a clean PNG data URL via an off-screen HTML canvas.
@@ -126,6 +127,12 @@ async function resolveImageToDataUrl(imageInput: any): Promise<string | null> {
  * Name format: Bill-001-Seller-Bill.pdf
  */
 export async function downloadSellerBillPDF(deal: any): Promise<string> {
+  if (typeof document !== "undefined" && document.querySelector("#print-area")) {
+    const regNo = (deal?.vehicle?.registration_number || deal?.bill_number || "Bill").replace(/[^a-zA-Z0-9_-]/g, "_");
+    const defaultFileName = `Seller_Agreement_${regNo}.pdf`;
+    return await exportPreviewToPdf("#print-area", defaultFileName);
+  }
+
   const photos = deal?.photos || {};
   const seller = deal?.seller || {};
   const vehicle = deal?.vehicle || {};
