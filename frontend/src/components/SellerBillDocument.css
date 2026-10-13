@@ -205,12 +205,16 @@
   background: #f8fafc;
   overflow: hidden;
   position: relative;
+  box-sizing: border-box;
+  padding: 2px;
 }
 
 .sb-photo-img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
+  object-position: center;
+  display: block;
 }
 
 .sb-photo-placeholder {
@@ -295,18 +299,30 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-end;
-  padding: 3px;
+  justify-content: space-between;
+  padding: 3px 4px;
   background: #f8fafc;
   min-height: 56px;
+  box-sizing: border-box;
+  overflow: hidden;
   position: relative;
+}
+
+.sb-sig-slot {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  min-height: 0;
 }
 
 .sb-sig-img {
   max-width: 90%;
-  max-height: 38px;
+  max-height: 34px;
   object-fit: contain;
-  margin-bottom: 2px;
+  display: block;
 }
 
 .sb-sig-label {
@@ -319,6 +335,9 @@
   width: 100%;
   text-align: center;
   padding-top: 2px;
+  margin-top: 1px;
+  line-height: 1.1;
+  flex-shrink: 0;
 }
 
 /* ── Section 2: Amount Details ─────────────────────────── */
@@ -433,6 +452,8 @@
   background: #f8fafc;
   overflow: hidden;
   position: relative;
+  box-sizing: border-box;
+  padding: 2px;
 }
 
 .sb-vehicle-specs {
@@ -474,6 +495,9 @@
   justify-content: center;
   background: #f8fafc;
   overflow: hidden;
+  position: relative;
+  box-sizing: border-box;
+  padding: 2px;
 }
 
 .sb-witness-fields {
@@ -485,8 +509,8 @@
 }
 
 .sb-witness-sigs {
-  width: 180px;
-  min-width: 180px;
+  width: 190px;
+  min-width: 190px;
   display: flex;
   gap: 8px;
 }
@@ -531,19 +555,39 @@
 .sb-bottom-sig-box {
   border: 1px solid #94a3b8;
   background: #ffffff;
-  height: 58px;
+  height: 60px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-end;
-  padding: 4px;
+  justify-content: space-between;
+  padding: 3px 4px;
   text-align: center;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.sb-bottom-sig-slot {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.sb-bottom-sig-img {
+  max-width: 90%;
+  max-height: 28px;
+  object-fit: contain;
+  display: block;
 }
 
 .sb-bottom-sig-line {
   width: 82%;
   border-top: 1px solid #475569;
-  margin-bottom: 3px;
+  margin-bottom: 2px;
+  flex-shrink: 0;
 }
 
 .sb-bottom-sig-title {
@@ -551,19 +595,16 @@
   font-weight: 800;
   color: #0a2342;
   text-transform: uppercase;
+  flex-shrink: 0;
+  line-height: 1.1;
 }
 
 .sb-bottom-sig-sub {
   font-size: 7.8px;
   font-weight: 600;
   color: #64748b;
-}
-
-.sb-bottom-sig-img {
-  max-width: 90%;
-  max-height: 28px;
-  object-fit: contain;
-  margin-bottom: 2px;
+  flex-shrink: 0;
+  line-height: 1.1;
 }
 
 /* ── Print Isolation ───────────────────────────────────── */

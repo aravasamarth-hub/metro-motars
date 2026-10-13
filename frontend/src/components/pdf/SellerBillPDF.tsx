@@ -157,11 +157,12 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     overflow: "hidden",
+    padding: 2,
   },
   photoImg: {
     width: "100%",
     height: "100%",
-    objectFit: "cover",
+    objectFit: "contain",
   },
   photoPlaceholderText: {
     fontSize: 6,
@@ -217,15 +218,21 @@ const styles = StyleSheet.create({
     borderColor: "#94a3b8",
     backgroundColor: "#f8fafc",
     alignItems: "center",
-    justifyContent: "flex-end",
+    justifyContent: "space-between",
     padding: 2,
     minHeight: 46,
+    overflow: "hidden",
+  },
+  sigSlot: {
+    flex: 1,
+    width: "100%",
+    alignItems: "center",
+    justifyContent: "center",
   },
   sigImg: {
     maxWidth: "85%",
-    maxHeight: 30,
+    maxHeight: 28,
     objectFit: "contain",
-    marginBottom: 1,
   },
   sigLabel: {
     fontSize: 6.2,
@@ -285,6 +292,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     overflow: "hidden",
+    padding: 2,
   },
   vehicleSpecs: {
     flex: 1.3,
@@ -307,6 +315,8 @@ const styles = StyleSheet.create({
     backgroundColor: "#f8fafc",
     justifyContent: "center",
     alignItems: "center",
+    overflow: "hidden",
+    padding: 2,
   },
   witnessFields: {
     flex: 1,
@@ -348,8 +358,15 @@ const styles = StyleSheet.create({
     borderColor: "#94a3b8",
     height: 48,
     alignItems: "center",
-    justifyContent: "flex-end",
+    justifyContent: "space-between",
     padding: 3,
+    overflow: "hidden",
+  },
+  bottomSigSlot: {
+    flex: 1,
+    width: "100%",
+    alignItems: "center",
+    justifyContent: "center",
   },
   bottomSigLine: {
     width: "75%",
@@ -567,11 +584,15 @@ export function SellerBillPDF({ deal, resolvedImages }: SellerBillProps) {
             {/* Signature & Thumb */}
             <View style={styles.sigColumn}>
               <View style={styles.sigBox}>
-                {isValidRasterImage(sellerSign) ? <Image src={sellerSign!} style={styles.sigImg} /> : null}
+                <View style={styles.sigSlot}>
+                  {isValidRasterImage(sellerSign) ? <Image src={sellerSign!} style={styles.sigImg} /> : null}
+                </View>
                 <Text style={styles.sigLabel}>Owner Signature</Text>
               </View>
               <View style={styles.sigBox}>
-                {isValidRasterImage(sellerThumb) ? <Image src={sellerThumb!} style={styles.sigImg} /> : null}
+                <View style={styles.sigSlot}>
+                  {isValidRasterImage(sellerThumb) ? <Image src={sellerThumb!} style={styles.sigImg} /> : null}
+                </View>
                 <Text style={styles.sigLabel}>Owner Thumb</Text>
               </View>
             </View>
@@ -724,11 +745,15 @@ export function SellerBillPDF({ deal, resolvedImages }: SellerBillProps) {
             </View>
             <View style={styles.witnessSigs}>
               <View style={styles.sigBox}>
-                {isValidRasterImage(witnessSign) ? <Image src={witnessSign!} style={styles.sigImg} /> : null}
+                <View style={styles.sigSlot}>
+                  {isValidRasterImage(witnessSign) ? <Image src={witnessSign!} style={styles.sigImg} /> : null}
+                </View>
                 <Text style={styles.sigLabel}>Witness Signature</Text>
               </View>
               <View style={styles.sigBox}>
-                {isValidRasterImage(witnessThumb) ? <Image src={witnessThumb!} style={styles.sigImg} /> : null}
+                <View style={styles.sigSlot}>
+                  {isValidRasterImage(witnessThumb) ? <Image src={witnessThumb!} style={styles.sigImg} /> : null}
+                </View>
                 <Text style={styles.sigLabel}>Witness Thumb</Text>
               </View>
             </View>
@@ -763,21 +788,26 @@ export function SellerBillPDF({ deal, resolvedImages }: SellerBillProps) {
           {/* Signatures */}
           <View style={styles.bottomSignatures}>
             <View style={styles.bottomSigBox}>
-              {isValidRasterImage(sellerSign) && (
-                <Image src={sellerSign!} style={styles.bottomSigImg} />
-              )}
+              <View style={styles.bottomSigSlot}>
+                {isValidRasterImage(sellerSign) && (
+                  <Image src={sellerSign!} style={styles.bottomSigImg} />
+                )}
+              </View>
               <View style={styles.bottomSigLine} />
               <Text style={styles.bottomSigTitle}>Owner (Seller) Signature</Text>
             </View>
             <View style={styles.bottomSigBox}>
+              <View style={styles.bottomSigSlot} />
               <View style={styles.bottomSigLine} />
               <Text style={styles.bottomSigTitle}>For METRO MOTORS</Text>
               <Text style={styles.bottomSigSub}>(Authorized Representative)</Text>
             </View>
             <View style={styles.bottomSigBox}>
-              {isValidRasterImage(witnessSign) && (
-                <Image src={witnessSign!} style={styles.bottomSigImg} />
-              )}
+              <View style={styles.bottomSigSlot}>
+                {isValidRasterImage(witnessSign) && (
+                  <Image src={witnessSign!} style={styles.bottomSigImg} />
+                )}
+              </View>
               <View style={styles.bottomSigLine} />
               <Text style={styles.bottomSigTitle}>Witness Signature</Text>
             </View>

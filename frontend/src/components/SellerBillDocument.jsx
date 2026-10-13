@@ -249,21 +249,25 @@ export default function SellerBillDocument({ deal = {} }) {
           {/* Owner Signature & Thumb Boxes */}
           <div className="sb-signatures-cell">
             <div className="sb-sig-box">
-              {sellerSignSrc ? (
-                <img src={sellerSignSrc} alt="Signature" className="sb-sig-img" />
-              ) : null}
+              <div className="sb-sig-slot">
+                {sellerSignSrc ? (
+                  <img src={sellerSignSrc} alt="Signature" className="sb-sig-img" />
+                ) : null}
+              </div>
               <span className="sb-sig-label">Owner Signature</span>
             </div>
             <div className="sb-sig-box">
-              {sellerThumbSrc ? (
-                <img src={sellerThumbSrc} alt="Thumb" className="sb-sig-img" />
-              ) : (
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="1.5">
-                  <path d="M12 2a10 10 0 0 0-10 10c0 4.1 2.5 7.6 6 9.1" />
-                  <path d="M12 6a6 6 0 0 0-6 6c0 2.5 1.5 4.6 3.6 5.5" />
-                  <path d="M12 10a2 2 0 0 0-2 2c0 .9.6 1.7 1.4 1.9" />
-                </svg>
-              )}
+              <div className="sb-sig-slot">
+                {sellerThumbSrc ? (
+                  <img src={sellerThumbSrc} alt="Thumb" className="sb-sig-img" />
+                ) : (
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="1.5">
+                    <path d="M12 2a10 10 0 0 0-10 10c0 4.1 2.5 7.6 6 9.1" />
+                    <path d="M12 6a6 6 0 0 0-6 6c0 2.5 1.5 4.6 3.6 5.5" />
+                    <path d="M12 10a2 2 0 0 0-2 2c0 .9.6 1.7 1.4 1.9" />
+                  </svg>
+                )}
+              </div>
               <span className="sb-sig-label">Owner Thumb</span>
             </div>
           </div>
@@ -477,20 +481,24 @@ export default function SellerBillDocument({ deal = {} }) {
           {/* Witness Signatures */}
           <div className="sb-witness-sigs">
             <div className="sb-sig-box">
-              {witnessSignSrc ? (
-                <img src={witnessSignSrc} alt="Witness Sign" className="sb-sig-img" />
-              ) : null}
+              <div className="sb-sig-slot">
+                {witnessSignSrc ? (
+                  <img src={witnessSignSrc} alt="Witness Sign" className="sb-sig-img" />
+                ) : null}
+              </div>
               <span className="sb-sig-label">Witness Signature</span>
             </div>
             <div className="sb-sig-box">
-              {witnessThumbSrc ? (
-                <img src={witnessThumbSrc} alt="Witness Thumb" className="sb-sig-img" />
-              ) : (
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="1.5">
-                  <path d="M12 2a10 10 0 0 0-10 10c0 4.1 2.5 7.6 6 9.1" />
-                  <path d="M12 6a6 6 0 0 0-6 6c0 2.5 1.5 4.6 3.6 5.5" />
-                </svg>
-              )}
+              <div className="sb-sig-slot">
+                {witnessThumbSrc ? (
+                  <img src={witnessThumbSrc} alt="Witness Thumb" className="sb-sig-img" />
+                ) : (
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="1.5">
+                    <path d="M12 2a10 10 0 0 0-10 10c0 4.1 2.5 7.6 6 9.1" />
+                    <path d="M12 6a6 6 0 0 0-6 6c0 2.5 1.5 4.6 3.6 5.5" />
+                  </svg>
+                )}
+              </div>
               <span className="sb-sig-label">Witness Thumb</span>
             </div>
           </div>
@@ -527,23 +535,28 @@ export default function SellerBillDocument({ deal = {} }) {
         {/* ===================== BOTTOM SIGNATURE BLOCKS ===================== */}
         <div className="sb-bottom-signatures">
           <div className="sb-bottom-sig-box">
-            {sellerSignSrc ? (
-              <img src={sellerSignSrc} alt="Owner Signature" className="sb-bottom-sig-img" />
-            ) : null}
+            <div className="sb-bottom-sig-slot">
+              {sellerSignSrc ? (
+                <img src={sellerSignSrc} alt="Owner Signature" className="sb-bottom-sig-img" />
+              ) : null}
+            </div>
             <div className="sb-bottom-sig-line"></div>
             <span className="sb-bottom-sig-title">Owner (Seller) Signature</span>
           </div>
 
           <div className="sb-bottom-sig-box">
+            <div className="sb-bottom-sig-slot"></div>
             <div className="sb-bottom-sig-line"></div>
             <span className="sb-bottom-sig-title">For METRO MOTORS</span>
             <span className="sb-bottom-sig-sub">(Authorized Representative)</span>
           </div>
 
           <div className="sb-bottom-sig-box">
-            {witnessSignSrc ? (
-              <img src={witnessSignSrc} alt="Witness Signature" className="sb-bottom-sig-img" />
-            ) : null}
+            <div className="sb-bottom-sig-slot">
+              {witnessSignSrc ? (
+                <img src={witnessSignSrc} alt="Witness Signature" className="sb-bottom-sig-img" />
+              ) : null}
+            </div>
             <div className="sb-bottom-sig-line"></div>
             <span className="sb-bottom-sig-title">Witness Signature</span>
           </div>
