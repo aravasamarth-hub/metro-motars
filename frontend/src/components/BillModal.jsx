@@ -32,6 +32,7 @@ import "./SaleAgreementBill.css";
 import { downloadSellerBillPDF, printSellerBillPDF } from "@/hooks/useSellerBill";
 import { downloadBuyerBillPDF, printBuyerBillPDF } from "@/hooks/useBuyerBill";
 import { downloadBondAgreementPDF, printBondAgreement } from "@/hooks/useBondAgreement";
+import { exportPreviewToPdf } from "@/utils/domToPdf";
 import { dealRepository } from "@/data/dealRepository";
 import { useLanguage } from "@/features/i18n/LanguageContext";
 
@@ -224,19 +225,34 @@ export default function BillModal({
     setDownloading(true);
     setDownloadSuccess("");
     try {
-      let fileName = "";
-      if (activeDoc === "buyer-bill") {
-        fileName = await downloadBuyerBillPDF(editableDeal);
-      } else if (activeDoc === "bond-agreement") {
-        fileName = await downloadBondAgreementPDF(editableDeal);
-      } else {
-        fileName = await downloadSellerBillPDF(editableDeal);
-      }
+      const regNo = (editableDeal?.vehicle?.reg_number || editableDeal?.vehicle?.regNo || editableDeal?.id || "deal")
+        .replace(/[^a-zA-Z0-9_-]/g, "_");
+      const defaultFileName =
+        activeDoc === "buyer-bill"
+          ? `Buyer_Bill_${regNo}.pdf`
+          : activeDoc === "bond-agreement"
+          ? `Bond_Agreement_${regNo}.pdf`
+          : `Seller_Agreement_${regNo}.pdf`;
+
+      const fileName = await exportPreviewToPdf("#print-area", defaultFileName);
       setDownloadSuccess(fileName);
       setTimeout(() => setDownloadSuccess(""), 4000);
     } catch (err) {
-      console.error("PDF download failed, falling back to print:", err);
-      window.print();
+      console.error("Direct preview PDF capture error, falling back to react-pdf / print:", err);
+      try {
+        let fallbackName = "";
+        if (activeDoc === "buyer-bill") {
+          fallbackName = await downloadBuyerBillPDF(editableDeal);
+        } else if (activeDoc === "bond-agreement") {
+          fallbackName = await downloadBondAgreementPDF(editableDeal);
+        } else {
+          fallbackName = await downloadSellerBillPDF(editableDeal);
+        }
+        setDownloadSuccess(fallbackName);
+        setTimeout(() => setDownloadSuccess(""), 4000);
+      } catch (e) {
+        window.print();
+      }
     } finally {
       setDownloading(false);
     }
