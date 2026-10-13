@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, CheckCircle2, FileText, Pencil } from "lucide-react";
+import { ArrowLeft, CheckCircle2, FileText, Pencil, ShieldCheck } from "lucide-react";
 import { dealRepository } from "@/data/dealRepository";
 import { DealSummary } from "@/features/deals/DealSummary";
 import { StatusBadges } from "@/features/deals/LocalUI";
@@ -114,6 +114,14 @@ export default function DealView() {
               title="Open Seller Agreement"
             >
               <FileText size={16}/> <span>{t("bills.generate_bill", "Seller Agreement")}</span>
+            </button>
+            <button
+              className="button button-secondary"
+              onClick={() => { setDocType("bond-agreement"); setBillOpen(true); }}
+              data-testid="deal-view-bond-agreement"
+              title="Open E-Stamp Bond Agreement (7 Pages)"
+            >
+              <ShieldCheck size={16}/> <span>Bond Agreement</span>
             </button>
             <button className="button button-secondary" onClick={() => navigate(`/new-deal/${deal.id}`)} data-testid="deal-view-edit">
               <Pencil size={16}/> {t("deal.edit_deal", "Edit Deal")}

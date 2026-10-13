@@ -23,12 +23,15 @@ import {
   FileText,
   AlertTriangle,
   CheckCircle2,
+  ShieldCheck,
 } from "lucide-react";
 import SellerBillDocument from "./SellerBillDocument";
 import BuyerBillDocument from "./BuyerBillDocument";
+import BondAgreementDocument from "./BondAgreementDocument";
 import "./SaleAgreementBill.css";
 import { downloadSellerBillPDF, printSellerBillPDF } from "@/hooks/useSellerBill";
 import { downloadBuyerBillPDF, printBuyerBillPDF } from "@/hooks/useBuyerBill";
+import { downloadBondAgreementPDF, printBondAgreement } from "@/hooks/useBondAgreement";
 import { dealRepository } from "@/data/dealRepository";
 import { useLanguage } from "@/features/i18n/LanguageContext";
 
@@ -207,6 +210,8 @@ export default function BillModal({
     try {
       if (activeDoc === "buyer-bill") {
         await printBuyerBillPDF(editableDeal);
+      } else if (activeDoc === "bond-agreement") {
+        await printBondAgreement(editableDeal);
       } else {
         await printSellerBillPDF(editableDeal);
       }
@@ -222,6 +227,8 @@ export default function BillModal({
       let fileName = "";
       if (activeDoc === "buyer-bill") {
         fileName = await downloadBuyerBillPDF(editableDeal);
+      } else if (activeDoc === "bond-agreement") {
+        fileName = await downloadBondAgreementPDF(editableDeal);
       } else {
         fileName = await downloadSellerBillPDF(editableDeal);
       }
@@ -238,7 +245,8 @@ export default function BillModal({
   const rawBuyerBn = editableDeal.buyer_bill_number || editableDeal.bill_number || editableDeal.billNumber || "BB-001";
   const buyerBillNumber = rawBuyerBn.startsWith("Bill-") ? rawBuyerBn.replace("Bill-", "BB-") : rawBuyerBn;
   const sellerBillNumber = editableDeal.bill_number || editableDeal.billNumber || "Bill-001";
-  const billNumber = activeDoc === "buyer-bill" ? buyerBillNumber : sellerBillNumber;
+  const bondNumber = "BOND-" + (editableDeal.id ? editableDeal.id.slice(0, 8) : "001");
+  const billNumber = activeDoc === "buyer-bill" ? buyerBillNumber : activeDoc === "bond-agreement" ? bondNumber : sellerBillNumber;
 
   const seller = editableDeal.seller || {};
   const vehicle = editableDeal.vehicle || {};
@@ -302,10 +310,23 @@ export default function BillModal({
                 <FileText size={13} />
                 <span>Seller Agreement</span>
               </button>
+              <button
+                type="button"
+                className={`doc-type-toggle-btn ${activeDoc === "bond-agreement" ? "active" : ""}`}
+                onClick={() => { setActiveDoc("bond-agreement"); setActiveTab("general"); }}
+                data-testid="switch-doc-bond-agreement"
+              >
+                <ShieldCheck size={13} />
+                <span>Bond Agreement</span>
+              </button>
             </div>
 
             <span className="bill-modal-badge" data-testid="bill-modal-doc-title">
-              {activeDoc === "buyer-bill" ? "Buyer Bill / Sale Receipt" : "Vehicle Handover Agreement"}
+              {activeDoc === "buyer-bill"
+                ? "Buyer Bill / Sale Receipt"
+                : activeDoc === "bond-agreement"
+                ? "E-Stamp Bond Agreement (7 Pages)"
+                : "Vehicle Handover Agreement"}
             </span>
             <span className="bill-modal-separator">·</span>
             <strong className="bill-modal-number">{billNumber}</strong>
@@ -1206,6 +1227,20 @@ export default function BillModal({
                 {activeTab === "general" && (
                   <div className="bill-form-section">
                     <div className="bill-field-group">
+                      <label>E-Stamp Certificate Number</label>
+                      <input
+                        type="text"
+                        value={editableDeal.eStampNumber || editableDeal.bondCertificateNo || editableDeal.e_stamp_number || ""}
+                        onChange={(e) => {
+                          updateGeneral("eStampNumber", e.target.value);
+                          updateGeneral("e_stamp_number", e.target.value);
+                        }}
+                        placeholder="e.g. IN-KA12345678901234V"
+                        data-testid="edit-estamp-number"
+                      />
+                    </div>
+
+                    <div className="bill-field-group">
                       <label>Bill Number (Sl. No.)</label>
                       <input
                         type="text"
@@ -1344,6 +1379,8 @@ export default function BillModal({
             >
               {activeDoc === "buyer-bill" ? (
                 <BuyerBillDocument deal={editableDeal} />
+              ) : activeDoc === "bond-agreement" ? (
+                <BondAgreementDocument deal={editableDeal} />
               ) : (
                 <SellerBillDocument deal={editableDeal} />
               )}

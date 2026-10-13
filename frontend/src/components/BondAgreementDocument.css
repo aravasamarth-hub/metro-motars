@@ -1,0 +1,444 @@
+/* ==========================================================================
+   METRO MOTORS - BOND AGREEMENT / E-STAMP VEHICLE PURCHASE & SALE AGREEMENT
+   Exact 7-Page Bilingual (Kannada + English) A4 Layout
+   ========================================================================== */
+
+.bond-agreement-wrapper {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  padding: 10px 0;
+  box-sizing: border-box;
+  background: transparent;
+}
+
+.bond-page {
+  position: relative;
+  width: 794px;
+  min-width: 794px;
+  max-width: 794px;
+  min-height: 1123px;
+  height: 1123px;
+  background-color: #ffffff;
+  color: #111827;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", "Nirmala UI", "Tunga", Arial, sans-serif;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  border: 1px solid #d1d5db;
+  box-sizing: border-box;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 36px 44px 30px 44px;
+  user-select: text;
+}
+
+/* ── Top Header / E-Stamp Header ── */
+.bond-estamp-header {
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+  align-items: baseline;
+  font-size: 11px;
+  font-weight: 700;
+  color: #1f2937;
+  border-bottom: 1px solid #e5e7eb;
+  padding-bottom: 6px;
+  margin-bottom: 16px;
+  flex-shrink: 0;
+}
+
+.bond-estamp-label {
+  font-family: "Segoe UI", Tahoma, sans-serif;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  margin-right: 6px;
+}
+
+.bond-estamp-val {
+  font-family: monospace;
+  font-weight: 700;
+  font-size: 11.5px;
+  letter-spacing: 0.5px;
+  min-width: 180px;
+  display: inline-block;
+  border-bottom: 1px dashed #9ca3af;
+  padding: 0 4px;
+  color: #0f172a;
+}
+
+/* ── Page Footer ── */
+.bond-page-footer {
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  font-size: 10px;
+  font-weight: 600;
+  color: #6b7280;
+  border-top: 1px solid #e5e7eb;
+  padding-top: 6px;
+  margin-top: auto;
+  flex-shrink: 0;
+}
+
+/* ── Page 1 Content Layout ── */
+.bond-page1-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding-bottom: 80px;
+  text-align: center;
+}
+
+.bond-page1-date-row {
+  display: flex;
+  justify-content: flex-end;
+  align-items: baseline;
+  font-size: 12px;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 18px;
+}
+
+.bond-date-fill {
+  font-family: monospace;
+  font-weight: 700;
+  padding: 0 8px;
+  border-bottom: 1px solid #374151;
+  margin: 0 4px;
+  min-width: 90px;
+  display: inline-block;
+}
+
+.bond-page1-title-kannada {
+  font-size: 20px;
+  font-weight: 900;
+  color: #111827;
+  margin: 0 0 6px 0;
+  line-height: 1.3;
+}
+
+.bond-page1-title-english {
+  font-size: 14.5px;
+  font-weight: 800;
+  color: #1f2937;
+  letter-spacing: 0.8px;
+  margin: 0 0 10px 0;
+}
+
+.bond-page1-asterisks {
+  font-size: 14px;
+  letter-spacing: 3px;
+  color: #4b5563;
+  margin-bottom: 14px;
+}
+
+.bond-page1-intro-kannada {
+  font-size: 12px;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 0 0 4px 0;
+}
+
+.bond-page1-intro-english {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #374151;
+  font-style: italic;
+  margin: 0;
+}
+
+/* ── Section Titles ── */
+.bond-section-heading {
+  background: #f3f4f6;
+  border-left: 4px solid #1e3a5f;
+  padding: 5px 10px;
+  font-size: 11.5px;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 10px 0 6px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.bond-checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin: 4px 0 6px 0;
+  font-size: 11px;
+  font-weight: 600;
+  color: #374151;
+}
+
+.bond-checkbox-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.bond-box-check {
+  width: 12px;
+  height: 12px;
+  border: 1.2px solid #374151;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+/* ── Tables ── */
+.bond-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 6px;
+  font-size: 10.5px;
+}
+
+.bond-table td {
+  border: 1px solid #cbd5e1;
+  padding: 4px 8px;
+  vertical-align: middle;
+}
+
+.bond-table .bond-td-label {
+  background-color: #f8fafc;
+  color: #1e293b;
+  font-weight: 700;
+  width: 32%;
+}
+
+.bond-table .bond-td-val {
+  color: #0f172a;
+  font-weight: 600;
+}
+
+.bond-subtext-note {
+  font-size: 9.5px;
+  font-style: italic;
+  color: #475569;
+  margin: 3px 0 8px 0;
+}
+
+/* ── Clauses / Legal Text ── */
+.bond-clause-block {
+  margin-bottom: 8px;
+  line-height: 1.38;
+}
+
+.bond-clause-kannada {
+  font-size: 10.2px;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 2px;
+}
+
+.bond-clause-kannada strong {
+  font-weight: 800;
+  color: #0a2342;
+}
+
+.bond-clause-english {
+  font-size: 9.6px;
+  font-weight: 500;
+  color: #374151;
+}
+
+.bond-clause-english strong {
+  font-weight: 700;
+  color: #0a2342;
+}
+
+/* ── Delivery Details ── */
+.bond-delivery-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border: 1px solid #cbd5e1;
+  margin: 6px 0 10px 0;
+}
+
+.bond-delivery-cell {
+  padding: 6px 10px;
+  border-right: 1px solid #cbd5e1;
+}
+
+.bond-delivery-cell:last-child {
+  border-right: none;
+}
+
+.bond-delivery-lbl {
+  font-size: 10px;
+  font-weight: 700;
+  color: #475569;
+  display: block;
+  margin-bottom: 2px;
+}
+
+.bond-delivery-val {
+  font-size: 11.5px;
+  font-weight: 800;
+  color: #0a2342;
+  font-family: monospace;
+}
+
+/* ── Signature Cards (Execution) ── */
+.bond-sigs-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 10px;
+}
+
+.bond-sig-card {
+  border: 1px solid #cbd5e1;
+  border-radius: 3px;
+  padding: 8px 12px;
+  background: #f8fafc;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 105px;
+}
+
+.bond-sig-card-title {
+  font-size: 10.5px;
+  font-weight: 800;
+  color: #0a2342;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 4px;
+  margin-bottom: 6px;
+  text-align: center;
+}
+
+.bond-sig-preview-slot {
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.bond-sig-preview-img {
+  max-height: 38px;
+  max-width: 90%;
+  object-fit: contain;
+}
+
+.bond-sig-card-line {
+  border-top: 1px solid #475569;
+  margin: 4px 0;
+}
+
+.bond-sig-card-label {
+  font-size: 9px;
+  font-weight: 700;
+  color: #475569;
+  text-align: center;
+}
+
+.bond-sig-card-date {
+  font-size: 9.5px;
+  font-weight: 600;
+  color: #334155;
+  margin-top: 2px;
+}
+
+/* ── Witness Cards (Page 7) ── */
+.bond-witnesses-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  margin-top: 12px;
+}
+
+.bond-witness-card {
+  border: 1px solid #cbd5e1;
+  padding: 12px 14px;
+  background: #ffffff;
+}
+
+.bond-witness-card-title {
+  font-size: 11px;
+  font-weight: 800;
+  color: #0a2342;
+  margin-bottom: 12px;
+  border-bottom: 1.5px solid #0a2342;
+  padding-bottom: 4px;
+}
+
+.bond-witness-field {
+  margin-bottom: 14px;
+}
+
+.bond-witness-field-lbl {
+  font-size: 10px;
+  font-weight: 700;
+  color: #475569;
+  margin-bottom: 2px;
+  display: block;
+}
+
+.bond-witness-field-line {
+  min-height: 18px;
+  border-bottom: 1px solid #94a3b8;
+  font-size: 11px;
+  font-weight: 700;
+  color: #0f172a;
+  padding-bottom: 1px;
+}
+
+.bond-witness-sig-slot {
+  min-height: 40px;
+  border-bottom: 1px solid #475569;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  margin-top: 4px;
+}
+
+/* ── Print Isolation ── */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 0;
+  }
+
+  body {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+  }
+
+  .bond-agreement-wrapper {
+    padding: 0 !important;
+    margin: 0 !important;
+    display: block !important;
+  }
+
+  .bond-page {
+    page-break-after: always !important;
+    page-break-inside: avoid !important;
+    box-shadow: none !important;
+    border: none !important;
+    width: 210mm !important;
+    height: 297mm !important;
+    min-width: 210mm !important;
+    min-height: 297mm !important;
+    max-width: 210mm !important;
+    padding: 12mm 16mm 10mm 16mm !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .bond-page:last-child {
+    page-break-after: avoid !important;
+  }
+}
