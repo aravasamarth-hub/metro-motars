@@ -4,6 +4,7 @@ import { personFields, witnessFields } from "./fieldConfig";
 import { PhotoSlots } from "./PhotoSlots";
 import { PartyIdentityRow } from "./PartyIdentityRow";
 import { Seller } from "@/components/Seller";
+import { Buyer } from "@/components/Buyer";
 import { useLanguage } from "@/features/i18n/LanguageContext";
 import { money } from "./dealModel";
 
@@ -13,6 +14,19 @@ export const PersonStep = ({ group, deal, updateSection, updateWitness, setPhoto
   if (group === "seller") {
     return (
       <Seller
+        group={group}
+        deal={deal}
+        updateSection={updateSection}
+        updateWitness={updateWitness}
+        setPhoto={setPhoto}
+        errors={errors}
+      />
+    );
+  }
+
+  if (group === "buyer") {
+    return (
+      <Buyer
         group={group}
         deal={deal}
         updateSection={updateSection}

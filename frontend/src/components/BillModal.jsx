@@ -25,8 +25,10 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import SellerBillDocument from "./SellerBillDocument";
+import BuyerBillDocument from "./BuyerBillDocument";
 import "./SaleAgreementBill.css";
 import { downloadSellerBillPDF, printSellerBillPDF } from "@/hooks/useSellerBill";
+import { downloadBuyerBillPDF, printBuyerBillPDF } from "@/hooks/useBuyerBill";
 import { dealRepository } from "@/data/dealRepository";
 import { useLanguage } from "@/features/i18n/LanguageContext";
 
@@ -39,8 +41,9 @@ export default function BillModal({
 }) {
   const { t } = useLanguage();
   const [editableDeal, setEditableDeal] = useState(null);
+  const [activeDoc, setActiveDoc] = useState(initialDocument || "seller-bill");
   const [showEditor, setShowEditor] = useState(true);
-  const [activeTab, setActiveTab] = useState("seller");
+  const [activeTab, setActiveTab] = useState(initialDocument === "buyer-bill" ? "buyer" : "seller");
   const [zoom, setZoom] = useState(1);
   const [downloading, setDownloading] = useState(false);
   const [downloadSuccess, setDownloadSuccess] = useState("");
@@ -59,10 +62,13 @@ export default function BillModal({
       } catch (e) {
         setEditableDeal({ ...deal });
       }
+      const targetDoc = initialDocument || "seller-bill";
+      setActiveDoc(targetDoc);
+      setActiveTab(targetDoc === "buyer-bill" ? "buyer" : "seller");
       setSaveNotice("");
       setDownloadSuccess("");
     }
-  }, [isOpen, deal]);
+  }, [isOpen, deal, initialDocument]);
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -122,6 +128,18 @@ export default function BillModal({
     });
   };
 
+  const updateWitness2 = (key, value) => {
+    setEditableDeal((prev) => {
+      const witnesses = [...(prev?.witnesses || [{}, {}])];
+      witnesses[1] = { ...(witnesses[1] || {}), [key]: value };
+      return {
+        ...prev,
+        witnesses,
+        witness2: { ...(prev?.witness2 || {}), [key]: value },
+      };
+    });
+  };
+
   const updateGeneral = (key, value) => {
     setEditableDeal((prev) => ({
       ...prev,
@@ -131,10 +149,20 @@ export default function BillModal({
 
   const autoCalculateBalance = () => {
     const p = editableDeal?.payments || {};
-    const price = Number(p.purchase_price ?? p.selling_price ?? 0);
-    const advance = Number(p.paid_to_seller ?? p.received_from_buyer ?? 0);
-    const bal = Math.max(0, price - advance);
-    updatePayments("balanceAmount", bal);
+    if (activeDoc === "buyer-bill") {
+      const price = Number(p.selling_price ?? 0);
+      const discount = Number(p.discount ?? 0);
+      const addl = Number(p.additional_charges ?? 0);
+      const invoiceAmt = Math.max(0, price - discount + addl);
+      const received = Number(p.received_from_buyer ?? 0);
+      const bal = Math.max(0, invoiceAmt - received);
+      updatePayments("balanceAmount", bal);
+    } else {
+      const price = Number(p.purchase_price ?? p.selling_price ?? 0);
+      const advance = Number(p.paid_to_seller ?? p.received_from_buyer ?? 0);
+      const bal = Math.max(0, price - advance);
+      updatePayments("balanceAmount", bal);
+    }
   };
 
   const handleReset = () => {
@@ -177,7 +205,11 @@ export default function BillModal({
 
   const handlePrint = async () => {
     try {
-      await printSellerBillPDF(editableDeal);
+      if (activeDoc === "buyer-bill") {
+        await printBuyerBillPDF(editableDeal);
+      } else {
+        await printSellerBillPDF(editableDeal);
+      }
     } catch (err) {
       window.print();
     }
@@ -187,7 +219,12 @@ export default function BillModal({
     setDownloading(true);
     setDownloadSuccess("");
     try {
-      const fileName = await downloadSellerBillPDF(editableDeal);
+      let fileName = "";
+      if (activeDoc === "buyer-bill") {
+        fileName = await downloadBuyerBillPDF(editableDeal);
+      } else {
+        fileName = await downloadSellerBillPDF(editableDeal);
+      }
       setDownloadSuccess(fileName);
       setTimeout(() => setDownloadSuccess(""), 4000);
     } catch (err) {
@@ -198,8 +235,10 @@ export default function BillModal({
     }
   };
 
-  const billNumber =
-    editableDeal.bill_number || editableDeal.billNumber || "Bill-001";
+  const rawBuyerBn = editableDeal.buyer_bill_number || editableDeal.bill_number || editableDeal.billNumber || "BB-001";
+  const buyerBillNumber = rawBuyerBn.startsWith("Bill-") ? rawBuyerBn.replace("Bill-", "BB-") : rawBuyerBn;
+  const sellerBillNumber = editableDeal.bill_number || editableDeal.billNumber || "Bill-001";
+  const billNumber = activeDoc === "buyer-bill" ? buyerBillNumber : sellerBillNumber;
 
   const seller = editableDeal.seller || {};
   const vehicle = editableDeal.vehicle || {};
@@ -207,16 +246,26 @@ export default function BillModal({
   const buyer = editableDeal.buyer || {};
   const witness1 =
     editableDeal.witness1 || (editableDeal.witnesses && editableDeal.witnesses[0]) || {};
+  const witness2 =
+    editableDeal.witness2 || (editableDeal.witnesses && editableDeal.witnesses[1]) || {};
 
   const missingFields = [];
-  if (!seller.name) missingFields.push("Seller Name");
-  if (!seller.phone && !seller.mobile) missingFields.push("Mobile");
-  if (!seller.id_number && !seller.aadhaar) missingFields.push("Aadhaar");
-  if (!vehicle.vehicle_name) missingFields.push("Vehicle Name");
-  if (!vehicle.registration_number && !vehicle.vehicle_number) missingFields.push("Reg Number");
-  if (!vehicle.engine_number && !vehicle.engineNumber) missingFields.push("Engine No");
-  if (!vehicle.chassis_number && !vehicle.chassisNumber) missingFields.push("Chassis No");
-  if (!payments.purchase_price) missingFields.push("Purchase Amount");
+  if (activeDoc === "buyer-bill") {
+    if (!buyer.name) missingFields.push("Buyer Name");
+    if (!buyer.phone && !buyer.mobile) missingFields.push("Mobile");
+    if (!vehicle.vehicle_name) missingFields.push("Vehicle Name");
+    if (!vehicle.registration_number && !vehicle.vehicle_number) missingFields.push("Reg Number");
+    if (!payments.selling_price) missingFields.push("Selling Price");
+  } else {
+    if (!seller.name) missingFields.push("Seller Name");
+    if (!seller.phone && !seller.mobile) missingFields.push("Mobile");
+    if (!seller.id_number && !seller.aadhaar) missingFields.push("Aadhaar");
+    if (!vehicle.vehicle_name) missingFields.push("Vehicle Name");
+    if (!vehicle.registration_number && !vehicle.vehicle_number) missingFields.push("Reg Number");
+    if (!vehicle.engine_number && !vehicle.engineNumber) missingFields.push("Engine No");
+    if (!vehicle.chassis_number && !vehicle.chassisNumber) missingFields.push("Chassis No");
+    if (!payments.purchase_price) missingFields.push("Purchase Amount");
+  }
 
   const modalContent = (
     <div
@@ -234,8 +283,29 @@ export default function BillModal({
         {/* Top Control Bar (hidden in print) */}
         <div className="bill-modal-bar no-print">
           <div className="bill-modal-title">
+            <div className="bill-document-switcher" role="tablist">
+              <button
+                type="button"
+                className={`doc-type-toggle-btn ${activeDoc === "buyer-bill" ? "active" : ""}`}
+                onClick={() => { setActiveDoc("buyer-bill"); setActiveTab("buyer"); }}
+                data-testid="switch-doc-buyer-bill"
+              >
+                <FileText size={13} />
+                <span>Buyer Bill</span>
+              </button>
+              <button
+                type="button"
+                className={`doc-type-toggle-btn ${activeDoc === "seller-bill" ? "active" : ""}`}
+                onClick={() => { setActiveDoc("seller-bill"); setActiveTab("seller"); }}
+                data-testid="switch-doc-seller-bill"
+              >
+                <FileText size={13} />
+                <span>Seller Agreement</span>
+              </button>
+            </div>
+
             <span className="bill-modal-badge" data-testid="bill-modal-doc-title">
-              Vehicle Handover Agreement
+              {activeDoc === "buyer-bill" ? "Buyer Bill / Sale Receipt" : "Vehicle Handover Agreement"}
             </span>
             <span className="bill-modal-separator">·</span>
             <strong className="bill-modal-number">{billNumber}</strong>
@@ -372,15 +442,27 @@ export default function BillModal({
 
               {/* Navigation Tabs */}
               <div className="bill-editor-tabs" role="tablist">
-                <button
-                  type="button"
-                  className={`bill-tab-btn ${activeTab === "seller" ? "active" : ""}`}
-                  onClick={() => setActiveTab("seller")}
-                  title="Seller details"
-                >
-                  <User size={13} />
-                  <span>Seller</span>
-                </button>
+                {activeDoc === "buyer-bill" ? (
+                  <button
+                    type="button"
+                    className={`bill-tab-btn ${activeTab === "buyer" ? "active" : ""}`}
+                    onClick={() => setActiveTab("buyer")}
+                    title="Buyer details"
+                  >
+                    <User size={13} />
+                    <span>Buyer</span>
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    className={`bill-tab-btn ${activeTab === "seller" ? "active" : ""}`}
+                    onClick={() => setActiveTab("seller")}
+                    title="Seller details"
+                  >
+                    <User size={13} />
+                    <span>Seller</span>
+                  </button>
+                )}
                 <button
                   type="button"
                   className={`bill-tab-btn ${activeTab === "vehicle" ? "active" : ""}`}
@@ -399,15 +481,17 @@ export default function BillModal({
                   <IndianRupee size={13} />
                   <span>Financials</span>
                 </button>
-                <button
-                  type="button"
-                  className={`bill-tab-btn ${activeTab === "buyer" ? "active" : ""}`}
-                  onClick={() => setActiveTab("buyer")}
-                  title="Purchaser / Buyer"
-                >
-                  <Building2 size={13} />
-                  <span>Purchaser</span>
-                </button>
+                {activeDoc === "seller-bill" && (
+                  <button
+                    type="button"
+                    className={`bill-tab-btn ${activeTab === "buyer" ? "active" : ""}`}
+                    onClick={() => setActiveTab("buyer")}
+                    title="Purchaser / Buyer"
+                  >
+                    <Building2 size={13} />
+                    <span>Purchaser</span>
+                  </button>
+                )}
                 <button
                   type="button"
                   className={`bill-tab-btn ${activeTab === "witness" ? "active" : ""}`}
@@ -603,244 +687,518 @@ export default function BillModal({
                 {/* 3. FINANCIALS TAB */}
                 {activeTab === "financials" && (
                   <div className="bill-form-section">
-                    <div className="bill-field-group">
-                      <label>Agreed Total Sale Amount (₹)</label>
-                      <input
-                        type="number"
-                        value={
-                          payments.purchase_price ?? payments.selling_price ?? ""
-                        }
-                        onChange={(e) => {
-                          updatePayments("purchase_price", e.target.value);
-                          updatePayments("selling_price", e.target.value);
-                        }}
-                        placeholder="e.g. 65000"
-                        data-testid="edit-sale-price"
-                      />
-                    </div>
+                    {activeDoc === "buyer-bill" ? (
+                      <>
+                        <div className="bill-field-group">
+                          <label>Agreed Vehicle Selling Price (₹)</label>
+                          <input
+                            type="number"
+                            value={payments.selling_price ?? ""}
+                            onChange={(e) => updatePayments("selling_price", e.target.value)}
+                            placeholder="e.g. 180000"
+                            data-testid="edit-sale-price"
+                          />
+                        </div>
 
-                    <div className="bill-field-group">
-                      <label>Advance Paid Amount (₹)</label>
-                      <input
-                        type="number"
-                        value={
-                          payments.paid_to_seller ?? payments.advancePaid ?? ""
-                        }
-                        onChange={(e) => {
-                          updatePayments("paid_to_seller", e.target.value);
-                          updatePayments("advancePaid", e.target.value);
-                        }}
-                        placeholder="e.g. 25000"
-                        data-testid="edit-advance-price"
-                      />
-                    </div>
+                        <div className="bill-field-group">
+                          <label>Discount Applied (₹)</label>
+                          <input
+                            type="number"
+                            value={payments.discount ?? ""}
+                            onChange={(e) => updatePayments("discount", e.target.value)}
+                            placeholder="e.g. 5000"
+                            data-testid="edit-discount"
+                          />
+                        </div>
 
-                    <div className="bill-field-group">
-                      <div className="label-with-action">
-                        <label>Balance Amount (₹)</label>
-                        <button
-                          type="button"
-                          className="text-btn"
-                          onClick={autoCalculateBalance}
-                          title="Auto calculate (Price - Advance)"
-                        >
-                          <Sparkles size={11} /> Auto-Calc
-                        </button>
-                      </div>
-                      <input
-                        type="number"
-                        value={payments.balanceAmount !== undefined ? payments.balanceAmount : ""}
-                        onChange={(e) => updatePayments("balanceAmount", e.target.value)}
-                        placeholder="Leave blank for auto-calculation"
-                        data-testid="edit-balance-price"
-                      />
-                    </div>
+                        <div className="bill-field-group">
+                          <label>Additional Charges (₹)</label>
+                          <input
+                            type="number"
+                            value={payments.additional_charges ?? ""}
+                            onChange={(e) => updatePayments("additional_charges", e.target.value)}
+                            placeholder="e.g. 2500"
+                            data-testid="edit-additional-charges"
+                          />
+                        </div>
 
-                    <div className="bill-field-group">
-                      <label>T. O. And Insurance (₹)</label>
-                      <input
-                        type="text"
-                        value={
-                          payments.toAndInsurance !== undefined
-                            ? payments.toAndInsurance
-                            : editableDeal.toAndInsurance !== undefined
-                            ? editableDeal.toAndInsurance
-                            : "5000"
-                        }
-                        onChange={(e) => {
-                          updatePayments("toAndInsurance", e.target.value);
-                          updateGeneral("toAndInsurance", e.target.value);
-                        }}
-                        placeholder="e.g. 5000"
-                      />
-                    </div>
+                        <div className="bill-field-group">
+                          <label>Confirmed Amount Received (₹)</label>
+                          <input
+                            type="number"
+                            value={payments.received_from_buyer ?? ""}
+                            onChange={(e) => updatePayments("received_from_buyer", e.target.value)}
+                            placeholder="e.g. 50000"
+                            data-testid="edit-received-price"
+                          />
+                        </div>
 
-                    <div className="bill-sub-header">
-                      <span>Vehicle Document Checkmarks:</span>
-                    </div>
+                        <div className="bill-field-group">
+                          <div className="label-with-action">
+                            <label>Remaining Balance (₹)</label>
+                            <button
+                              type="button"
+                              className="text-btn"
+                              onClick={autoCalculateBalance}
+                              title="Auto calculate (Final Invoice - Received)"
+                            >
+                              <Sparkles size={11} /> Auto-Calc
+                            </button>
+                          </div>
+                          <input
+                            type="number"
+                            value={payments.balanceAmount !== undefined ? payments.balanceAmount : ""}
+                            onChange={(e) => updatePayments("balanceAmount", e.target.value)}
+                            placeholder="Leave blank for auto-calculation"
+                            data-testid="edit-balance-price"
+                          />
+                        </div>
 
-                    <div className="checkbox-row">
-                      <label className="checkbox-label">
-                        <input
-                          type="checkbox"
-                          checked={editableDeal.insurance !== undefined ? !!editableDeal.insurance : true}
-                          onChange={(e) => updateGeneral("insurance", e.target.checked)}
-                        />
-                        <span>Insurance</span>
-                      </label>
-                      <label className="checkbox-label">
-                        <input
-                          type="checkbox"
-                          checked={editableDeal.fc !== undefined ? !!editableDeal.fc : true}
-                          onChange={(e) => updateGeneral("fc", e.target.checked)}
-                        />
-                        <span>F. C.</span>
-                      </label>
-                    </div>
+                        <div className="bill-field-group">
+                          <label>Payment Method</label>
+                          <select
+                            value={payments.payment_method || "Cash"}
+                            onChange={(e) => updatePayments("payment_method", e.target.value)}
+                            data-testid="edit-payment-method"
+                          >
+                            {["Cash", "UPI", "Bank Transfer", "Cheque", "Mixed"].map((m) => (
+                              <option key={m} value={m}>{m}</option>
+                            ))}
+                          </select>
+                        </div>
 
-                    <div className="checkbox-row">
-                      <label className="checkbox-label">
-                        <input
-                          type="checkbox"
-                          checked={editableDeal.tax !== undefined ? !!editableDeal.tax : true}
-                          onChange={(e) => updateGeneral("tax", e.target.checked)}
-                        />
-                        <span>Tax</span>
-                      </label>
-                      <label className="checkbox-label">
-                        <input
-                          type="checkbox"
-                          checked={editableDeal.cc !== undefined ? !!editableDeal.cc : true}
-                          onChange={(e) => updateGeneral("cc", e.target.checked)}
-                        />
-                        <span>C. C.</span>
-                      </label>
-                    </div>
+                        <div className="bill-field-group">
+                          <label>Transaction Reference / UTR</label>
+                          <input
+                            type="text"
+                            value={payments.transaction_reference || ""}
+                            onChange={(e) => updatePayments("transaction_reference", e.target.value)}
+                            placeholder="e.g. UPI-12345678"
+                            data-testid="edit-payment-reference"
+                          />
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="bill-field-group">
+                          <label>Agreed Total Sale Amount (₹)</label>
+                          <input
+                            type="number"
+                            value={
+                              payments.purchase_price ?? payments.selling_price ?? ""
+                            }
+                            onChange={(e) => {
+                              updatePayments("purchase_price", e.target.value);
+                              updatePayments("selling_price", e.target.value);
+                            }}
+                            placeholder="e.g. 65000"
+                            data-testid="edit-sale-price"
+                          />
+                        </div>
+
+                        <div className="bill-field-group">
+                          <label>Advance Paid Amount (₹)</label>
+                          <input
+                            type="number"
+                            value={
+                              payments.paid_to_seller ?? payments.advancePaid ?? ""
+                            }
+                            onChange={(e) => {
+                              updatePayments("paid_to_seller", e.target.value);
+                              updatePayments("advancePaid", e.target.value);
+                            }}
+                            placeholder="e.g. 25000"
+                            data-testid="edit-advance-price"
+                          />
+                        </div>
+
+                        <div className="bill-field-group">
+                          <div className="label-with-action">
+                            <label>Balance Amount (₹)</label>
+                            <button
+                              type="button"
+                              className="text-btn"
+                              onClick={autoCalculateBalance}
+                              title="Auto calculate (Price - Advance)"
+                            >
+                              <Sparkles size={11} /> Auto-Calc
+                            </button>
+                          </div>
+                          <input
+                            type="number"
+                            value={payments.balanceAmount !== undefined ? payments.balanceAmount : ""}
+                            onChange={(e) => updatePayments("balanceAmount", e.target.value)}
+                            placeholder="Leave blank for auto-calculation"
+                            data-testid="edit-balance-price"
+                          />
+                        </div>
+
+                        <div className="bill-field-group">
+                          <label>T. O. And Insurance (₹)</label>
+                          <input
+                            type="text"
+                            value={
+                              payments.toAndInsurance !== undefined
+                                ? payments.toAndInsurance
+                                : editableDeal.toAndInsurance !== undefined
+                                ? editableDeal.toAndInsurance
+                                : "5000"
+                            }
+                            onChange={(e) => {
+                              updatePayments("toAndInsurance", e.target.value);
+                              updateGeneral("toAndInsurance", e.target.value);
+                            }}
+                            placeholder="e.g. 5000"
+                          />
+                        </div>
+
+                        <div className="bill-sub-header">
+                          <span>Vehicle Document Checkmarks:</span>
+                        </div>
+
+                        <div className="checkbox-row">
+                          <label className="checkbox-label">
+                            <input
+                              type="checkbox"
+                              checked={editableDeal.insurance !== undefined ? !!editableDeal.insurance : true}
+                              onChange={(e) => updateGeneral("insurance", e.target.checked)}
+                            />
+                            <span>Insurance</span>
+                          </label>
+                          <label className="checkbox-label">
+                            <input
+                              type="checkbox"
+                              checked={editableDeal.fc !== undefined ? !!editableDeal.fc : true}
+                              onChange={(e) => updateGeneral("fc", e.target.checked)}
+                            />
+                            <span>F. C.</span>
+                          </label>
+                        </div>
+
+                        <div className="checkbox-row">
+                          <label className="checkbox-label">
+                            <input
+                              type="checkbox"
+                              checked={editableDeal.tax !== undefined ? !!editableDeal.tax : true}
+                              onChange={(e) => updateGeneral("tax", e.target.checked)}
+                            />
+                            <span>Tax</span>
+                          </label>
+                          <label className="checkbox-label">
+                            <input
+                              type="checkbox"
+                              checked={editableDeal.cc !== undefined ? !!editableDeal.cc : true}
+                              onChange={(e) => updateGeneral("cc", e.target.checked)}
+                            />
+                            <span>C. C.</span>
+                          </label>
+                        </div>
+                      </>
+                    )}
                   </div>
                 )}
 
                 {/* 4. BUYER TAB */}
                 {activeTab === "buyer" && (
                   <div className="bill-form-section">
-                    <div className="bill-field-group">
-                      <label>Purchaser Name</label>
-                      <input
-                        type="text"
-                        value={editableDeal.buyerName || buyer.name || "METRO MOTORS"}
-                        onChange={(e) => updateBuyer("name", e.target.value)}
-                        placeholder="METRO MOTORS"
-                        data-testid="edit-buyer-name"
-                      />
-                      <small className="helper-text">
-                        Default is METRO MOTORS (pre-printed showroom purchase).
-                      </small>
-                    </div>
+                    {activeDoc === "buyer-bill" ? (
+                      <>
+                        <div className="bill-field-group">
+                          <label>Buyer Full Name</label>
+                          <input
+                            type="text"
+                            value={buyer.name || ""}
+                            onChange={(e) => updateBuyer("name", e.target.value)}
+                            placeholder="e.g. Anand Kumar"
+                            data-testid="edit-buyer-name"
+                          />
+                        </div>
 
-                    <div className="bill-field-group">
-                      <label>Purchaser Phone</label>
-                      <input
-                        type="text"
-                        value={buyer.phone || buyer.mobile || ""}
-                        onChange={(e) => updateBuyer("phone", e.target.value)}
-                        placeholder="Optional contact"
-                      />
-                    </div>
+                        <div className="bill-field-group">
+                          <label>Father / Spouse Name</label>
+                          <input
+                            type="text"
+                            value={buyer.father_name || ""}
+                            onChange={(e) => updateBuyer("father_name", e.target.value)}
+                            placeholder="e.g. Rajappa K"
+                            data-testid="edit-buyer-father"
+                          />
+                        </div>
 
-                    <div className="bill-field-group">
-                      <label>Purchaser Aadhaar / ID</label>
-                      <input
-                        type="text"
-                        value={buyer.id_number || buyer.aadhaar || ""}
-                        onChange={(e) => updateBuyer("id_number", e.target.value)}
-                        placeholder="Optional Aadhaar"
-                      />
-                    </div>
+                        <div className="bill-field-group">
+                          <label>Mobile Number</label>
+                          <input
+                            type="text"
+                            value={buyer.phone || buyer.mobile || ""}
+                            onChange={(e) => updateBuyer("phone", e.target.value)}
+                            placeholder="e.g. 9876543210"
+                            data-testid="edit-buyer-phone"
+                          />
+                        </div>
+
+                        <div className="bill-field-group">
+                          <label>Alternate Mobile</label>
+                          <input
+                            type="text"
+                            value={buyer.alternate_phone || buyer.alt_phone || ""}
+                            onChange={(e) => updateBuyer("alternate_phone", e.target.value)}
+                            placeholder="Optional alternate"
+                            data-testid="edit-buyer-alt-phone"
+                          />
+                        </div>
+
+                        <div className="bill-field-group">
+                          <label>Email Address</label>
+                          <input
+                            type="email"
+                            value={buyer.email || ""}
+                            onChange={(e) => updateBuyer("email", e.target.value)}
+                            placeholder="e.g. buyer@example.com"
+                            data-testid="edit-buyer-email"
+                          />
+                        </div>
+
+                        <div className="bill-field-group">
+                          <label>Address</label>
+                          <textarea
+                            rows={2}
+                            value={buyer.address || ""}
+                            onChange={(e) => updateBuyer("address", e.target.value)}
+                            placeholder="e.g. #42, Main Road, MCC B Block"
+                            data-testid="edit-buyer-address"
+                          />
+                        </div>
+
+                        <div className="two-cols">
+                          <div className="bill-field-group">
+                            <label>City / District</label>
+                            <input
+                              type="text"
+                              value={buyer.city || ""}
+                              onChange={(e) => updateBuyer("city", e.target.value)}
+                              placeholder="e.g. Davangere"
+                              data-testid="edit-buyer-city"
+                            />
+                          </div>
+                          <div className="bill-field-group">
+                            <label>State</label>
+                            <input
+                              type="text"
+                              value={buyer.state || "Karnataka"}
+                              onChange={(e) => updateBuyer("state", e.target.value)}
+                              placeholder="e.g. Karnataka"
+                              data-testid="edit-buyer-state"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="two-cols">
+                          <div className="bill-field-group">
+                            <label>PIN Code</label>
+                            <input
+                              type="text"
+                              value={buyer.pincode || buyer.pin || ""}
+                              onChange={(e) => updateBuyer("pincode", e.target.value)}
+                              placeholder="e.g. 577004"
+                              data-testid="edit-buyer-pin"
+                            />
+                          </div>
+                          <div className="bill-field-group">
+                            <label>Aadhaar Number</label>
+                            <input
+                              type="text"
+                              value={buyer.id_number || buyer.aadhaar || ""}
+                              onChange={(e) => updateBuyer("id_number", e.target.value)}
+                              placeholder="e.g. 1234 5678 9012"
+                              data-testid="edit-buyer-aadhaar"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="bill-field-group">
+                          <label>PAN Number</label>
+                          <input
+                            type="text"
+                            value={buyer.pan_number || buyer.pan || ""}
+                            onChange={(e) => updateBuyer("pan_number", e.target.value)}
+                            placeholder="e.g. ABCDE1234F"
+                            data-testid="edit-buyer-pan"
+                          />
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="bill-field-group">
+                          <label>Purchaser Name</label>
+                          <input
+                            type="text"
+                            value={editableDeal.buyerName || buyer.name || "METRO MOTORS"}
+                            onChange={(e) => updateBuyer("name", e.target.value)}
+                            placeholder="METRO MOTORS"
+                            data-testid="edit-buyer-name"
+                          />
+                          <small className="helper-text">
+                            Default is METRO MOTORS (pre-printed showroom purchase).
+                          </small>
+                        </div>
+
+                        <div className="bill-field-group">
+                          <label>Purchaser Phone</label>
+                          <input
+                            type="text"
+                            value={buyer.phone || buyer.mobile || ""}
+                            onChange={(e) => updateBuyer("phone", e.target.value)}
+                            placeholder="Optional contact"
+                          />
+                        </div>
+
+                        <div className="bill-field-group">
+                          <label>Purchaser Aadhaar / ID</label>
+                          <input
+                            type="text"
+                            value={buyer.id_number || buyer.aadhaar || ""}
+                            onChange={(e) => updateBuyer("id_number", e.target.value)}
+                            placeholder="Optional Aadhaar"
+                          />
+                        </div>
+                      </>
+                    )}
                   </div>
                 )}
 
                 {/* 5. WITNESS TAB */}
                 {activeTab === "witness" && (
                   <div className="bill-form-section">
-                    <div className="bill-field-group">
-                      <label>Witness Name</label>
-                      <input
-                        type="text"
-                        value={witness1.name || ""}
-                        onChange={(e) => updateWitness1("name", e.target.value)}
-                        placeholder="e.g. Suresh Kumar"
-                        data-testid="edit-witness-name"
-                      />
-                    </div>
+                    {activeDoc === "buyer-bill" ? (
+                      <>
+                        <div className="bill-field-group">
+                          <label>Buyer Witness Name</label>
+                          <input
+                            type="text"
+                            value={witness2.name || ""}
+                            onChange={(e) => updateWitness2("name", e.target.value)}
+                            placeholder="e.g. Suresh Kumar"
+                            data-testid="edit-witness2-name"
+                          />
+                        </div>
 
-                    <div className="bill-field-group">
-                      <label>Witness Cell / Phone</label>
-                      <input
-                        type="text"
-                        value={witness1.phone || witness1.mobile || ""}
-                        onChange={(e) => updateWitness1("phone", e.target.value)}
-                        placeholder="e.g. 9987654321"
-                        data-testid="edit-witness-phone"
-                      />
-                    </div>
+                        <div className="bill-field-group">
+                          <label>Buyer Witness Mobile</label>
+                          <input
+                            type="text"
+                            value={witness2.phone || witness2.mobile || ""}
+                            onChange={(e) => updateWitness2("phone", e.target.value)}
+                            placeholder="e.g. 9987654321"
+                            data-testid="edit-witness2-phone"
+                          />
+                        </div>
 
-                    <div className="bill-field-group">
-                      <label>Witness Aadhaar / ID</label>
-                      <input
-                        type="text"
-                        value={witness1.id_number || witness1.aadhaar || ""}
-                        onChange={(e) => updateWitness1("id_number", e.target.value)}
-                        placeholder="e.g. 9876 5432 1098"
-                        data-testid="edit-witness-aadhaar"
-                      />
-                    </div>
+                        <div className="bill-field-group">
+                          <label>Buyer Witness Aadhaar / ID</label>
+                          <input
+                            type="text"
+                            value={witness2.id_number || witness2.aadhaar || ""}
+                            onChange={(e) => updateWitness2("id_number", e.target.value)}
+                            placeholder="e.g. 9876 5432 1098"
+                            data-testid="edit-witness2-aadhaar"
+                          />
+                        </div>
 
-                    <div className="bill-field-group">
-                      <label>Witness Full Address</label>
-                      <textarea
-                        rows={2}
-                        value={witness1.address || ""}
-                        onChange={(e) => {
-                          updateWitness1("address", e.target.value);
-                          updateWitness1("address1", undefined);
-                          updateWitness1("address2", undefined);
-                          updateWitness1("address3", undefined);
-                        }}
-                        placeholder="e.g. #5, Temple Road, Bapuji Nagar, Davangere"
-                        data-testid="edit-witness-address"
-                      />
-                    </div>
+                        <div className="bill-field-group">
+                          <label>Buyer Witness Address</label>
+                          <textarea
+                            rows={2}
+                            value={witness2.address || ""}
+                            onChange={(e) => updateWitness2("address", e.target.value)}
+                            placeholder="e.g. #5, Temple Road, Davangere"
+                            data-testid="edit-witness2-address"
+                          />
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="bill-field-group">
+                          <label>Witness Name</label>
+                          <input
+                            type="text"
+                            value={witness1.name || ""}
+                            onChange={(e) => updateWitness1("name", e.target.value)}
+                            placeholder="e.g. Suresh Kumar"
+                            data-testid="edit-witness-name"
+                          />
+                        </div>
 
-                    <div className="bill-sub-header">
-                      <span>Exact Line Placement on Dotted Lines:</span>
-                    </div>
+                        <div className="bill-field-group">
+                          <label>Witness Cell / Phone</label>
+                          <input
+                            type="text"
+                            value={witness1.phone || witness1.mobile || ""}
+                            onChange={(e) => updateWitness1("phone", e.target.value)}
+                            placeholder="e.g. 9987654321"
+                            data-testid="edit-witness-phone"
+                          />
+                        </div>
 
-                    <div className="bill-field-group">
-                      <label>Address Line 1 (Right of 'Address :')</label>
-                      <input
-                        type="text"
-                        value={witness1.address1 !== undefined ? witness1.address1 : ""}
-                        onChange={(e) => updateWitness1("address1", e.target.value)}
-                        placeholder="Line 1 override"
-                      />
-                    </div>
-                    <div className="bill-field-group">
-                      <label>Address Line 2 (Second line)</label>
-                      <input
-                        type="text"
-                        value={witness1.address2 !== undefined ? witness1.address2 : ""}
-                        onChange={(e) => updateWitness1("address2", e.target.value)}
-                        placeholder="Line 2 override"
-                      />
-                    </div>
-                    <div className="bill-field-group">
-                      <label>Address Line 3 (Third line)</label>
-                      <input
-                        type="text"
-                        value={witness1.address3 !== undefined ? witness1.address3 : ""}
-                        onChange={(e) => updateWitness1("address3", e.target.value)}
-                        placeholder="Line 3 override"
-                      />
-                    </div>
+                        <div className="bill-field-group">
+                          <label>Witness Aadhaar / ID</label>
+                          <input
+                            type="text"
+                            value={witness1.id_number || witness1.aadhaar || ""}
+                            onChange={(e) => updateWitness1("id_number", e.target.value)}
+                            placeholder="e.g. 9876 5432 1098"
+                            data-testid="edit-witness-aadhaar"
+                          />
+                        </div>
+
+                        <div className="bill-field-group">
+                          <label>Witness Full Address</label>
+                          <textarea
+                            rows={2}
+                            value={witness1.address || ""}
+                            onChange={(e) => {
+                              updateWitness1("address", e.target.value);
+                              updateWitness1("address1", undefined);
+                              updateWitness1("address2", undefined);
+                              updateWitness1("address3", undefined);
+                            }}
+                            placeholder="e.g. #5, Temple Road, Bapuji Nagar, Davangere"
+                            data-testid="edit-witness-address"
+                          />
+                        </div>
+
+                        <div className="bill-sub-header">
+                          <span>Exact Line Placement on Dotted Lines:</span>
+                        </div>
+
+                        <div className="bill-field-group">
+                          <label>Address Line 1 (Right of 'Address :')</label>
+                          <input
+                            type="text"
+                            value={witness1.address1 !== undefined ? witness1.address1 : ""}
+                            onChange={(e) => updateWitness1("address1", e.target.value)}
+                            placeholder="Line 1 override"
+                          />
+                        </div>
+                        <div className="bill-field-group">
+                          <label>Address Line 2 (Second line)</label>
+                          <input
+                            type="text"
+                            value={witness1.address2 !== undefined ? witness1.address2 : ""}
+                            onChange={(e) => updateWitness1("address2", e.target.value)}
+                            placeholder="Line 2 override"
+                          />
+                        </div>
+                        <div className="bill-field-group">
+                          <label>Address Line 3 (Third line)</label>
+                          <input
+                            type="text"
+                            value={witness1.address3 !== undefined ? witness1.address3 : ""}
+                            onChange={(e) => updateWitness1("address3", e.target.value)}
+                            placeholder="Line 3 override"
+                          />
+                        </div>
+                      </>
+                    )}
                   </div>
                 )}
 
@@ -984,7 +1342,11 @@ export default function BillModal({
                 transformOrigin: "top center",
               }}
             >
-              <SellerBillDocument deal={editableDeal} />
+              {activeDoc === "buyer-bill" ? (
+                <BuyerBillDocument deal={editableDeal} />
+              ) : (
+                <SellerBillDocument deal={editableDeal} />
+              )}
             </div>
           </main>
         </div>

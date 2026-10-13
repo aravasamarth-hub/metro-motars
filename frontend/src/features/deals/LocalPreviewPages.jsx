@@ -285,7 +285,7 @@ export const LocalBills = () => {
         deal={preview?.deal || preview?.doc?.deal}
         isOpen={!!preview}
         onClose={() => setPreview(null)}
-        initialDocument={billType.includes("Intermediate") || billType.includes("Buyer") ? "sale-agreement" : "seller-bill"}
+        initialDocument={billType.includes("Buyer") ? "buyer-bill" : "seller-bill"}
       />
     </>
   );

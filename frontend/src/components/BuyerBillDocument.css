@@ -1,0 +1,726 @@
+/* ==========================================================================
+   METRO MOTORS - BUYER BILL / VEHICLE PURCHASE RECEIPT STYLES
+   Exact A4 Portrait Layout matching Metro Motors Reference Design Series
+   Perfect, high-legibility typography with enlarged photos, signatures & thumb impressions
+   ========================================================================== */
+
+.buyer-bill-wrapper {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 10px 0;
+  box-sizing: border-box;
+  background: transparent;
+}
+
+.buyer-bill-sheet {
+  position: relative;
+  width: 794px;
+  min-width: 794px;
+  max-width: 794px;
+  min-height: 1123px;
+  height: 1123px;
+  background-color: #ffffff;
+  color: #0f172a;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+  border: 1.5px solid #0a2342;
+  box-sizing: border-box;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 10px 14px;
+  user-select: text;
+}
+
+/* ── Top Header ────────────────────────────────────────── */
+.bb-header {
+  display: flex;
+  align-items: stretch;
+  border: 1.5px solid #0a2342;
+  margin-bottom: 3px;
+  height: 64px;
+  background: #ffffff;
+  flex-shrink: 0;
+  box-sizing: border-box;
+}
+
+.bb-header-logo-box {
+  flex: 0 0 240px;
+  background: #0a2342;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  padding: 5px 12px;
+  gap: 10px;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.bb-header-logo-icon {
+  width: 38px;
+  height: 38px;
+  color: #ffffff;
+  flex-shrink: 0;
+}
+
+.bb-header-brand-text {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+}
+
+.bb-brand-name {
+  font-size: 18.5px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  line-height: 1.1;
+  color: #ffffff;
+  white-space: nowrap;
+}
+
+.bb-brand-tagline {
+  font-size: 7.5px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  color: #facc15;
+  margin-top: 3px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.bb-header-title-box {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 2px 6px;
+  border-right: 1.5px solid #0a2342;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.bb-main-title {
+  font-size: 15.5px;
+  font-weight: 900;
+  color: #0a2342;
+  letter-spacing: 0.5px;
+  margin: 0;
+  line-height: 1.15;
+  white-space: nowrap;
+}
+
+.bb-sub-title-1 {
+  font-size: 10px;
+  font-weight: 800;
+  color: #1e293b;
+  letter-spacing: 0.5px;
+  margin-top: 2px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.bb-sub-title-2 {
+  font-size: 8px;
+  font-weight: 700;
+  color: #475569;
+  letter-spacing: 0.3px;
+  margin-top: 1px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.bb-header-meta-box {
+  flex: 0 0 160px;
+  background: #f8fafc;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 4px 10px;
+  gap: 2.5px;
+  box-sizing: border-box;
+}
+
+.bb-meta-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 10px;
+  line-height: 1.25;
+}
+
+.bb-meta-label {
+  font-weight: 700;
+  color: #475569;
+}
+
+.bb-meta-val {
+  font-weight: 900;
+  color: #0a2342;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+/* ── Section Bars ──────────────────────────────────────── */
+.bb-section-bar {
+  background: #0a2342;
+  color: #ffffff;
+  padding: 4px 10px;
+  font-size: 11.5px;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 4px;
+  margin-bottom: 3px;
+  flex-shrink: 0;
+}
+
+.bb-section-subtext {
+  font-size: 9.2px;
+  font-weight: 700;
+  color: #93c5fd;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+/* ── Common Field Lines ────────────────────────────────── */
+.bb-field-line {
+  display: flex;
+  align-items: center;
+  font-size: 10.6px;
+  line-height: 1.45;
+}
+
+.bb-field-label {
+  width: 112px;
+  min-width: 112px;
+  color: #334155;
+  font-weight: 700;
+  font-size: 10.6px;
+}
+
+.bb-field-colon {
+  width: 10px;
+  text-align: center;
+  font-weight: 800;
+  color: #64748b;
+  font-size: 10.6px;
+}
+
+.bb-field-value {
+  flex: 1;
+  color: #0f172a;
+  font-weight: 600;
+  font-size: 10.8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bb-field-value.bold {
+  font-weight: 900;
+  color: #0a2342;
+  font-size: 11.2px;
+}
+
+.bb-field-value.empty {
+  color: #94a3b8;
+  font-style: italic;
+}
+
+/* ── Photo Cells (Perfect Prominent Dimensions) ────────── */
+.bb-photo-cell {
+  width: 120px;
+  min-width: 120px;
+  height: 135px;
+  border: 1.2px solid #94a3b8;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #f8fafc;
+  overflow: hidden;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  padding: 2px;
+}
+
+.bb-photo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+  display: block;
+}
+
+.bb-photo-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #94a3b8;
+  gap: 6px;
+}
+
+.bb-photo-caption {
+  font-size: 9.2px;
+  font-weight: 800;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+/* ── Section 1: Vehicle Grid (Enlarged) ────────────────── */
+.bb-vehicle-grid {
+  display: flex;
+  align-items: stretch;
+  gap: 12px;
+  border: 1px solid #cbd5e1;
+  padding: 6px 10px;
+  background: #ffffff;
+  min-height: 132px;
+}
+
+.bb-vehicle-grid .bb-photo-cell {
+  width: 135px;
+  min-width: 135px;
+  height: 132px;
+}
+
+.bb-vehicle-specs {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 2px;
+}
+
+.bb-vehicle-specs .bb-field-label {
+  width: 132px;
+  min-width: 132px;
+  font-size: 10.6px;
+}
+
+.bb-vehicle-docs {
+  width: 220px;
+  min-width: 220px;
+  border-left: 1px solid #e2e8f0;
+  padding-left: 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.bb-docs-header {
+  font-size: 10.5px;
+  font-weight: 900;
+  color: #0a2342;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 3px;
+  margin-bottom: 3px;
+}
+
+.bb-doc-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 10.5px;
+  padding: 2.5px 0;
+}
+
+.bb-doc-name {
+  font-weight: 700;
+  color: #475569;
+}
+
+.bb-doc-val {
+  font-weight: 900;
+  color: #047857;
+  font-size: 10.5px;
+}
+
+/* ── Sections 2 & 3: Person Grids (Buyer & Seller) (Enlarged) ── */
+.bb-person-grid {
+  display: flex;
+  align-items: stretch;
+  gap: 12px;
+  border: 1px solid #cbd5e1;
+  padding: 6px 10px;
+  background: #ffffff;
+  min-height: 135px;
+}
+
+.bb-person-fields-two-col {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.22fr);
+  gap: 3px 12px;
+  align-content: space-between;
+}
+
+.bb-field-col {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  justify-content: space-between;
+}
+
+.bb-field-col .bb-field-line {
+  min-width: 0;
+}
+
+.bb-field-col .bb-field-label {
+  width: 96px;
+  min-width: 96px;
+  font-size: 10.4px;
+}
+
+.bb-field-line.bb-address-line {
+  align-items: flex-start;
+}
+
+.bb-field-line.bb-address-line .bb-field-label,
+.bb-field-line.bb-address-line .bb-field-colon {
+  padding-top: 1px;
+}
+
+.bb-field-value.bb-address-value {
+  white-space: normal;
+  overflow: visible;
+  line-height: 1.25;
+  word-break: break-word;
+}
+
+/* ── Signatures & Fingerprint / Thumb Impression (Enlarged) ── */
+.bb-side-sigs {
+  width: 148px;
+  min-width: 148px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.bb-side-sig-box {
+  flex: 1;
+  border: 1.2px solid #cbd5e1;
+  background: #f8fafc;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 3px 5px;
+  min-height: 64px;
+  height: 64px;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.bb-side-sig-slot {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.bb-sig-img {
+  max-width: 92%;
+  max-height: 38px;
+  object-fit: contain;
+}
+
+.bb-sig-label {
+  font-size: 9px;
+  font-weight: 800;
+  color: #334155;
+  text-transform: uppercase;
+  margin-top: 2px;
+  letter-spacing: 0.3px;
+  line-height: 1.1;
+  flex-shrink: 0;
+}
+
+/* ── Section 4: Transaction & Payment Details (Enlarged) ─── */
+.bb-tx-container {
+  border: 1px solid #cbd5e1;
+  padding: 7px 10px;
+  background: #ffffff;
+}
+
+.bb-tx-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px 12px;
+}
+
+.bb-tx-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 5px 9px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 3px;
+  font-size: 10.4px;
+}
+
+.bb-tx-item.highlight {
+  background: #eff6ff;
+  border-color: #bfdbfe;
+}
+
+.bb-tx-item.balance {
+  background: #fef2f2;
+  border-color: #fecaca;
+}
+
+.bb-tx-lbl {
+  font-weight: 700;
+  color: #475569;
+  font-size: 10px;
+}
+
+.bb-tx-val {
+  font-weight: 800;
+  color: #0f172a;
+  font-size: 10.8px;
+}
+
+.bb-tx-val.prominent {
+  font-weight: 900;
+  color: #1e3a8a;
+  font-size: 13.5px;
+}
+
+.bb-tx-val.bold {
+  font-weight: 900;
+  color: #b91c1c;
+  font-size: 13px;
+}
+
+.bb-tx-words-line {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 5px;
+  padding-top: 4px;
+  border-top: 1px solid #e2e8f0;
+  font-size: 10.4px;
+}
+
+.bb-tx-words-label {
+  font-weight: 800;
+  color: #0a2342;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.bb-tx-words-val {
+  font-weight: 800;
+  color: #047857;
+  font-style: italic;
+  font-size: 10.4px;
+}
+
+.bb-badge {
+  display: inline-block;
+  padding: 3px 9px;
+  border-radius: 3px;
+  font-size: 9.2px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.bb-badge.paid {
+  background: #d1fae5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+}
+
+.bb-badge.partial {
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fde68a;
+}
+
+.bb-badge.pending {
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+}
+
+/* ── Section 5: Buyer Acknowledgement (Enlarged) ─────────── */
+.bb-acknowledgement-container {
+  border: 1px solid #cbd5e1;
+  padding: 6px 10px;
+  background: #ffffff;
+}
+
+.bb-acknowledgement-intro {
+  margin: 0 0 4px 0;
+  font-size: 10.2px;
+  line-height: 1.45;
+  color: #0f172a;
+}
+
+.bb-acknowledgement-intro strong {
+  color: #0a2342;
+  font-weight: 900;
+}
+
+.bb-acknowledgement-list {
+  margin: 0;
+  padding-left: 16px;
+}
+
+.bb-acknowledgement-list li {
+  margin-bottom: 3px;
+  font-size: 9.6px;
+  line-height: 1.4;
+  color: #1e293b;
+}
+
+.bb-acknowledgement-list li:last-child {
+  margin-bottom: 0;
+}
+
+/* ── Section 6: Signatures Grid (Enlarged) ────────────────── */
+.bb-signatures-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 120px;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.bb-sig-card {
+  border: 1.2px solid #94a3b8;
+  background: #ffffff;
+  height: 74px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 3px 6px;
+  text-align: center;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.bb-card-sig-slot {
+  height: 34px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.bb-card-sig-img {
+  max-width: 92%;
+  max-height: 32px;
+  object-fit: contain;
+}
+
+.bb-card-sig-line {
+  width: 88%;
+  border-top: 1.5px solid #334155;
+  margin: 1px 0 2px 0;
+  flex-shrink: 0;
+}
+
+.bb-card-sig-text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 28px;
+  flex-shrink: 0;
+}
+
+.bb-card-sig-title {
+  font-size: 8.8px;
+  font-weight: 900;
+  color: #0a2342;
+  text-transform: uppercase;
+  line-height: 1.15;
+}
+
+.bb-card-sig-sub {
+  font-size: 7.6px;
+  font-weight: 700;
+  color: #64748b;
+  line-height: 1.1;
+  margin-top: 1px;
+}
+
+.bb-sig-date-card {
+  border: 1.2px solid #94a3b8;
+  background: #f8fafc;
+  height: 74px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  text-align: center;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.bb-sig-date-lbl {
+  font-size: 9.6px;
+  font-weight: 900;
+  color: #475569;
+  text-transform: uppercase;
+}
+
+.bb-sig-date-val {
+  font-size: 11px;
+  font-weight: 900;
+  color: #0a2342;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  margin-top: 4px;
+}
+
+/* ── Print Specific Rules ──────────────────────────────── */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 0;
+  }
+
+  body {
+    background: #ffffff !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .buyer-bill-wrapper {
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  .buyer-bill-sheet {
+    box-shadow: none !important;
+    border: none !important;
+    width: 100% !important;
+    height: 100% !important;
+    page-break-after: avoid !important;
+    page-break-inside: avoid !important;
+  }
+}

@@ -60,6 +60,7 @@ export default function DealView() {
   const { t, language } = useLanguage();
   const [deal, setDeal] = useState(null);
   const [billOpen, setBillOpen] = useState(false);
+  const [docType, setDocType] = useState("buyer-bill");
   const [agentModalOpen, setAgentModalOpen] = useState(false);
   const [error, setError] = useState("");
   useEffect(() => {
@@ -98,10 +99,23 @@ export default function DealView() {
         </div>
         {deal && (
           <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-            <button className="button button-secondary" onClick={() => setBillOpen(true)} data-testid="deal-view-generate-bill">
-              <FileText size={16}/> {t("bills.generate_bill", "Generate Bill")}
+            <button
+              className="button button-primary"
+              onClick={() => { setDocType("buyer-bill"); setBillOpen(true); }}
+              data-testid="deal-view-buyer-bill"
+              title="Open Buyer Bill / Vehicle Sale Receipt"
+            >
+              <FileText size={16}/> <span>Buyer Bill</span>
             </button>
-            <button className="button button-primary" onClick={() => navigate(`/new-deal/${deal.id}`)} data-testid="deal-view-edit">
+            <button
+              className="button button-secondary"
+              onClick={() => { setDocType("seller-bill"); setBillOpen(true); }}
+              data-testid="deal-view-generate-bill"
+              title="Open Seller Agreement"
+            >
+              <FileText size={16}/> <span>{t("bills.generate_bill", "Seller Agreement")}</span>
+            </button>
+            <button className="button button-secondary" onClick={() => navigate(`/new-deal/${deal.id}`)} data-testid="deal-view-edit">
               <Pencil size={16}/> {t("deal.edit_deal", "Edit Deal")}
             </button>
           </div>
@@ -170,6 +184,19 @@ export default function DealView() {
               fields={deal.buyer.is_dealer ? [...personFields, ...dealerFields] : personFields}
               value={deal.buyer}
               prefix="buyer"
+              action={
+                <button
+                  type="button"
+                  className="button button-primary"
+                  onClick={() => { setDocType("buyer-bill"); setBillOpen(true); }}
+                  data-testid="deal-view-buyer-bill-btn"
+                  title="Open Buyer Bill / Vehicle Sale Receipt"
+                  style={{ padding: "6px 12px", fontSize: "12px", height: "34px", display: "inline-flex", gap: "6px", alignItems: "center" }}
+                >
+                  <FileText size={13} />
+                  <span>Buyer Bill</span>
+                </button>
+              }
             />
             <PhotoSlots group="buyer" photos={deal.photos} readOnly/>
             <ReadGroup
@@ -223,7 +250,7 @@ export default function DealView() {
           </section>
         </>
       )}
-      <BillModal deal={deal} isOpen={billOpen} onClose={() => setBillOpen(false)} initialDocument="seller-bill" />
+      <BillModal deal={deal} isOpen={billOpen} onClose={() => setBillOpen(false)} initialDocument={docType} />
       <AgentWhatsAppModal
         isOpen={agentModalOpen}
         onClose={() => setAgentModalOpen(false)}
