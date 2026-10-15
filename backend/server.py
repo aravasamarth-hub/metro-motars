@@ -688,6 +688,174 @@ async def download_pdf_stream(request: Request):
     )
 
 
+class AuthSetPasswordRequest(BaseModel):
+    email: str
+    password: str
+
+
+class AuthSendOtpRequest(BaseModel):
+    email: str
+
+
+class AuthVerifyOtpRequest(BaseModel):
+    email: str
+    otp: str
+    new_password: str
+
+
+class AuthLoginRequest(BaseModel):
+    email: str
+    password: Optional[str] = None
+
+
+OTPS: Dict[str, Dict[str, Any]] = {}
+
+
+@api_router.post("/auth/set-password")
+async def auth_set_password(payload: AuthSetPasswordRequest):
+    email = payload.email.strip().lower()
+    if len(payload.password) < 4:
+        raise HTTPException(status_code=400, detail="Password must be at least 4 characters")
+
+    role = "OWNER" if email == "aravasamarth@gmail.com" else "WORKER"
+    name = "Arava Samarth" if role == "OWNER" else "Samarth Arava"
+
+    await db.users.update_one(
+        {"email": email},
+        {
+            "$set": {
+                "email": email,
+                "password": payload.password,
+                "role": role,
+                "name": name,
+                "updated_at": now_iso(),
+            }
+        },
+        upsert=True,
+    )
+    return {"success": True, "message": f"Password successfully set for {email}", "role": role}
+
+
+@api_router.post("/auth/send-otp")
+async def auth_send_otp(payload: AuthSendOtpRequest):
+    import random
+
+    email = payload.email.strip().lower()
+    otp = f"{random.randint(100000, 999999)}"
+    OTPS[email] = {
+        "otp": otp,
+        "created_at": datetime.now(timezone.utc),
+    }
+
+    # Record in Mongo as well
+    await db.otps.update_one(
+        {"email": email},
+        {"$set": {"email": email, "otp": otp, "created_at": now_iso()}},
+        upsert=True,
+    )
+
+    # If SMTP is configured, attempt delivery
+    smtp_host = os.environ.get("SMTP_HOST")
+    if smtp_host:
+        try:
+            import smtplib
+            from email.mime.text import MIMEText
+
+            msg = MIMEText(f"Your Metro Motors password reset verification code is: {otp}\nValid for 10 minutes.")
+            msg["Subject"] = "Metro Motors Security - Password Reset OTP"
+            msg["From"] = os.environ.get("SMTP_FROM", "noreply@metromotors.in")
+            msg["To"] = email
+
+            with smtplib.SMTP(smtp_host, int(os.environ.get("SMTP_PORT", 587))) as server:
+                server.starttls()
+                server.login(os.environ["SMTP_USER"], os.environ["SMTP_PASSWORD"])
+                server.send_message(msg)
+        except Exception as e:
+            logger.warning(f"SMTP send failed: {e}")
+
+    return {
+        "success": True,
+        "message": f"Verification code sent to {email}",
+        "preview_otp": otp,
+    }
+
+
+@api_router.post("/auth/verify-otp")
+async def auth_verify_otp(payload: AuthVerifyOtpRequest):
+    email = payload.email.strip().lower()
+    otp = payload.otp.strip()
+
+    valid = False
+    if email in OTPS and OTPS[email]["otp"] == otp:
+        valid = True
+    else:
+        doc = await db.otps.find_one({"email": email, "otp": otp})
+        if doc:
+            valid = True
+
+    if not valid:
+        raise HTTPException(status_code=400, detail="Invalid or expired verification code")
+
+    if len(payload.new_password) < 4:
+        raise HTTPException(status_code=400, detail="Password must be at least 4 characters")
+
+    role = "OWNER" if email == "aravasamarth@gmail.com" else "WORKER"
+    name = "Arava Samarth" if role == "OWNER" else "Samarth Arava"
+
+    await db.users.update_one(
+        {"email": email},
+        {
+            "$set": {
+                "email": email,
+                "password": payload.new_password,
+                "role": role,
+                "name": name,
+                "updated_at": now_iso(),
+            }
+        },
+        upsert=True,
+    )
+
+    if email in OTPS:
+        del OTPS[email]
+    await db.otps.delete_many({"email": email})
+
+    return {"success": True, "message": "Password reset successfully"}
+
+
+@api_router.post("/auth/login")
+async def auth_login(payload: AuthLoginRequest):
+    email = payload.email.strip().lower()
+    is_owner = email == "aravasamarth@gmail.com"
+    role = "OWNER" if is_owner else "WORKER"
+    name = "Arava Samarth" if is_owner else "Samarth Arava"
+
+    user_doc = await db.users.find_one({"email": email})
+    password_set = bool(user_doc and user_doc.get("password"))
+
+    if user_doc and payload.password:
+        if user_doc.get("password") != payload.password:
+            raise HTTPException(status_code=401, detail="Incorrect password. You can reset it via Email OTP.")
+
+    permissions = {
+        "can_view_prices": is_owner,
+        "can_view_agent_financials": is_owner,
+        "can_view_payments": is_owner,
+        "can_view_bills": is_owner,
+        "can_view_finances": is_owner,
+    }
+
+    return {
+        "email": email,
+        "name": name,
+        "role": role,
+        "role_key": role,
+        "password_set": password_set,
+        "permissions": permissions,
+    }
+
+
+
 register_simple_crud("vehicles", "vehicles", "vehicle_id", "VEH", VehicleCreate, VehicleUpdate)
 register_simple_crud("sellers", "sellers", "seller_id", "SELLER", PersonCreate, PersonUpdate)
 register_simple_crud("buyers", "buyers", "buyer_id", "BUYER", PersonCreate, PersonUpdate)

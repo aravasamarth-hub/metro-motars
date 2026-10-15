@@ -1,17 +1,125 @@
 /* ==========================================================================
-   METRO MOTORS — AWARD-LEVEL 1-LAKH LUXURY ATELIER DESIGN SYSTEM
+   METRO MOTORS — AWARD-LEVEL LUXURY ATELIER DESIGN SYSTEM
    Featuring: shadcn/ui, KokonutUI, Motion (motion.dev), Anime.js v4, Bklit
+   Full Dual-Theme Architecture: Pristine Luminous Light Mode & Sleek Dark Mode
    ========================================================================== */
 
-/* ── 1. Luxury Dark Sidebar (Matches exact user screenshot) ─────────────── */
+/* ── 0. Modern Segmented Theme Switch ───────────────────────────────────── */
+.theme-toggle-switch {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 3px !important;
+  padding: 3px !important;
+  border-radius: 10px !important;
+  user-select: none !important;
+  transition: all 0.2s ease !important;
+}
+
+/* Dark mode theme switch container */
+.theme-dark .theme-toggle-switch,
+.dark .theme-toggle-switch {
+  background: #141f2e !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Light mode theme switch container */
+.theme-light .theme-toggle-switch,
+.light .theme-toggle-switch,
+html:not(.dark) .theme-toggle-switch {
+  background: #f1f5f9 !important;
+  border: 1px solid #e2e8f0 !important;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+}
+
+.theme-switch-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  padding: 6px 11px !important;
+  border-radius: 7px !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  border: 1px solid transparent !important;
+  background: transparent !important;
+  cursor: pointer !important;
+  transition: all 0.18s ease !important;
+}
+
+/* Dark mode inactive button */
+.theme-dark .theme-switch-btn,
+.dark .theme-switch-btn {
+  color: #94a3b8 !important;
+}
+
+.theme-dark .theme-switch-btn:hover,
+.dark .theme-switch-btn:hover {
+  color: #f1f5f9 !important;
+}
+
+/* Dark mode active button */
+.theme-dark .theme-switch-btn.active,
+.dark .theme-switch-btn.active {
+  background: #1e293b !important;
+  color: #fbbf24 !important;
+  border-color: rgba(245, 158, 11, 0.3) !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35) !important;
+}
+
+/* Light mode inactive button */
+.theme-light .theme-switch-btn,
+.light .theme-switch-btn,
+html:not(.dark) .theme-switch-btn {
+  color: #64748b !important;
+}
+
+.theme-light .theme-switch-btn:hover,
+.light .theme-switch-btn:hover,
+html:not(.dark) .theme-switch-btn:hover {
+  color: #0f172a !important;
+}
+
+/* Light mode active button — Crisp White Elevated */
+.theme-light .theme-switch-btn.active,
+.light .theme-switch-btn.active,
+html:not(.dark) .theme-switch-btn.active {
+  background: #ffffff !important;
+  color: #0f172a !important;
+  border-color: #cbd5e1 !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08) !important;
+  font-weight: 700 !important;
+}
+
+.theme-light .theme-switch-btn.active .theme-toggle-icon,
+.light .theme-switch-btn.active .theme-toggle-icon,
+html:not(.dark) .theme-switch-btn.active .theme-toggle-icon {
+  color: #d97706 !important;
+}
+
+/* ── 1. Sidebar Theming ─────────────────────────────────────────────────── */
+/* Dark Sidebar */
 .theme-dark .sidebar,
-.sidebar {
+.dark .sidebar,
+html.dark .sidebar {
   background: #090e1a !important;
   color: #94a3b8 !important;
   border-right: 1px solid rgba(255, 255, 255, 0.06) !important;
   padding: 24px 14px 20px !important;
   width: 252px !important;
   box-shadow: 4px 0 24px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* Light Sidebar — Pure Pristine White */
+.theme-light .sidebar,
+.light .sidebar,
+html.theme-light .sidebar,
+html.light .sidebar,
+html:not(.dark) .sidebar {
+  background: #ffffff !important;
+  color: #475569 !important;
+  border-right: 1px solid #e2e8f0 !important;
+  padding: 24px 14px 20px !important;
+  width: 252px !important;
+  box-shadow: 2px 0 16px rgba(0, 0, 0, 0.04) !important;
 }
 
 .brand-lockup {
@@ -26,8 +134,49 @@
   border-radius: 10px !important;
 }
 
-.sidebar-label {
+.theme-dark .brand-lockup strong,
+.dark .brand-lockup strong,
+html.dark .brand-lockup strong {
+  color: #f1f5f9 !important;
+}
+
+.theme-light .brand-lockup strong,
+.light .brand-lockup strong,
+html.theme-light .brand-lockup strong,
+html.light .brand-lockup strong,
+html:not(.dark) .brand-lockup strong {
+  color: #0f172a !important;
+}
+
+.theme-dark .brand-lockup small,
+.dark .brand-lockup small,
+html.dark .brand-lockup small {
+  color: #8495a7 !important;
+}
+
+.theme-light .brand-lockup small,
+.light .brand-lockup small,
+html.theme-light .brand-lockup small,
+html.light .brand-lockup small,
+html:not(.dark) .brand-lockup small {
   color: #64748b !important;
+}
+
+.theme-dark .sidebar-label,
+.dark .sidebar-label,
+html.dark .sidebar-label {
+  color: #64748b !important;
+}
+
+.theme-light .sidebar-label,
+.light .sidebar-label,
+html.theme-light .sidebar-label,
+html.light .sidebar-label,
+html:not(.dark) .sidebar-label {
+  color: #94a3b8 !important;
+}
+
+.sidebar-label {
   font-size: 10px !important;
   font-weight: 700 !important;
   letter-spacing: 1.5px !important;
@@ -40,11 +189,10 @@
   gap: 5px !important;
 }
 
-/* Nav links: Luxury Dark with Golden Pill Indicator (Exact Screenshot Match) */
+/* Nav links: Shared Base */
 .nav-link {
   height: 48px !important;
   border-radius: 12px !important;
-  color: #94a3b8 !important;
   text-decoration: none !important;
   display: flex !important;
   align-items: center !important;
@@ -58,14 +206,24 @@
   position: relative !important;
 }
 
-.nav-link:hover {
+/* Dark Nav Links */
+.theme-dark .nav-link,
+.dark .nav-link,
+html.dark .nav-link {
+  color: #94a3b8 !important;
+}
+
+.theme-dark .nav-link:hover,
+.dark .nav-link:hover,
+html.dark .nav-link:hover {
   background: rgba(255, 255, 255, 0.04) !important;
   color: #f1f5f9 !important;
   transform: translateX(2px) !important;
 }
 
-/* Active Nav State — Exact match to the user's image! */
-.nav-link.active {
+.theme-dark .nav-link.active,
+.dark .nav-link.active,
+html.dark .nav-link.active {
   background: #141f2e !important;
   color: #fde047 !important;
   border: 1px solid rgba(245, 158, 11, 0.22) !important;
@@ -74,161 +232,304 @@
   font-weight: 700 !important;
 }
 
-.nav-link.active svg {
+.theme-dark .nav-link.active svg,
+.dark .nav-link.active svg,
+html.dark .nav-link.active svg {
   color: #f59e0b !important;
   filter: drop-shadow(0 0 8px rgba(245, 158, 11, 0.5)) !important;
 }
 
-.nav-plus {
-  margin-left: auto !important;
-  font-size: 16px !important;
-  font-weight: 600 !important;
-  color: #64748b !important;
-  transition: color 0.2s !important;
+/* Light Nav Links */
+.theme-light .nav-link,
+.light .nav-link,
+html.theme-light .nav-link,
+html.light .nav-link,
+html:not(.dark) .nav-link {
+  color: #475569 !important;
 }
 
-.nav-link:hover .nav-plus,
-.nav-link.active .nav-plus {
-  color: #f59e0b !important;
+.theme-light .nav-link:hover,
+.light .nav-link:hover,
+html.theme-light .nav-link:hover,
+html.light .nav-link:hover,
+html:not(.dark) .nav-link:hover {
+  background: #f1f5f9 !important;
+  color: #0f172a !important;
+  transform: translateX(2px) !important;
 }
 
-/* Sidebar VIP Showcase Badge */
+.theme-light .nav-link.active,
+.light .nav-link.active,
+html.theme-light .nav-link.active,
+html.light .nav-link.active,
+html:not(.dark) .nav-link.active {
+  background: #fffbeb !important;
+  color: #92400e !important;
+  border: 1px solid #fde68a !important;
+  border-left: 4px solid #f59e0b !important;
+  box-shadow: 0 4px 14px rgba(245, 158, 11, 0.15) !important;
+  font-weight: 700 !important;
+}
+
+.theme-light .nav-link.active svg,
+.light .nav-link.active svg,
+html.theme-light .nav-link.active svg,
+html.light .nav-link.active svg,
+html:not(.dark) .nav-link.active svg {
+  color: #d97706 !important;
+}
+
 .sidebar-vip-pill {
+  width: 100%;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  width: 100%;
-  padding: 9px 12px;
-  margin-bottom: 16px;
-  background: linear-gradient(135deg, rgba(245, 158, 11, 0.12), rgba(56, 189, 248, 0.12));
-  border: 1px solid rgba(245, 158, 11, 0.3);
+  padding: 8px 12px;
   border-radius: 10px;
-  color: #f59e0b;
-  font-size: 11.5px;
+  font-size: 12px;
   font-weight: 700;
   cursor: pointer;
+  margin-bottom: 12px;
   transition: all 0.2s ease;
 }
 
-.sidebar-vip-pill:hover {
-  background: linear-gradient(135deg, rgba(245, 158, 11, 0.22), rgba(56, 189, 248, 0.22));
-  transform: translateY(-1px);
-  box-shadow: 0 4px 14px rgba(245, 158, 11, 0.2);
+.theme-dark .sidebar-vip-pill,
+.dark .sidebar-vip-pill,
+html.dark .sidebar-vip-pill {
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  color: #f59e0b;
 }
 
-/* ── 2. Topbar & App Shell ──────────────────────────────────────────────── */
-.topbar {
+.theme-light .sidebar-vip-pill,
+.light .sidebar-vip-pill,
+html.theme-light .sidebar-vip-pill,
+html.light .sidebar-vip-pill,
+html:not(.dark) .sidebar-vip-pill {
+  background: #fffbeb !important;
+  border: 1px solid #fcd34d !important;
+  color: #b45309 !important;
+}
+
+.theme-dark .support-card,
+.dark .support-card,
+html.dark .support-card {
+  background: #141f2e !important;
+  border: 1px solid rgba(255, 255, 255, 0.06) !important;
+  color: #94a3b8 !important;
+}
+
+.theme-light .support-card,
+.light .support-card,
+html.theme-light .support-card,
+html.light .support-card,
+html:not(.dark) .support-card {
+  background: #f8fafc !important;
+  border: 1px solid #e2e8f0 !important;
+  color: #334155 !important;
+}
+
+.theme-light .support-card span,
+.light .support-card span,
+html.theme-light .support-card span,
+html.light .support-card span,
+html:not(.dark) .support-card span {
+  color: #64748b !important;
+}
+
+.theme-dark .logout-link,
+.dark .logout-link,
+html.dark .logout-link {
+  color: #94a3b8 !important;
+}
+
+.theme-light .logout-link,
+.light .logout-link,
+html.theme-light .logout-link,
+html.light .logout-link,
+html:not(.dark) .logout-link {
+  color: #475569 !important;
+}
+
+.theme-dark .logout-link:hover,
+.dark .logout-link:hover,
+html.dark .logout-link:hover {
+  background: rgba(255, 255, 255, 0.05) !important;
+  color: #ffffff !important;
+}
+
+.theme-light .logout-link:hover,
+.light .logout-link:hover,
+html.theme-light .logout-link:hover,
+html.light .logout-link:hover,
+html:not(.dark) .logout-link:hover {
+  background: #f1f5f9 !important;
+  color: #0f172a !important;
+}
+
+.theme-dark .version,
+.dark .version,
+html.dark .version {
+  border-top-color: rgba(255, 255, 255, 0.08) !important;
+  color: #64748b !important;
+}
+
+.theme-light .version,
+.light .version,
+html.theme-light .version,
+html.light .version,
+html:not(.dark) .version {
+  border-top-color: #e2e8f0 !important;
+  color: #94a3b8 !important;
+}
+
+/* ── 2. Topbar & App Shell Theming ──────────────────────────────────────── */
+.theme-dark .topbar,
+.dark .topbar,
+html.dark .topbar {
   background: #0b1220 !important;
   border-bottom: 1px solid rgba(255, 255, 255, 0.07) !important;
-  backdrop-blur-md: blur(12px) !important;
 }
 
-.theme-dark {
+.theme-light .topbar,
+.light .topbar,
+html.theme-light .topbar,
+html.light .topbar,
+html:not(.dark) .topbar {
+  background: #ffffff !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+  color: #0f172a !important;
+}
+
+.theme-dark,
+.dark .app-shell,
+.theme-dark.app-shell,
+html.dark body,
+html.dark .app-shell {
   background: #060a12 !important;
   color: #f1f5f9 !important;
 }
 
-.app-shell {
-  background: #060a12 !important;
+.theme-light,
+.light .app-shell,
+.theme-light.app-shell,
+html.theme-light body,
+html.light body,
+html.theme-light .app-shell,
+html.light .app-shell,
+html:not(.dark) body,
+html:not(.dark) .app-shell {
+  background: #f8fafc !important;
+  color: #0f172a !important;
 }
 
-/* ── 3. Page Luxury Hero Containers & Kokonut Ambient Paths ──────────────── */
+.theme-light .breadcrumb,
+.light .breadcrumb,
+html.theme-light .breadcrumb,
+html.light .breadcrumb,
+html:not(.dark) .breadcrumb {
+  color: #64748b !important;
+}
+
+.theme-light .breadcrumb b,
+.light .breadcrumb b,
+html.theme-light .breadcrumb b,
+html.light .breadcrumb b,
+html:not(.dark) .breadcrumb b {
+  color: #0f172a !important;
+}
+
+.theme-light .user-copy b,
+.light .user-copy b,
+html.theme-light .user-copy b,
+html.light .user-copy b,
+html:not(.dark) .user-copy b {
+  color: #0f172a !important;
+}
+
+.theme-light .user-copy span,
+.light .user-copy span,
+html.theme-light .user-copy span,
+html.light .user-copy span,
+html:not(.dark) .user-copy span {
+  color: #64748b !important;
+}
+
+/* ── 3. Page Luxury Hero Containers & Ambient Paths ─────────────────────── */
 .luxury-hero-container {
   position: relative;
   overflow: hidden;
   border-radius: 18px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: linear-gradient(135deg, rgba(15, 23, 42, 0.85), rgba(10, 16, 29, 0.95));
-  backdrop-filter: blur(16px);
   padding: 24px 28px;
   margin-bottom: 24px;
-  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.5);
+  transform: translateZ(0);
 }
 
-.luxury-hero-container::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(245, 158, 11, 0.4), rgba(56, 189, 248, 0.4), transparent);
+.theme-dark .luxury-hero-container,
+.dark .luxury-hero-container,
+html.dark .luxury-hero-container {
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  background: linear-gradient(135deg, #0e1728 0%, #080e1a 100%) !important;
+  box-shadow: 0 16px 36px -12px rgba(0, 0, 0, 0.5) !important;
 }
 
-/* ── 4. 5-Library Showcase Ribbon ────────────────────────────────────────── */
-.five-lib-ribbon {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 4px 12px;
-  border-radius: 9999px;
-  background: rgba(245, 158, 11, 0.08);
-  border: 1px solid rgba(245, 158, 11, 0.28);
-  font-size: 11px;
-  font-weight: 700;
-  color: #fbbf24;
-  letter-spacing: 0.5px;
-  margin-bottom: 8px;
+.theme-light .luxury-hero-container,
+.light .luxury-hero-container,
+html.theme-light .luxury-hero-container,
+html.light .luxury-hero-container,
+html:not(.dark) .luxury-hero-container {
+  border: 1px solid #e2e8f0 !important;
+  background: linear-gradient(135deg, #ffffff 0%, #fffdf8 45%, #f4f8fe 100%) !important;
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.06), 0 2px 8px rgba(0, 0, 0, 0.02) !important;
 }
 
-.five-lib-ribbon span.tag {
-  color: #94a3b8;
-  font-weight: 500;
+.theme-light .luxury-hero-container h1,
+.light .luxury-hero-container h1,
+html.theme-light .luxury-hero-container h1,
+html.light .luxury-hero-container h1,
+html:not(.dark) .luxury-hero-container h1 {
+  color: #0f172a !important;
 }
 
-/* ── 5. Luxury Metric Cards & Spotlight Glow ────────────────────────────── */
-.metric-grid.luxury-dashboard-metrics {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
-  margin-bottom: 24px;
+.theme-light .luxury-hero-container p,
+.light .luxury-hero-container p,
+html.theme-light .luxury-hero-container p,
+html.light .luxury-hero-container p,
+html:not(.dark) .luxury-hero-container p {
+  color: #475569 !important;
 }
 
-@media (max-width: 1024px) {
-  .metric-grid.luxury-dashboard-metrics {
-    grid-template-columns: repeat(2, 1fr);
-  }
+/* ── 4. Metric Cards & Spotlight Glow Theming ───────────────────────────── */
+.theme-light [data-testid^="metric-"],
+.theme-light .spotlight-card,
+.theme-light .luxury-metric-card,
+.light [data-testid^="metric-"],
+.light .spotlight-card,
+.light .luxury-metric-card,
+html.theme-light [data-testid^="metric-"],
+html.theme-light .spotlight-card,
+html.light [data-testid^="metric-"],
+html.light .spotlight-card,
+html:not(.dark) [data-testid^="metric-"] {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  box-shadow: 0 4px 18px -2px rgba(0, 0, 0, 0.05), 0 2px 6px -1px rgba(0, 0, 0, 0.03) !important;
+  color: #0f172a !important;
 }
 
-@media (max-width: 640px) {
-  .metric-grid.luxury-dashboard-metrics {
-    grid-template-columns: 1fr;
-  }
+.theme-light [data-testid^="metric-"]:hover,
+.light [data-testid^="metric-"]:hover,
+html.theme-light [data-testid^="metric-"]:hover,
+html.light [data-testid^="metric-"]:hover,
+html:not(.dark) [data-testid^="metric-"]:hover {
+  border-color: rgba(245, 158, 11, 0.45) !important;
+  box-shadow: 0 12px 28px -4px rgba(245, 158, 11, 0.12), 0 4px 12px rgba(0, 0, 0, 0.04) !important;
 }
 
-.luxury-metric-card {
-  position: relative;
-  border-radius: 16px;
-  padding: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(15, 24, 38, 0.7);
-  backdrop-filter: blur(12px);
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-  text-align: left;
-  cursor: pointer;
-  overflow: hidden;
-}
-
-.luxury-metric-card:hover {
-  transform: translateY(-3px);
-  border-color: rgba(245, 158, 11, 0.4);
-  box-shadow: 0 12px 30px -5px rgba(245, 158, 11, 0.15);
-}
-
-.luxury-metric-card .metric-big-num {
-  font-size: 28px;
-  font-weight: 800;
-  font-family: 'Manrope', sans-serif;
-  letter-spacing: -0.5px;
-  color: #ffffff;
-  display: block;
-  margin: 12px 0 8px;
-}
-
-/* ── 6. Particle Button Styling ─────────────────────────────────────────── */
+/* ── 5. Particle Button Styling ─────────────────────────────────────────── */
 .luxury-particle-cta {
   background: linear-gradient(135deg, #f59e0b, #d97706) !important;
-  color: #090e1a !important;
+  color: #ffffff !important;
   font-weight: 800 !important;
   border: none !important;
   box-shadow: 0 6px 20px rgba(245, 158, 11, 0.35) !important;
@@ -242,142 +543,7 @@
   box-shadow: 0 8px 25px rgba(245, 158, 11, 0.5) !important;
 }
 
-/* ── 7. Luxury Tab Navigation with Motion layoutId ───────────────────────── */
-.luxury-tabs-bar {
-  display: flex;
-  gap: 6px;
-  padding: 4px;
-  background: rgba(15, 24, 38, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  border-radius: 12px;
-  margin-bottom: 20px;
-  width: fit-content;
-}
-
-.luxury-tab-btn {
-  padding: 8px 16px;
-  border-radius: 8px;
-  font-size: 12px;
-  font-weight: 700;
-  color: #94a3b8;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  position: relative;
-}
-
-.luxury-tab-btn:hover {
-  color: #f1f5f9;
-}
-
-.luxury-tab-btn.active {
-  color: #090e1a;
-  background: #f59e0b;
-  font-weight: 800;
-  box-shadow: 0 4px 14px rgba(245, 158, 11, 0.3);
-}
-
-/* ── 8. Status Badges & Pills ───────────────────────────────────────────── */
-.badge-gold {
-  background: rgba(245, 158, 11, 0.15) !important;
-  color: #f59e0b !important;
-  border: 1px solid rgba(245, 158, 11, 0.35) !important;
-}
-
-.badge-emerald {
-  background: rgba(16, 185, 129, 0.15) !important;
-  color: #10b981 !important;
-  border: 1px solid rgba(16, 185, 129, 0.35) !important;
-}
-
-.badge-sky {
-  background: rgba(56, 189, 248, 0.15) !important;
-  color: #38bdf8 !important;
-  border: 1px solid rgba(56, 189, 248, 0.35) !important;
-}
-
-/* ── 9. Vehicle Category Selector (8 Canonical Vehicle Types) ────────────── */
-.vehicle-category-selector {
-  background: rgba(13, 21, 32, 0.85);
-  backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 16px;
-  padding: 16px;
-  margin-bottom: 20px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
-}
-
-.vehicle-category-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 10px;
-}
-
-@media (max-width: 900px) {
-  .vehicle-category-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-.category-select-card {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  padding: 12px 8px;
-  border-radius: 12px;
-  background: rgba(20, 31, 45, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  cursor: pointer;
-  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
-  text-align: center;
-}
-
-.category-select-card:hover {
-  transform: translateY(-2px);
-  border-color: rgba(245, 158, 11, 0.4);
-  background: rgba(28, 44, 64, 0.85);
-}
-
-.category-select-card.active {
-  background: linear-gradient(135deg, rgba(245, 158, 11, 0.2) 0%, rgba(20, 31, 45, 0.95) 100%);
-  border: 1.5px solid #f59e0b;
-  box-shadow: 0 0 16px rgba(245, 158, 11, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.1);
-}
-
-.cat-card-icon {
-  font-size: 24px;
-  line-height: 1;
-}
-
-.cat-card-name {
-  font-size: 11px;
-  font-weight: 700;
-  color: #cbd5e1;
-  letter-spacing: 0.1px;
-  line-height: 1.3;
-}
-
-.category-select-card.active .cat-card-name {
-  color: #fef3c7;
-  font-weight: 800;
-}
-
-.cat-card-active-dot {
-  position: absolute;
-  top: 7px;
-  right: 7px;
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: #f59e0b;
-  box-shadow: 0 0 8px #f59e0b;
-}
-
-/* ── 10. Fleet Segment Horizontal Filter Bar ────────────────────────────── */
+/* ── 6. Category Filter Chips Theming ───────────────────────────────────── */
 .category-filter-bar {
   display: flex;
   align-items: center;
@@ -399,38 +565,311 @@
   border-radius: 9999px;
   font-size: 12px;
   font-weight: 600;
-  color: #94a3b8;
-  background: rgba(15, 23, 42, 0.65);
-  border: 1px solid rgba(255, 255, 255, 0.08);
   white-space: nowrap;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
-.category-filter-chip:hover {
-  color: #f1f5f9;
-  border-color: rgba(245, 158, 11, 0.3);
-  background: rgba(30, 41, 59, 0.8);
+/* Dark Category Chips */
+.theme-dark .category-filter-chip,
+.dark .category-filter-chip,
+html.dark .category-filter-chip {
+  color: #94a3b8 !important;
+  background: rgba(15, 23, 42, 0.65) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
 }
 
-.category-filter-chip.active {
-  color: #090e1a;
-  background: #f59e0b;
-  border-color: #f59e0b;
-  font-weight: 800;
-  box-shadow: 0 4px 14px rgba(245, 158, 11, 0.35);
+.theme-dark .category-filter-chip:hover,
+.dark .category-filter-chip:hover,
+html.dark .category-filter-chip:hover {
+  color: #f1f5f9 !important;
+  border-color: rgba(245, 158, 11, 0.3) !important;
+  background: rgba(30, 41, 59, 0.8) !important;
 }
 
-.category-filter-chip .chip-count {
-  font-size: 10px;
-  font-weight: 800;
-  padding: 1px 6px;
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.12);
+.theme-dark .category-filter-chip.active,
+.dark .category-filter-chip.active,
+html.dark .category-filter-chip.active {
+  color: #090e1a !important;
+  background: #f59e0b !important;
+  border-color: #f59e0b !important;
+  font-weight: 800 !important;
+  box-shadow: 0 4px 14px rgba(245, 158, 11, 0.35) !important;
 }
 
-.category-filter-chip.active .chip-count {
-  background: rgba(0, 0, 0, 0.2);
-  color: #090e1a;
+.theme-dark .category-filter-chip .chip-count,
+.dark .category-filter-chip .chip-count,
+html.dark .category-filter-chip .chip-count {
+  background: rgba(255, 255, 255, 0.12) !important;
 }
 
+.theme-dark .category-filter-chip.active .chip-count,
+.dark .category-filter-chip.active .chip-count,
+html.dark .category-filter-chip.active .chip-count {
+  background: rgba(0, 0, 0, 0.2) !important;
+  color: #090e1a !important;
+}
+
+/* Light Category Chips — Pure White with Dark Typography */
+.theme-light .category-filter-chip,
+.light .category-filter-chip,
+html.theme-light .category-filter-chip,
+html.light .category-filter-chip,
+html:not(.dark) .category-filter-chip {
+  color: #334155 !important;
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03) !important;
+}
+
+.theme-light .category-filter-chip:hover,
+.light .category-filter-chip:hover,
+html.theme-light .category-filter-chip:hover,
+html.light .category-filter-chip:hover,
+html:not(.dark) .category-filter-chip:hover {
+  color: #0f172a !important;
+  border-color: #cbd5e1 !important;
+  background: #f8fafc !important;
+}
+
+.theme-light .category-filter-chip.active,
+.light .category-filter-chip.active,
+html.theme-light .category-filter-chip.active,
+html.light .category-filter-chip.active,
+html:not(.dark) .category-filter-chip.active {
+  color: #ffffff !important;
+  background: linear-gradient(135deg, #f59e0b, #d97706) !important;
+  border-color: #f59e0b !important;
+  font-weight: 800 !important;
+  box-shadow: 0 4px 14px rgba(245, 158, 11, 0.35) !important;
+}
+
+.theme-light .category-filter-chip .chip-count,
+.light .category-filter-chip .chip-count,
+html.theme-light .category-filter-chip .chip-count,
+html.light .category-filter-chip .chip-count,
+html:not(.dark) .category-filter-chip .chip-count {
+  background: #f1f5f9 !important;
+  color: #475569 !important;
+}
+
+.theme-light .category-filter-chip.active .chip-count,
+.light .category-filter-chip.active .chip-count,
+html.theme-light .category-filter-chip.active .chip-count,
+html.light .category-filter-chip.active .chip-count,
+html:not(.dark) .category-filter-chip.active .chip-count {
+  background: rgba(0, 0, 0, 0.25) !important;
+  color: #ffffff !important;
+}
+
+/* ── 7. Tables & Ledgers Theming ────────────────────────────────────────── */
+.theme-dark .dashboard-table-wrapper,
+.dark .dashboard-table-wrapper,
+html.dark .dashboard-table-wrapper {
+  background: rgba(15, 23, 42, 0.7) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+.theme-light .dashboard-table-wrapper,
+.theme-light .local-table-shell,
+.theme-light .table-shell,
+.light .dashboard-table-wrapper,
+.light .local-table-shell,
+.light .table-shell,
+html.theme-light .dashboard-table-wrapper,
+html.theme-light .table-shell,
+html.light .dashboard-table-wrapper,
+html.light .table-shell,
+html:not(.dark) .dashboard-table-wrapper,
+html:not(.dark) .table-shell {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05) !important;
+}
+
+.theme-light table,
+.light table,
+html.theme-light table,
+html.light table,
+html:not(.dark) table {
+  background: #ffffff !important;
+}
+
+.theme-light th,
+.light th,
+html.theme-light th,
+html.light th,
+html:not(.dark) th {
+  background: #f8fafc !important;
+  color: #475569 !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+  font-weight: 700 !important;
+}
+
+.theme-light td,
+.light td,
+html.theme-light td,
+html.light td,
+html:not(.dark) td {
+  color: #1e293b !important;
+  border-bottom: 1px solid #f1f5f9 !important;
+}
+
+.theme-light tbody tr:hover,
+.light tbody tr:hover,
+html.theme-light tbody tr:hover,
+html.light tbody tr:hover,
+html:not(.dark) tbody tr:hover {
+  background: #fbfcfe !important;
+}
+
+.theme-light .table-vehicle b,
+.light .table-vehicle b,
+html.theme-light .table-vehicle b,
+html.light .table-vehicle b,
+html:not(.dark) .table-vehicle b {
+  color: #0f172a !important;
+}
+
+.theme-light .table-vehicle small,
+.light .table-vehicle small,
+html.theme-light .table-vehicle small,
+html.light .table-vehicle small,
+html:not(.dark) .table-vehicle small {
+  color: #64748b !important;
+}
+
+.theme-light .table-heading,
+.light .table-heading,
+html.theme-light .table-heading,
+html.light .table-heading,
+html:not(.dark) .table-heading {
+  background: #ffffff !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+  color: #64748b !important;
+}
+
+.theme-light .table-heading b,
+.light .table-heading b,
+html.theme-light .table-heading b,
+html.light .table-heading b,
+html:not(.dark) .table-heading b {
+  color: #0f172a !important;
+}
+
+/* ── 8. Forms, Inputs & Selects Theming ─────────────────────────────────── */
+.theme-light input,
+.theme-light select,
+.theme-light textarea,
+.light input,
+.light select,
+.light textarea,
+html.theme-light input,
+html.theme-light select,
+html.theme-light textarea,
+html.light input,
+html.light select,
+html.light textarea,
+html:not(.dark) input,
+html:not(.dark) select,
+html:not(.dark) textarea {
+  background: #ffffff !important;
+  border-color: #cbd5e1 !important;
+  color: #0f172a !important;
+}
+
+.theme-light .deals-luxury-select,
+.light .deals-luxury-select,
+html.theme-light .deals-luxury-select,
+html.light .deals-luxury-select,
+html:not(.dark) .deals-luxury-select {
+  background: #ffffff !important;
+  border-color: #cbd5e1 !important;
+  color: #0f172a !important;
+}
+
+.theme-light .deals-luxury-select select,
+.light .deals-luxury-select select,
+html.theme-light .deals-luxury-select select,
+html.light .deals-luxury-select select,
+html:not(.dark) .deals-luxury-select select {
+  color: #0f172a !important;
+}
+
+.theme-light .deals-luxury-select select option,
+.light .deals-luxury-select select option,
+html.theme-light .deals-luxury-select select option,
+html.light .deals-luxury-select select option,
+html:not(.dark) .deals-luxury-select select option {
+  background: #ffffff !important;
+  color: #0f172a !important;
+}
+
+/* ── 9. Universal Overrides for Light Mode ("Make everything bright / white type") ── */
+.theme-light [class*="bg-neutral-900"],
+.theme-light [class*="bg-neutral-950"],
+.light [class*="bg-neutral-900"],
+.light [class*="bg-neutral-950"],
+html.theme-light [class*="bg-neutral-900"],
+html.theme-light [class*="bg-neutral-950"],
+html.light [class*="bg-neutral-900"],
+html.light [class*="bg-neutral-950"] {
+  background-color: #ffffff !important;
+}
+
+.theme-light [class*="border-neutral-800"],
+.light [class*="border-neutral-800"],
+html.theme-light [class*="border-neutral-800"],
+html.light [class*="border-neutral-800"] {
+  border-color: #e2e8f0 !important;
+}
+
+.theme-light [class*="text-white"],
+.light [class*="text-white"],
+html.theme-light [class*="text-white"],
+html.light [class*="text-white"] {
+  color: #0f172a !important;
+}
+
+.theme-light [class*="text-neutral-400"],
+.light [class*="text-neutral-400"],
+html.theme-light [class*="text-neutral-400"],
+html.light [class*="text-neutral-400"] {
+  color: #64748b !important;
+}
+
+.theme-light [class*="text-neutral-300"],
+.light [class*="text-neutral-300"],
+html.theme-light [class*="text-neutral-300"],
+html.light [class*="text-neutral-300"] {
+  color: #475569 !important;
+}
+
+.theme-light [class*="text-neutral-500"],
+.light [class*="text-neutral-500"],
+html.theme-light [class*="text-neutral-500"],
+html.light [class*="text-neutral-500"] {
+  color: #94a3b8 !important;
+}
+
+/* High contrast accent colors for light mode */
+.theme-light .text-amber-400,
+.light .text-amber-400,
+html.theme-light .text-amber-400,
+html.light .text-amber-400 {
+  color: #d97706 !important;
+}
+
+.theme-light .text-emerald-400,
+.light .text-emerald-400,
+html.theme-light .text-emerald-400,
+html.light .text-emerald-400 {
+  color: #059669 !important;
+}
+
+.theme-light .text-sky-400,
+.light .text-sky-400,
+html.theme-light .text-sky-400,
+html.light .text-sky-400 {
+  color: #0284c7 !important;
+}

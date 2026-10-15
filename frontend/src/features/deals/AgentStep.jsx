@@ -1,8 +1,8 @@
-import React, { useState } from "react";
-import { Check } from "lucide-react";
+import { Check, ShieldCheck } from "lucide-react";
 import { DealField } from "./DealField";
 import { money } from "./dealModel";
 import { useLanguage } from "@/features/i18n/LanguageContext";
+import { useAuth } from "@/context/AuthContext";
 import { AgentWhatsAppModal } from "./AgentWhatsAppModal";
 
 export const RTO_TASKS = [
@@ -23,6 +23,7 @@ const getLocalDatetimeString = (date = new Date()) => {
 
 export const AgentStep = ({ deal, updateSection, errors = {} }) => {
   const { t } = useLanguage();
+  const { isOwner } = useAuth();
   const agent = deal.agent || {};
 
   // Extract initial otherDoc if present in deal.agent.other_doc or deal.agent.task
@@ -49,6 +50,20 @@ export const AgentStep = ({ deal, updateSection, errors = {} }) => {
 
   // Assigned at: defaults to current local datetime if not set
   const assignedAt = agent.assigned_at || getLocalDatetimeString();
+
+  if (!isOwner) {
+    return (
+      <div className="p-8 text-center bg-neutral-900/60 rounded-2xl border border-neutral-800" data-testid="agent-step-restricted">
+        <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
+          <ShieldCheck size={28} />
+        </div>
+        <h3 className="text-lg font-bold text-white mb-2">Agent Details Restricted</h3>
+        <p className="text-neutral-400 text-sm max-w-md mx-auto">
+          Agent assignments, commissions, and RTO broker fees are confidential and managed exclusively by Showroom Owner account (aravasamarth@gmail.com).
+        </p>
+      </div>
+    );
+  }
 
   const handleAgentChange = (key, value) => {
     if (!updateSection) return;

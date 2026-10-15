@@ -245,9 +245,10 @@
 
 .sb-field-line {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   font-size: 9.8px;
-  line-height: 1.32;
+  line-height: 1.4;
+  min-height: 16px;
 }
 
 .sb-field-label {
@@ -257,6 +258,8 @@
   color: #1e293b;
   white-space: nowrap;
   font-size: 9.8px;
+  line-height: 1.4;
+  padding-top: 1px;
 }
 
 .sb-field-colon {
@@ -265,6 +268,8 @@
   color: #64748b;
   text-align: center;
   font-size: 9.8px;
+  line-height: 1.4;
+  padding-top: 1px;
 }
 
 .sb-field-value {
@@ -272,8 +277,9 @@
   border-bottom: 1px solid #94a3b8;
   font-weight: 700;
   color: #0a2342;
-  padding: 0 4px 1px 4px;
-  min-height: 13.5px;
+  padding: 1px 4px 1px 4px;
+  min-height: 16px;
+  line-height: 1.4;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

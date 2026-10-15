@@ -73,19 +73,19 @@ export async function downloadSellerAgreementPDF(deal: SellerAgreementDeal): Pro
       deal.seller?.photo || deal.photos?.["seller-1"] || deal.photos?.["seller-portrait"] || deal.photos?.["seller_photo"]
     ),
     resolveImageToDataUrl(
-      deal.seller?.signature || deal.photos?.["seller-signature"] || deal.photos?.["seller-8"] || deal.photos?.["seller_signature"]
+      deal.seller?.signature || deal.photos?.["seller-signature"] || deal.photos?.["seller_signature"]
     ),
     resolveImageToDataUrl(
-      deal.seller?.thumb || deal.photos?.["seller-thumb"] || deal.photos?.["seller-thumb-impression"] || deal.photos?.["seller-2"]
+      deal.seller?.thumb || deal.photos?.["seller-thumb"] || deal.photos?.["seller-thumb-impression"]
     ),
     resolveImageToDataUrl(
       deal.buyer?.photo || deal.photos?.["buyer-1"] || deal.photos?.["buyer-portrait"] || deal.photos?.["buyer_photo"]
     ),
     resolveImageToDataUrl(
-      deal.buyer?.signature || deal.photos?.["buyer-signature"] || deal.photos?.["buyer-8"] || deal.photos?.["buyer_signature"]
+      deal.buyer?.signature || deal.photos?.["buyer-signature"] || deal.photos?.["buyer_signature"]
     ),
     resolveImageToDataUrl(
-      deal.buyer?.thumb || deal.photos?.["buyer-thumb"] || deal.photos?.["buyer-thumb-impression"] || deal.photos?.["buyer-2"]
+      deal.buyer?.thumb || deal.photos?.["buyer-thumb"] || deal.photos?.["buyer-thumb-impression"]
     ),
     resolveImageToDataUrl(
       deal.witness1?.photo || deal.photos?.["witness-1-1"] || deal.photos?.["witness-1"]

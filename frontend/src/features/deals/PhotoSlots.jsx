@@ -567,10 +567,23 @@ export const PhotoSlots = ({ group, photos, onChange, readOnly = false, dealerTo
     const portraitId    = `${group}-1`;
     const portraitLabel = slots[0];
     const restSlots     = slots.slice(1);
+    const filteredSlots = isPersonGroup ? restSlots.filter((s) => s !== "Signature") : restSlots;
     const hasPortrait   = !!photos[portraitId];
-    const docsCount     = restSlots.filter((_, i) => photos[`${group}-${i + 2}`]).length;
     const sectionTitle  = group === "seller" ? t("photo.seller_photo", "Seller photo") : group === "buyer" ? t("photo.buyer_photo", "Buyer photo") : t("photo.vehicle_photo", "Vehicle photo");
     const docsTitle     = isVehicle ? t("photo.additional_docs", "Additional photos & documents") : t("photo.docs_additional", "Documents & additional photos");
+
+    const isSlotSignatureContaminated = (label, slotId) => {
+      const candidate = photos[slotId];
+      if (!candidate) return false;
+      const sig = photos[`${group}-signature`] || photos[`${group}_signature`];
+      if (sig && (candidate === sig || (candidate.dataUrl && candidate.dataUrl === sig.dataUrl) || (candidate.url && candidate.url === sig.url))) {
+        return true;
+      }
+      if (candidate.name && String(candidate.name).toLowerCase().includes("signature")) {
+        return true;
+      }
+      return false;
+    };
 
     if (variant === "portrait") {
       if (isPersonGroup) {
@@ -614,12 +627,14 @@ export const PhotoSlots = ({ group, photos, onChange, readOnly = false, dealerTo
     }
 
     if (variant === "docs") {
-      const filteredSlots = isPersonGroup ? restSlots.filter((s) => s !== "Signature") : restSlots;
       const extraUploaded = allExtraIds.filter((id) => photos[id]).length;
+
       const totalDocsCount =
         filteredSlots.filter((label) => {
           const originalIndex = restSlots.indexOf(label);
-          return photos[`${group}-${originalIndex + 2}`];
+          const slotId = `${group}-${originalIndex + 2}`;
+          if (isSlotSignatureContaminated(label, slotId)) return false;
+          return Boolean(photos[slotId]);
         }).length + extraUploaded;
       const totalDocsSlots = filteredSlots.length + allExtraIds.length;
 
@@ -635,12 +650,13 @@ export const PhotoSlots = ({ group, photos, onChange, readOnly = false, dealerTo
             {filteredSlots.map((label) => {
               const originalIndex = restSlots.indexOf(label);
               const slotId = `${group}-${originalIndex + 2}`;
+              const slotPhoto = isSlotSignatureContaminated(label, slotId) ? null : photos[slotId];
               return (
                 <PhotoSlot
                   key={label}
                   id={slotId}
                   label={label}
-                  photo={photos[slotId]}
+                  photo={slotPhoto}
                   onChange={onChange}
                   readOnly={readOnly}
                 />
@@ -735,14 +751,79 @@ export const PhotoSlots = ({ group, photos, onChange, readOnly = false, dealerTo
       );
     }
 
+    if (isPersonGroup) {
+      return (
+        <section className="wizard-group photo-group" data-testid={`${group}-identity-docs-section`}>
+          <PartyIdentityRow
+            group={group}
+            photos={photos}
+            onChange={onChange}
+            readOnly={readOnly}
+            dealerToggle={dealerToggle}
+            embedded={true}
+            showHeader={true}
+          />
+
+          <div className="avatar-docs-label" style={{ marginTop: "24px" }}>
+            {t("photo.docs_additional", "Documents & additional photos")}
+          </div>
+          <div className="photo-slot-grid">
+            {filteredSlots.map((label) => {
+              const originalIndex = restSlots.indexOf(label);
+              const slotId = `${group}-${originalIndex + 2}`;
+              const slotPhoto = isSlotSignatureContaminated(label, slotId) ? null : photos[slotId];
+              return (
+                <PhotoSlot
+                  key={label}
+                  id={slotId}
+                  label={label}
+                  photo={slotPhoto}
+                  onChange={onChange}
+                  readOnly={readOnly}
+                />
+              );
+            })}
+            {allExtraIds.map((extraId) => {
+              const num = extraId.replace(`${group}-extra-`, "");
+              const photo = photos[extraId];
+              return (
+                <PhotoSlot
+                  key={extraId}
+                  id={extraId}
+                  label={photo?.name ? `Additional: ${photo.name.slice(0, 16)}` : `Additional photo ${num}`}
+                  photo={photo}
+                  onChange={(id, val) => {
+                    onChange(id, val);
+                    if (!val) {
+                      setExtraSlotIds(prev => prev.filter(x => x !== extraId));
+                    }
+                  }}
+                  readOnly={readOnly}
+                  onDeleteExtra={() => {
+                    onChange(extraId, null);
+                    setExtraSlotIds(prev => prev.filter(x => x !== extraId));
+                  }}
+                />
+              );
+            })}
+            {!readOnly && (
+              <AddPhotoBox
+                group={group}
+                onAddPhotos={handleAddPhotos}
+              />
+            )}
+          </div>
+        </section>
+      );
+    }
+
     return (
       <section className="wizard-group photo-group">
-        {/* Heading row: "Seller photo" + photo count + Dealer toggle */}
+        {/* Heading row: "Vehicle photo" + photo count */}
         <div className="section-title">
-          <h2>{group === "seller" ? t("photo.seller_photo", "Seller photo") : t("photo.buyer_photo", "Buyer photo")}</h2>
+          <h2>{t("photo.vehicle_photo", "Vehicle photo")}</h2>
           <div className="photo-section-actions">
             <span className="slot-count" data-testid={`${group}-photo-count`}>{count} / {slots.length} {t("photo.photos_count", "photos")}</span>
-            {dealerToggle}
           </div>
         </div>
 
@@ -752,10 +833,15 @@ export const PhotoSlots = ({ group, photos, onChange, readOnly = false, dealerTo
           photo={photos[portraitId]}
           onChange={onChange}
           readOnly={readOnly}
+          icon="bike"
+          stockStatus={stockStatus}
+          onStockStatusChange={onStockStatusChange}
+          rcStatus={rcStatus}
+          onRcStatusChange={onRcStatusChange}
         />
 
         {restSlots.length > 0 && (
-          <div className="avatar-docs-label">{t("photo.docs_additional", "Documents & additional photos")}</div>
+          <div className="avatar-docs-label">{docsTitle}</div>
         )}
         <div className="photo-slot-grid">
           {restSlots.map((label, i) => {

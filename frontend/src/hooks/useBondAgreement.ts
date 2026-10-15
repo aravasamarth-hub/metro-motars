@@ -16,10 +16,53 @@ export async function downloadBondAgreementPDF(deal: any): Promise<string> {
   }
 
   // Pre-resolve raster signatures
+  const resolveImage = (val: any): string | null => {
+    if (!val) return null;
+    if (typeof val === "string") return val;
+    if (val.dataUrl) return val.dataUrl;
+    if (val.url) return val.url;
+    if (val.src) return val.src;
+    return null;
+  };
+
+  const photos = deal?.photos || {};
+  const seller = deal?.seller || {};
+  const buyer = deal?.buyer || {};
+  const witnesses = deal?.witnesses || [deal?.witness1 || {}, deal?.witness2 || {}];
+
   const resolvedImages = {
-    sellerSignature: deal.photos?.seller_signature || null,
-    buyerSignature: deal.photos?.buyer_signature || null,
-    witnessSignature: deal.photos?.witness_signature || null,
+    sellerSignature: resolveImage(
+      photos["seller-signature"] ||
+      photos["seller_signature"] ||
+      photos["seller-sig"] ||
+      seller.signature ||
+      deal?.sellerSignature ||
+      deal?.signatures?.seller
+    ),
+    buyerSignature: resolveImage(
+      photos["buyer-signature"] ||
+      photos["buyer_signature"] ||
+      photos["buyer-sig"] ||
+      buyer.signature ||
+      deal?.buyerSignature ||
+      deal?.signatures?.buyer
+    ),
+    witnessSignature: resolveImage(
+      photos["witness-1-signature"] ||
+      photos["witness-1-2"] ||
+      photos["witness-1_signature"] ||
+      photos["witness_signature"] ||
+      photos["witness-signature"] ||
+      witnesses[0]?.signature ||
+      deal?.signatures?.witness1
+    ),
+    witness2Signature: resolveImage(
+      photos["witness-2-signature"] ||
+      photos["witness-2-2"] ||
+      photos["witness-2_signature"] ||
+      witnesses[1]?.signature ||
+      deal?.signatures?.witness2
+    ),
   };
 
   const docElement = React.createElement(BondAgreementPDF, {

@@ -23,11 +23,13 @@ import {
   AlertCircle,
   BarChart2,
   Sparkles,
+  ShieldCheck,
 } from "lucide-react";
 import { useDeals } from "./useDeals";
 import { money } from "./dealModel";
 import { dealRepository } from "@/data/dealRepository";
 import { useLanguage } from "@/features/i18n/LanguageContext";
+import { useAuth } from "@/context/AuthContext";
 import { AgentWhatsAppModal } from "./AgentWhatsAppModal";
 
 // 1. shadcn/ui
@@ -52,6 +54,7 @@ import { AgentCommissionChart } from "@/components/bklit/AgentCommissionChart";
 export default function AgentsView() {
   const navigate = useNavigate();
   const { t } = useLanguage();
+  const { isOwner } = useAuth();
   const { deals, loading } = useDeals();
 
   const [searchQuery, setSearchQuery] = useState("");
@@ -214,6 +217,38 @@ export default function AgentsView() {
       payoutStatus: a.amountBalance === 0 ? "settled" : "pending",
     }));
   }, [agentGroups]);
+
+  if (!isOwner) {
+    return (
+      <div className="local-page" data-testid="agents-restricted-page">
+        <div className="p-10 text-center max-w-lg mx-auto bg-neutral-900/80 rounded-2xl border border-neutral-800 shadow-2xl mt-12">
+          <div className="w-16 h-16 mx-auto mb-5 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
+            <ShieldCheck size={32} />
+          </div>
+          <h2 className="text-2xl font-bold text-white mb-3">Owner Access Required</h2>
+          <p className="text-neutral-400 text-sm mb-6 leading-relaxed">
+            Agent profiles, RTO service fees, commission structures, and payouts are confidential. This page is restricted to Showroom Owner account (<strong>aravasamarth@gmail.com</strong>).
+          </p>
+          <div className="flex gap-3 justify-center">
+            <button
+              type="button"
+              className="button button-primary"
+              onClick={() => navigate("/deals")}
+            >
+              Back to Deals
+            </button>
+            <button
+              type="button"
+              className="button button-secondary"
+              onClick={() => navigate("/login")}
+            >
+              Switch Account
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <motion.div

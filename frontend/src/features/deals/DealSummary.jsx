@@ -3,26 +3,33 @@ import { commission, calculateMaintenanceTotal, money } from "./dealModel";
 import { DealField } from "./DealField";
 import { useLanguage } from "@/features/i18n/LanguageContext";
 
+import { useAuth } from "@/context/AuthContext";
+
 export const DealSummary = ({ deal, edit }) => {
   const { t } = useLanguage();
+  const { isOwner } = useAuth();
   const maintenanceExpense = calculateMaintenanceTotal(deal.maintenance);
 
   const rows = [
     [t("step.vehicle", "Vehicle"), `${deal.vehicle.vehicle_name || "—"} · ${deal.vehicle.registration_number || deal.vehicle.vehicle_number || "—"}`, 0],
     [t("step.seller", "Seller"), deal.seller.is_dealer ? `${deal.seller.name} · ${deal.seller.dealer_name}` : deal.seller.name || "—", 1],
-    ...(maintenanceExpense > 0
+    ...(maintenanceExpense > 0 && isOwner
       ? [[t("maintenance.summary_label", "Maintenance Cost"), money(maintenanceExpense), 2]]
       : []),
     [t("step.buyer", "Buyer"), deal.buyer.name || t("summary.not_assigned", "Not assigned"), 3],
     [t("section.seller_witness", "Seller witness"), deal.witnesses[0].name || t("summary.not_recorded", "Not recorded"), 1],
     [t("section.buyer_witness", "Buyer witness"), deal.witnesses[1].name || t("summary.not_recorded", "Not recorded"), 3],
-    [t("field.purchase_price", "Purchase price"), money(deal.payments.purchase_price), 5],
-    [t("field.selling_price", "Selling price"), money(deal.payments.selling_price), 5],
-    [t("section.commission", "Commission"), money(commission(deal.payments, maintenanceExpense)), 5],
+    ...(isOwner
+      ? [
+          [t("field.purchase_price", "Purchase price"), money(deal.payments.purchase_price), 5],
+          [t("field.selling_price", "Selling price"), money(deal.payments.selling_price), 5],
+          [t("section.commission", "Commission"), money(commission(deal.payments, maintenanceExpense)), 5],
+        ]
+      : []),
     [t("photo.photos_count", "Photos"), `${Object.values(deal.photos).filter(Boolean).length} / 32 ${t("summary.attached", "attached")}`, 0],
   ];
 
-  if (deal.agent?.name) {
+  if (deal.agent?.name && isOwner) {
     const bal = deal.agent.amount_balance !== "" && deal.agent.amount_balance != null
       ? Number(deal.agent.amount_balance)
       : Math.max(0, (Number(deal.agent.total_amount) || 0) - (Number(deal.agent.amount_paid) || 0));

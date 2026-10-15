@@ -48,79 +48,48 @@ export function AnimePulseBeacon({
   label,
   className = "",
 }: AnimePulseBeaconProps) {
-  const ringRef1 = useRef<HTMLSpanElement>(null);
-  const ringRef2 = useRef<HTMLSpanElement>(null);
-  const coreRef = useRef<HTMLSpanElement>(null);
-  const tlRef = useRef<any>(null);
-
-  useEffect(() => {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-
-    const r1 = ringRef1.current;
-    const r2 = ringRef2.current;
-    const core = coreRef.current;
-    if (!r1 || !r2 || !core) return;
-
-    const tl = createTimeline({
-      loop: true,
-      loopDelay: 600,
-    });
-    tlRef.current = tl;
-
-    tl.add(core, {
-      scale: [1, 1.25, 1],
-      duration: 1200,
-      ease: "inOutSine",
-    });
-
-    tl.add(
-      r1,
-      {
-        scale: [0.6, 2.2],
-        opacity: [0.9, 0],
-        duration: 1800,
-        ease: "outQuad",
-      },
-      0
-    );
-
-    tl.add(
-      r2,
-      {
-        scale: [0.4, 2.6],
-        opacity: [0.75, 0],
-        duration: 2100,
-        ease: "outQuad",
-      },
-      400
-    );
-
-    return () => {
-      if (tlRef.current && typeof tlRef.current.pause === "function") {
-        tlRef.current.pause();
-      }
-    };
-  }, []);
-
   const c = COLOR_MAP[color] || COLOR_MAP.gold;
   const s = SIZE_MAP[size] || SIZE_MAP.md;
 
   return (
     <span className={`inline-flex items-center gap-2 ${className}`}>
-      <span className="relative flex items-center justify-center">
+      <style>{`
+        @keyframes mmBeaconCorePulse {
+          0%, 100% { transform: scale(1); }
+          50% { transform: scale(1.22); }
+        }
+        @keyframes mmBeaconRingPulse1 {
+          0% { transform: scale(0.6); opacity: 0.9; }
+          100% { transform: scale(2.2); opacity: 0; }
+        }
+        @keyframes mmBeaconRingPulse2 {
+          0% { transform: scale(0.4); opacity: 0.75; }
+          100% { transform: scale(2.6); opacity: 0; }
+        }
+        .mm-beacon-core {
+          animation: mmBeaconCorePulse 1.8s ease-in-out infinite;
+          will-change: transform;
+        }
+        .mm-beacon-ring-1 {
+          animation: mmBeaconRingPulse1 2.2s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+          will-change: transform, opacity;
+        }
+        .mm-beacon-ring-2 {
+          animation: mmBeaconRingPulse2 2.2s cubic-bezier(0.16, 1, 0.3, 1) 0.5s infinite;
+          will-change: transform, opacity;
+        }
+      `}</style>
+      <span className="relative flex items-center justify-center" style={{ transform: "translateZ(0)" }}>
         <span
-          ref={ringRef1}
-          className={`absolute rounded-full pointer-events-none ${s.ring}`}
+          className={`absolute rounded-full pointer-events-none mm-beacon-ring-1 ${s.ring}`}
           style={{ border: `1.5px solid ${c.ring}` }}
         />
         <span
-          ref={ringRef2}
-          className={`absolute rounded-full pointer-events-none ${s.ring}`}
+          className={`absolute rounded-full pointer-events-none mm-beacon-ring-2 ${s.ring}`}
           style={{ border: `1px solid ${c.ring}` }}
         />
         <span
-          ref={coreRef}
-          className={`relative rounded-full shadow-lg ${s.core} ${c.core}`}
+          className={`relative rounded-full shadow-lg mm-beacon-core ${s.core} ${c.core}`}
         />
       </span>
       {label && <span className={`${s.text} ${c.text}`}>{label}</span>}

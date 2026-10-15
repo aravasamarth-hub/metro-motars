@@ -6,10 +6,12 @@ import { PartyIdentityRow } from "./PartyIdentityRow";
 import { Seller } from "@/components/Seller";
 import { Buyer } from "@/components/Buyer";
 import { useLanguage } from "@/features/i18n/LanguageContext";
+import { useAuth } from "@/context/AuthContext";
 import { money } from "./dealModel";
 
 export const PersonStep = ({ group, deal, updateSection, updateWitness, setPhoto, errors }) => {
   const { t } = useLanguage();
+  const { isOwner } = useAuth();
 
   if (group === "seller") {
     return (
@@ -93,7 +95,7 @@ export const PersonStep = ({ group, deal, updateSection, updateWitness, setPhoto
       </section>
 
       {/* Buyer Payment / Pricing section: Price amount, Amount paid, Amount pending */}
-      {isBuyer && (
+      {isBuyer && isOwner && (
         <section className="wizard-group" data-testid="buyer-payments-section">
           <div className="section-title">
             <h2>{t("section.buyer_payments", "Payment & pricing details")}</h2>

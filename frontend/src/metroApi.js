@@ -24,6 +24,11 @@ export const createDocument = (payload) => request("/documents", { method: "POST
 export const updateDocument = (documentId, payload) => request(`/documents/${documentId}`, { method: "PUT", body: JSON.stringify(payload) });
 export const deleteDocument = (documentId) => request(`/documents/${documentId}`, { method: "DELETE" });
 
+export const authSetPassword = (payload) => request("/auth/set-password", { method: "POST", body: JSON.stringify(payload) });
+export const authSendOtp = (payload) => request("/auth/send-otp", { method: "POST", body: JSON.stringify(payload) });
+export const authVerifyOtp = (payload) => request("/auth/verify-otp", { method: "POST", body: JSON.stringify(payload) });
+export const authLogin = (payload) => request("/auth/login", { method: "POST", body: JSON.stringify(payload) });
+
 export function readFileAsDataUrl(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();

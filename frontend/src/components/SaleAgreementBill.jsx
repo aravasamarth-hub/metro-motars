@@ -202,15 +202,15 @@ export default function SaleAgreementBill({ deal = {}, doc = null }) {
   };
 
   const sellerPhoto = resolveMediaUrl(photos["seller-portrait"] || photos["seller-1"] || photos["seller_photo"] || s.photo);
-  const sellerThumb = resolveMediaUrl(photos["seller-thumb"] || photos["seller-thumb-impression"] || photos["seller-2"] || s.thumb);
-  const sellerSig = resolveMediaUrl(photos["seller-signature"] || photos["seller-8"] || photos["seller_signature"] || s.signature);
+  const sellerThumb = resolveMediaUrl(photos["seller-thumb"] || photos["seller-thumb-impression"] || s.thumb);
+  const sellerSig = resolveMediaUrl(photos["seller-signature"] || photos["seller_signature"] || s.signature);
 
   const buyerPhoto = resolveMediaUrl(photos["buyer-portrait"] || photos["buyer-1"] || photos["buyer_photo"] || b.photo);
-  const buyerThumb = resolveMediaUrl(photos["buyer-thumb"] || photos["buyer-thumb-impression"] || photos["buyer-2"] || b.thumb);
-  const buyerSig = resolveMediaUrl(photos["buyer-signature"] || photos["buyer-8"] || photos["buyer_signature"] || b.signature);
+  const buyerThumb = resolveMediaUrl(photos["buyer-thumb"] || photos["buyer-thumb-impression"] || b.thumb);
+  const buyerSig = resolveMediaUrl(photos["buyer-signature"] || photos["buyer_signature"] || b.signature);
 
   const witnessPhoto = resolveMediaUrl(photos["witness-1-1"] || photos["witness-1"] || photos["witness_photo"] || w1.photo);
-  const witnessThumb = resolveMediaUrl(photos["witness-1-thumb"] || photos["witness-1-thumb-impression"] || photos["witness-1-3"] || photos["witness-1-2"] || w1.thumb);
+  const witnessThumb = resolveMediaUrl(photos["witness-1-thumb"] || photos["witness-1-thumb-impression"] || photos["witness-1-3"] || w1.thumb);
   const witnessSig = resolveMediaUrl(photos["witness-1-signature"] || photos["witness-1-2"] || photos["witness_signature"] || w1.signature);
 
   return (

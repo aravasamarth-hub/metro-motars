@@ -44,21 +44,71 @@ export async function exportPreviewToPdf(
   container.style.transformOrigin = "top left";
 
   try {
+    // Wait for all web fonts to load completely before capturing canvas
+    if (typeof document !== "undefined" && (document as any).fonts && (document as any).fonts.ready) {
+      await (document as any).fonts.ready;
+    }
+
     for (let i = 0; i < targets.length; i++) {
       const pageEl = targets[i];
       const originalShadow = pageEl.style.boxShadow;
       pageEl.style.boxShadow = "none";
 
       try {
+        const pageWidth = pageEl.offsetWidth || 794;
+        const pageHeight = pageEl.offsetHeight || 1123;
+
         const canvas = await html2canvas(pageEl, {
           scale: 2.5, // 2.5x resolution for ultra-sharp typography and borders
           useCORS: true,
           allowTaint: true,
           backgroundColor: "#ffffff",
           logging: false,
-          windowWidth: 1280,
+          width: pageWidth,
+          height: pageHeight,
+          windowWidth: pageWidth,
           scrollX: 0,
           scrollY: 0,
+          onclone: (clonedDoc: Document) => {
+            // Fix Tailwind image preflight and prevent html2canvas ctx.clip() text cut-offs
+            const style = clonedDoc.createElement("style");
+            style.innerHTML = `
+              img {
+                display: inline-block !important;
+              }
+              .buyer-bill-sheet, .seller-bill-sheet, .bond-page {
+                box-shadow: none !important;
+              }
+              .bb-field-line, .sb-field-line, .bb-doc-row {
+                display: flex !important;
+                align-items: center !important;
+                min-height: 16px !important;
+                line-height: 1.45 !important;
+              }
+              .bb-field-label, .sb-field-label, .bb-field-colon, .sb-field-colon, .bb-doc-name, .bb-doc-val {
+                padding-top: 2px !important;
+                display: flex !important;
+                align-items: center !important;
+                line-height: 1.4 !important;
+              }
+              .bb-field-value, .sb-field-value {
+                overflow: visible !important;
+                padding-top: 2px !important;
+                padding-bottom: 1px !important;
+                display: flex !important;
+                align-items: center !important;
+                min-height: 16px !important;
+                line-height: 1.4 !important;
+              }
+              .bb-meta-row, .sb-meta-row {
+                padding-top: 1.5px !important;
+              }
+              .bb-meta-val, .sb-meta-val {
+                overflow: visible !important;
+              }
+            `;
+            clonedDoc.head.appendChild(style);
+          },
         });
 
         const imgData = canvas.toDataURL("image/jpeg", 0.98);

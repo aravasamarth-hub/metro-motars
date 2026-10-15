@@ -146,19 +146,19 @@ export async function downloadBuyerBillPDF(deal: any): Promise<string> {
       photos["buyer-1"] || photos["buyer-portrait"] || photos["buyer_photo"] || buyer.photo
     ),
     resolveImageToDataUrl(
-      photos["buyer-signature"] || photos["buyer-8"] || photos["buyer_signature"] || buyer.signature
+      photos["buyer-signature"] || photos["buyer_signature"] || buyer.signature
     ),
     resolveImageToDataUrl(
-      photos["buyer-thumb"] || photos["buyer-thumb-impression"] || photos["buyer-2"] || buyer.thumb
+      photos["buyer-thumb"] || photos["buyer-thumb-impression"] || buyer.thumb
     ),
     resolveImageToDataUrl(
       photos["seller-1"] || photos["seller-portrait"] || photos["seller_photo"] || seller.photo
     ),
     resolveImageToDataUrl(
-      photos["seller-signature"] || photos["seller-8"] || photos["seller_signature"] || seller.signature
+      photos["seller-signature"] || photos["seller_signature"] || seller.signature
     ),
     resolveImageToDataUrl(
-      photos["seller-thumb"] || photos["seller-thumb-impression"] || photos["seller-2"] || seller.thumb
+      photos["seller-thumb"] || photos["seller-thumb-impression"] || seller.thumb
     ),
     resolveImageToDataUrl(
       photos["vehicle-1"] || photos["vehicle_front"] || vehicle.photo

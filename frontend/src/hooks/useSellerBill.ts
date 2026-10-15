@@ -152,10 +152,10 @@ export async function downloadSellerBillPDF(deal: any): Promise<string> {
       photos["seller-1"] || photos["seller-portrait"] || photos["seller_photo"] || seller.photo
     ),
     resolveImageToDataUrl(
-      photos["seller-signature"] || photos["seller-8"] || photos["seller_signature"] || seller.signature
+      photos["seller-signature"] || photos["seller_signature"] || seller.signature
     ),
     resolveImageToDataUrl(
-      photos["seller-thumb"] || photos["seller-thumb-impression"] || photos["seller-2"] || seller.thumb
+      photos["seller-thumb"] || photos["seller-thumb-impression"] || seller.thumb
     ),
     resolveImageToDataUrl(
       photos["vehicle-1"] || photos["vehicle_front"] || vehicle.photo
@@ -167,7 +167,7 @@ export async function downloadSellerBillPDF(deal: any): Promise<string> {
       photos["witness-1-signature"] || photos["witness-1-2"] || photos["witness_signature"] || witness1.signature
     ),
     resolveImageToDataUrl(
-      photos["witness-1-thumb"] || photos["witness-1-3"] || photos["witness-1-thumb-impression"] || photos["witness-1"] || witness1.thumb
+      photos["witness-1-thumb"] || photos["witness-1-3"] || photos["witness-1-thumb-impression"] || witness1.thumb
     ),
   ]);
 

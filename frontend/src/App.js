@@ -51,12 +51,17 @@ function AppShell({ children, dark, setDark }) {
   const { t } = useLanguage();
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const { user, logout, isOwner } = useAuth();
   const [mobileNav, setMobileNav] = useState(false);
 
   if (location.pathname === "/login" || location.pathname === "/portal" || location.pathname === "/showcase") {
     return <div className={`showcase-fullscreen-wrapper ${dark ? "theme-dark dark" : "theme-light"}`}>{children}</div>;
   }
+
+  const visibleNavItems = navItems.filter(([, , path]) => {
+    if (!isOwner && (path === "/agents" || path === "/finances")) return false;
+    return true;
+  });
 
   const currentNav = navItems.find(([, , path]) => path === location.pathname);
   const pageName = currentNav
@@ -70,7 +75,7 @@ function AppShell({ children, dark, setDark }) {
     : t("nav.dashboard", "Dashboard");
 
   return (
-    <div className={`app-shell ${dark ? "theme-dark" : "theme-light"}`}>
+    <div className={`app-shell ${dark ? "dark theme-dark" : "light theme-light"}`}>
       <aside className={`sidebar ${mobileNav ? "is-open" : ""}`} data-testid="sidebar">
         <div className="brand-lockup" data-testid="brand-lockup">
           <div className="brand-mark">MM</div>
@@ -82,7 +87,7 @@ function AppShell({ children, dark, setDark }) {
         </div>
         <div className="sidebar-label">{t("nav.main_menu", "MAIN MENU")}</div>
         <nav className="main-nav" aria-label="Main navigation">
-          {navItems.map(([key, label, path, Icon]) => (
+          {visibleNavItems.map(([key, label, path, Icon]) => (
             <NavLink
               key={path}
               to={path}
@@ -156,26 +161,30 @@ function AppShell({ children, dark, setDark }) {
             <b>{pageName}</b>
           </div>
           <div className="topbar-actions">
-            <button
-              type="button"
-              className="theme-toggle"
-              onClick={() => setDark(!dark)}
-              data-testid="theme-toggle"
-              aria-label={dark ? "Switch to light mode" : "Switch to dark mode"}
-              title={dark ? "Switch to light mode" : "Switch to dark mode"}
-            >
-              {dark ? (
-                <>
-                  <Sun size={15} strokeWidth={2.2} className="theme-toggle-icon" />
-                  <span>{t("topbar.light", "Light")}</span>
-                </>
-              ) : (
-                <>
-                  <Moon size={15} strokeWidth={2.2} className="theme-toggle-icon" />
-                  <span>{t("topbar.dark", "Dark")}</span>
-                </>
-              )}
-            </button>
+            <div className="theme-toggle-switch" role="group" aria-label="Theme selector" data-testid="theme-toggle">
+              <button
+                type="button"
+                className={`theme-switch-btn ${!dark ? "active" : ""}`}
+                onClick={() => setDark(false)}
+                data-testid="theme-toggle-light"
+                aria-label="Switch to light mode"
+                title="Light Mode (Bright & White)"
+              >
+                <Sun size={14} strokeWidth={2.2} className="theme-toggle-icon" />
+                <span>{t("topbar.light", "Light")}</span>
+              </button>
+              <button
+                type="button"
+                className={`theme-switch-btn ${dark ? "active" : ""}`}
+                onClick={() => setDark(true)}
+                data-testid="theme-toggle-dark"
+                aria-label="Switch to dark mode"
+                title="Dark Mode"
+              >
+                <Moon size={14} strokeWidth={2.2} className="theme-toggle-icon" />
+                <span>{t("topbar.dark", "Dark")}</span>
+              </button>
+            </div>
             <LanguageSwitcher />
             <span
               className="owner-badge"
@@ -489,9 +498,15 @@ function App() {
       localStorage.setItem("mm_theme", dark ? "dark" : "light");
     } catch {}
     if (dark) {
-      document.documentElement.classList.add("dark");
+      document.documentElement.classList.add("dark", "theme-dark");
+      document.documentElement.classList.remove("light", "theme-light");
+      document.body.classList.add("dark", "theme-dark");
+      document.body.classList.remove("light", "theme-light");
     } else {
-      document.documentElement.classList.remove("dark");
+      document.documentElement.classList.remove("dark", "theme-dark");
+      document.documentElement.classList.add("light", "theme-light");
+      document.body.classList.remove("dark", "theme-dark");
+      document.body.classList.add("light", "theme-light");
     }
   }, [dark]);
 

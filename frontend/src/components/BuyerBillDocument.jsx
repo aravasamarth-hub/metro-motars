@@ -131,20 +131,20 @@ export default function BuyerBillDocument({ deal = {} }) {
     photos["buyer-1"] || photos["buyer-portrait"] || photos["buyer_photo"] || buyer.photo
   );
   const buyerSignSrc = getPhotoSrc(
-    photos["buyer-signature"] || photos["buyer-8"] || photos["buyer_signature"] || buyer.signature
+    photos["buyer-signature"] || photos["buyer_signature"] || buyer.signature
   );
   const buyerThumbSrc = getPhotoSrc(
-    photos["buyer-thumb"] || photos["buyer-thumb-impression"] || photos["buyer-2"] || buyer.thumb
+    photos["buyer-thumb"] || photos["buyer-thumb-impression"] || buyer.thumb
   );
 
   const sellerPhotoSrc = getPhotoSrc(
     photos["seller-1"] || photos["seller-portrait"] || photos["seller_photo"] || seller.photo
   );
   const sellerSignSrc = getPhotoSrc(
-    photos["seller-signature"] || photos["seller-8"] || photos["seller_signature"] || seller.signature
+    photos["seller-signature"] || photos["seller_signature"] || seller.signature
   );
   const sellerThumbSrc = getPhotoSrc(
-    photos["seller-thumb"] || photos["seller-thumb-impression"] || photos["seller-2"] || seller.thumb
+    photos["seller-thumb"] || photos["seller-thumb-impression"] || seller.thumb
   );
 
   // Bill number: use buyer_bill_number if present, or adapt bill_number to BB prefix

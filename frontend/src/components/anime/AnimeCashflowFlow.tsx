@@ -81,7 +81,10 @@ export function AnimeCashflowFlow({
   }, []);
 
   return (
-    <div className={`relative rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white/70 dark:bg-neutral-900/70 backdrop-blur-xl p-5 shadow-xl ${className}`}>
+    <div
+      className={`relative rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-5 shadow-xl ${className}`}
+      style={{ transform: "translateZ(0)" }}
+    >
       <div className="flex items-center justify-between mb-4">
         <div>
           <span className="text-[11px] font-bold text-amber-500 uppercase tracking-widest">

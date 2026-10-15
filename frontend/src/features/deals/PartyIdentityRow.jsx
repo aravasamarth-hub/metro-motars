@@ -56,7 +56,7 @@ export function PartyIdentityRow({
   const portraitKey = `${group}-1`;
   const portraitAltKey = isWitness ? group : null;
   const signatureKey = `${group}-signature`;
-  const signatureAltKey = isWitness ? `${group}-2` : `${group}-8`;
+  const signatureAltKey = isWitness ? `${group}-2` : null;
   const thumbKey = `${group}-thumb`;
   const thumbAltKey = isWitness ? `${group}-3` : `${group}-thumb-impression`;
 
@@ -68,7 +68,7 @@ export function PartyIdentityRow({
     photos[`${group}_photo`];
   const signaturePhoto =
     photos[signatureKey] ||
-    photos[signatureAltKey] ||
+    (isWitness && signatureAltKey ? photos[signatureAltKey] : null) ||
     photos[`${group}_signature`];
   const thumbPhoto =
     photos[thumbKey] ||
@@ -186,6 +186,13 @@ export function PartyIdentityRow({
     if (altKey) {
       setTimeout(() => onChange(altKey, prepared), 0);
     }
+    // If saving signature, ensure RC front (slot 8) is not contaminated
+    if (targetKey === signatureKey && !isWitness && photos[`${group}-8`]) {
+      const p8 = photos[`${group}-8`];
+      if (p8?.name?.toLowerCase().includes("signature") || p8?.dataUrl === prepared.dataUrl) {
+        setTimeout(() => onChange(`${group}-8`, null), 0);
+      }
+    }
   };
 
   // Remove photo helper
@@ -193,6 +200,12 @@ export function PartyIdentityRow({
     onChange(targetKey, null);
     if (altKey) {
       setTimeout(() => onChange(altKey, null), 0);
+    }
+    if (targetKey === signatureKey && !isWitness && photos[`${group}-8`]) {
+      const p8 = photos[`${group}-8`];
+      if (p8?.name?.toLowerCase().includes("signature")) {
+        setTimeout(() => onChange(`${group}-8`, null), 0);
+      }
     }
   };
 

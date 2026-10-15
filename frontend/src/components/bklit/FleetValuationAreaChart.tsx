@@ -23,7 +23,7 @@ export function FleetValuationAreaChart({ data = DEFAULT_FLEET_DATA }: { data?: 
   const [activeSeries, setActiveSeries] = useState<"both" | "valuation" | "sales">("both");
 
   return (
-    <Card className="border-neutral-200 dark:border-neutral-800 bg-white/70 dark:bg-neutral-900/70 backdrop-blur-xl shadow-xl">
+    <Card className="border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-xl" style={{ transform: "translateZ(0)" }}>
       <CardHeader className="flex flex-row items-center justify-between pb-4">
         <div>
           <div className="flex items-center gap-2">

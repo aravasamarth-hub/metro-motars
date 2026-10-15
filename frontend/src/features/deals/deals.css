@@ -955,14 +955,16 @@
   position: absolute;
   top: calc(100% + 8px);
   right: 0;
-  min-width: 195px;
+  min-width: 215px;
   background: #132233;
   border: 1px solid #283e56;
   border-radius: 10px;
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(229, 185, 76, 0.15);
   padding: 6px;
-  z-index: 100;
+  z-index: 99999 !important;
   animation: languageMenuFade 0.15s ease-out;
+  max-height: calc(100vh - 90px);
+  overflow-y: auto;
 }
 
 @keyframes languageMenuFade {
@@ -3192,9 +3194,18 @@
   background: radial-gradient(ellipse at 15% 10%, #0d1a2a 0%, #070d16 100%) !important;
 }
 
+.theme-light {
+  background: #f8fafc !important;
+}
+
 .theme-dark .sidebar {
   background: linear-gradient(180deg, #0d1825 0%, #070e17 100%) !important;
   border-right: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.theme-light .sidebar {
+  background: #ffffff !important;
+  border-right: 1px solid #e2e8f0 !important;
 }
 
 .brand-mark {
@@ -3223,11 +3234,25 @@
   font-weight: 700;
 }
 
+.topbar {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 1000 !important;
+}
+
+.topbar-actions {
+  position: relative !important;
+  z-index: 1001 !important;
+}
+
 .theme-dark .topbar {
-  background: rgba(11, 21, 35, 0.8) !important;
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  background: #0b1220 !important;
   border-bottom: 1px solid rgba(255, 255, 255, 0.07) !important;
+}
+
+.theme-light .topbar {
+  background: #ffffff !important;
+  border-bottom: 1px solid #e2e8f0 !important;
 }
 
 /* Dashboard Hero */

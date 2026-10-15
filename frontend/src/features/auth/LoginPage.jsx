@@ -26,18 +26,31 @@ import { LOGIN } from "@/constants/testIds/auth";
 import "./LoginPage.css";
 
 const ROLE_OPTIONS = [
-  { id: "OWNER", label: "Owner", icon: "👑", defaultEmail: "alex@metromotors.in" },
-  { id: "AGENT", label: "Sales Agent", icon: "⚡", defaultEmail: "rajesh@metromotors.in" },
-  { id: "MANAGER", label: "Finance / Audit", icon: "📊", defaultEmail: "priya@metromotors.in" },
+  {
+    id: "OWNER",
+    label: "Showroom Owner",
+    icon: "👑",
+    defaultEmail: "aravasamarth@gmail.com",
+    badge: "Full Access",
+    subtitle: "Everything Visible (All Pricing, Ledgers, Bills & Margins)",
+  },
+  {
+    id: "WORKER",
+    label: "Showroom Worker",
+    icon: "🛠️",
+    defaultEmail: "samartharava@gmail.com",
+    badge: "Restricted",
+    subtitle: "Prices, Agent Fee, Payments & Bills Shielded",
+  },
 ];
 
 export default function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { login, quickLogin, biometricLogin, personas } = useAuth();
+  const { login, quickLogin, biometricLogin, setPassword: authSetPass, sendOtp, verifyOtpAndResetPassword, personas } = useAuth();
 
   const [activeRole, setActiveRole] = useState("OWNER");
-  const [email, setEmail] = useState("alex@metromotors.in");
+  const [email, setEmail] = useState("aravasamarth@gmail.com");
   const [password, setPassword] = useState("metro2026");
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
@@ -47,6 +60,25 @@ export default function LoginPage() {
   const [scanSuccess, setScanSuccess] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+
+  // ── First-Time Password Setup State ──
+  const [showSetPasswordModal, setShowSetPasswordModal] = useState(false);
+  const [setupEmail, setSetupEmail] = useState("aravasamarth@gmail.com");
+  const [setupPassword, setSetupPassword] = useState("");
+  const [setupConfirm, setSetupConfirm] = useState("");
+  const [setupError, setSetupError] = useState("");
+
+  // ── Forgot Password & Email OTP State ──
+  const [showForgotModal, setShowForgotModal] = useState(false);
+  const [otpStep, setOtpStep] = useState(1); // 1: Email, 2: OTP, 3: New Password
+  const [otpEmail, setOtpEmail] = useState("aravasamarth@gmail.com");
+  const [otpCode, setOtpCode] = useState("");
+  const [dispatchedOtp, setDispatchedOtp] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [otpError, setOtpError] = useState("");
+  const [otpSuccess, setOtpSuccess] = useState("");
+  const [otpBusy, setOtpBusy] = useState(false);
 
   // Mouse tracking for subtle interactive ambient spotlight
   const handleMouseMove = (e) => {
@@ -75,10 +107,85 @@ export default function LoginPage() {
       await login({ email, password, roleKey: activeRole });
       const dest = location.state?.from?.pathname || "/";
       navigate(dest, { replace: true });
-    } catch {
-      setErrorMsg("Failed to authenticate terminal. Please check credentials.");
+    } catch (err) {
+      setErrorMsg(err.message || "Failed to authenticate terminal. Please check credentials or reset via OTP.");
     } finally {
       setBusy(false);
+    }
+  };
+
+  // ── Handle Initial Password Setup for Owner ──
+  const handleSaveInitialPassword = async (e) => {
+    e.preventDefault();
+    setSetupError("");
+    if (!setupPassword || setupPassword.length < 4) {
+      setSetupError("Password must be at least 4 characters.");
+      return;
+    }
+    if (setupPassword !== setupConfirm) {
+      setSetupError("Passwords do not match.");
+      return;
+    }
+    setBusy(true);
+    try {
+      await authSetPass(setupEmail, setupPassword);
+      await login({ email: setupEmail, password: setupPassword, roleKey: "OWNER" });
+      setShowSetPasswordModal(false);
+      navigate("/", { replace: true });
+    } catch (err) {
+      setSetupError(err.message || "Failed to save password.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  // ── Handle OTP Dispatch to Email ──
+  const handleSendOtp = async (e) => {
+    e.preventDefault();
+    setOtpError("");
+    setOtpSuccess("");
+    setOtpBusy(true);
+    try {
+      const res = await sendOtp(otpEmail);
+      setDispatchedOtp(res.otp);
+      setOtpSuccess(`Verification code dispatched to ${otpEmail}`);
+      setOtpStep(2);
+    } catch (err) {
+      setOtpError(err.message || "Failed to dispatch verification OTP.");
+    } finally {
+      setOtpBusy(false);
+    }
+  };
+
+  // ── Handle OTP Verification & Password Reset ──
+  const handleVerifyOtpAndSave = async (e) => {
+    e.preventDefault();
+    setOtpError("");
+    setOtpSuccess("");
+    if (!otpCode || otpCode.trim().length < 6) {
+      setOtpError("Please enter the complete 6-digit verification code.");
+      return;
+    }
+    if (!newPassword || newPassword.length < 4) {
+      setOtpError("New password must be at least 4 characters.");
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setOtpError("Passwords do not match.");
+      return;
+    }
+    setOtpBusy(true);
+    try {
+      await verifyOtpAndResetPassword(otpEmail, otpCode, newPassword);
+      setOtpSuccess("Password verified and updated!");
+      await new Promise((r) => setTimeout(r, 600));
+      await login({ email: otpEmail, password: newPassword, roleKey: "OWNER" });
+      setShowForgotModal(false);
+      navigate("/", { replace: true });
+    } catch (err) {
+      setOtpError(err.message || "Verification failed. Check the code and try again.");
+    } finally {
+      setOtpBusy(false);
     }
   };
 
@@ -89,7 +196,7 @@ export default function LoginPage() {
     try {
       await biometricLogin(activeRole);
       setScanSuccess(true);
-      await new Promise((r) => setTimeout(r, 600));
+      await new Promise((r) => setTimeout(r, 450));
       const dest = location.state?.from?.pathname || "/";
       navigate(dest, { replace: true });
     } catch {
@@ -190,10 +297,10 @@ export default function LoginPage() {
           {/* Heading */}
           <div className="login-header-text">
             <h1>Showroom Access</h1>
-            <p>Enter your credentials or scan biometrics to unlock the dealership console.</p>
+            <p>Select your authorized account and enter your security credentials.</p>
           </div>
 
-          {/* Role Segmented Tabs (Lovable / Stitch style) */}
+          {/* Role Segmented Tabs (Owner vs Worker) */}
           <div className="role-segment-selector" role="tablist">
             {ROLE_OPTIONS.map((role) => (
               <button
@@ -208,6 +315,29 @@ export default function LoginPage() {
                 <span>{role.label}</span>
               </button>
             ))}
+          </div>
+
+          {/* Role Description Banner */}
+          <div
+            style={{
+              padding: "10px 14px",
+              borderRadius: "10px",
+              background: activeRole === "OWNER" ? "rgba(245, 158, 11, 0.08)" : "rgba(56, 189, 248, 0.08)",
+              border: `1px solid ${activeRole === "OWNER" ? "rgba(245, 158, 11, 0.25)" : "rgba(56, 189, 248, 0.25)"}`,
+              marginBottom: "16px",
+              fontSize: "11px",
+              color: activeRole === "OWNER" ? "#fcd34d" : "#7dd3fc",
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+            }}
+          >
+            <ShieldCheck size={14} />
+            <span>
+              {activeRole === "OWNER"
+                ? "👑 Owner Account: Everything visible (Vehicle prices, seller & buyer costs, agent fees, payments, bills & finances)."
+                : "🛠️ Worker Account: Operations visible. Prices of seller & buyer, agent fees, payments, and bills are shielded."}
+            </span>
           </div>
 
           {/* Error Message */}
@@ -258,14 +388,42 @@ export default function LoginPage() {
             <div className="input-block">
               <div className="input-label-row">
                 <label htmlFor="login-password">Security Password</label>
-                <button
-                  type="button"
-                  className="forgot-link"
-                  data-testid={LOGIN.forgotPasswordLink}
-                  onClick={() => alert("Contact Showroom Administrator (Alex Kumar) for master password reset.")}
-                >
-                  Forgot password?
-                </button>
+                <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+                  {activeRole === "OWNER" && (
+                    <button
+                      type="button"
+                      className="forgot-link"
+                      style={{ color: "#38bdf8", fontWeight: 700 }}
+                      onClick={() => {
+                        setSetupEmail(email);
+                        setSetupPassword("");
+                        setSetupConfirm("");
+                        setSetupError("");
+                        setShowSetPasswordModal(true);
+                      }}
+                      title="Set or update owner password directly"
+                    >
+                      Set Initial Password
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    className="forgot-link"
+                    data-testid={LOGIN.forgotPasswordLink}
+                    onClick={() => {
+                      setOtpEmail(email);
+                      setOtpStep(1);
+                      setOtpCode("");
+                      setNewPassword("");
+                      setConfirmPassword("");
+                      setOtpError("");
+                      setOtpSuccess("");
+                      setShowForgotModal(true);
+                    }}
+                  >
+                    Forgot password? (Email OTP)
+                  </button>
+                </div>
               </div>
               <div className="input-field-wrapper">
                 <input
@@ -316,12 +474,215 @@ export default function LoginPage() {
                 </>
               ) : (
                 <>
-                  <span>Sign in to Showroom</span>
+                  <span>Sign in as {activeRole === "OWNER" ? "Owner" : "Worker"}</span>
                   <ArrowRight size={16} />
                 </>
               )}
             </button>
           </form>
+
+          {/* ── First-Time Initial Password Setup Modal ── */}
+          {showSetPasswordModal && (
+            <div className="auth-modal-backdrop" onClick={() => setShowSetPasswordModal(false)}>
+              <div className="auth-modal-card" onClick={(e) => e.stopPropagation()}>
+                <div className="auth-modal-header">
+                  <div>
+                    <h3><KeyRound size={20} className="text-amber-400" /> Set Starting Owner Password</h3>
+                    <p>Configure a custom security password for {setupEmail}</p>
+                  </div>
+                  <button
+                    type="button"
+                    className="password-eye-btn"
+                    onClick={() => setShowSetPasswordModal(false)}
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                {setupError && (
+                  <div className="workflow-message" style={{ background: "rgba(239, 68, 68, 0.15)", borderColor: "#ef4444", color: "#fca5a5", marginBottom: "14px" }}>
+                    <ShieldAlert size={14} />
+                    <span>{setupError}</span>
+                  </div>
+                )}
+
+                <form onSubmit={handleSaveInitialPassword}>
+                  <div className="input-block">
+                    <label style={{ fontSize: "11px", color: "#94a3b8", display: "block", marginBottom: "6px" }}>Owner Email Address</label>
+                    <input
+                      type="email"
+                      value={setupEmail}
+                      disabled
+                      className="login-input"
+                      style={{ opacity: 0.7 }}
+                    />
+                  </div>
+
+                  <div className="input-block" style={{ marginTop: "12px" }}>
+                    <label style={{ fontSize: "11px", color: "#94a3b8", display: "block", marginBottom: "6px" }}>New Security Password</label>
+                    <input
+                      type="password"
+                      required
+                      placeholder="Enter minimum 4 characters"
+                      value={setupPassword}
+                      onChange={(e) => setSetupPassword(e.target.value)}
+                      className="login-input"
+                    />
+                  </div>
+
+                  <div className="input-block" style={{ marginTop: "12px" }}>
+                    <label style={{ fontSize: "11px", color: "#94a3b8", display: "block", marginBottom: "6px" }}>Confirm Security Password</label>
+                    <input
+                      type="password"
+                      required
+                      placeholder="Repeat your new password"
+                      value={setupConfirm}
+                      onChange={(e) => setSetupConfirm(e.target.value)}
+                      className="login-input"
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="login-submit-btn"
+                    style={{ marginTop: "20px" }}
+                    disabled={busy}
+                  >
+                    {busy ? "Saving Credentials…" : "Save Password & Enter Showroom"}
+                  </button>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {/* ── Forgot Password & Email OTP Verification Modal ── */}
+          {showForgotModal && (
+            <div className="auth-modal-backdrop" onClick={() => setShowForgotModal(false)}>
+              <div className="auth-modal-card" onClick={(e) => e.stopPropagation()}>
+                <div className="auth-modal-header">
+                  <div>
+                    <h3><Mail size={20} className="text-amber-400" /> Reset Password via Email OTP</h3>
+                    <p>Verify your showroom identity to reset your password</p>
+                  </div>
+                  <button
+                    type="button"
+                    className="password-eye-btn"
+                    onClick={() => setShowForgotModal(false)}
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                {otpError && (
+                  <div className="workflow-message" style={{ background: "rgba(239, 68, 68, 0.15)", borderColor: "#ef4444", color: "#fca5a5", marginBottom: "14px" }}>
+                    <ShieldAlert size={14} />
+                    <span>{otpError}</span>
+                  </div>
+                )}
+
+                {otpSuccess && (
+                  <div className="workflow-message" style={{ background: "rgba(16, 185, 129, 0.15)", borderColor: "#10b981", color: "#6ee7b7", marginBottom: "14px" }}>
+                    <CheckCircle2 size={14} />
+                    <span>{otpSuccess}</span>
+                  </div>
+                )}
+
+                {otpStep === 1 && (
+                  <form onSubmit={handleSendOtp}>
+                    <div className="input-block">
+                      <label style={{ fontSize: "11px", color: "#94a3b8", display: "block", marginBottom: "6px" }}>Showroom Email ID</label>
+                      <input
+                        type="email"
+                        required
+                        value={otpEmail}
+                        onChange={(e) => setOtpEmail(e.target.value)}
+                        className="login-input"
+                      />
+                    </div>
+                    <button
+                      type="submit"
+                      className="login-submit-btn"
+                      style={{ marginTop: "20px" }}
+                      disabled={otpBusy}
+                    >
+                      {otpBusy ? "Dispatching OTP…" : "Send 6-Digit Email OTP"}
+                    </button>
+                  </form>
+                )}
+
+                {otpStep === 2 && (
+                  <form onSubmit={handleVerifyOtpAndSave}>
+                    {/* Live Preview OTP Banner for Test / Verification */}
+                    {dispatchedOtp && (
+                      <div className="auth-otp-preview-banner">
+                        <div>
+                          <b style={{ color: "#ffffff", fontSize: "12px", display: "block" }}>🔐 Dispatched Security OTP</b>
+                          <span style={{ color: "#94a3b8", fontSize: "11px" }}>Enter this verification code below:</span>
+                        </div>
+                        <span className="auth-otp-code-chip">{dispatchedOtp}</span>
+                      </div>
+                    )}
+
+                    <div className="input-block">
+                      <label style={{ fontSize: "11px", color: "#94a3b8", display: "block", marginBottom: "6px" }}>Enter 6-Digit Verification Code</label>
+                      <input
+                        type="text"
+                        maxLength={6}
+                        required
+                        placeholder="••••••"
+                        value={otpCode}
+                        onChange={(e) => setOtpCode(e.target.value)}
+                        className="login-input auth-otp-input"
+                      />
+                    </div>
+
+                    <div className="input-block" style={{ marginTop: "14px" }}>
+                      <label style={{ fontSize: "11px", color: "#94a3b8", display: "block", marginBottom: "6px" }}>New Security Password</label>
+                      <input
+                        type="password"
+                        required
+                        placeholder="Minimum 4 characters"
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        className="login-input"
+                      />
+                    </div>
+
+                    <div className="input-block" style={{ marginTop: "14px" }}>
+                      <label style={{ fontSize: "11px", color: "#94a3b8", display: "block", marginBottom: "6px" }}>Confirm New Password</label>
+                      <input
+                        type="password"
+                        required
+                        placeholder="Repeat new password"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        className="login-input"
+                      />
+                    </div>
+
+                    <button
+                      type="submit"
+                      className="login-submit-btn"
+                      style={{ marginTop: "20px" }}
+                      disabled={otpBusy}
+                    >
+                      {otpBusy ? "Verifying Code…" : "Verify OTP & Update Password"}
+                    </button>
+
+                    <div style={{ textAlign: "center", marginTop: "12px" }}>
+                      <button
+                        type="button"
+                        onClick={handleSendOtp}
+                        style={{ background: "none", border: "none", color: "#38bdf8", fontSize: "11.5px", cursor: "pointer" }}
+                      >
+                        Didn't receive code? Resend OTP
+                      </button>
+                    </div>
+                  </form>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Biometric Sensor Login Box */}
           <div
@@ -412,112 +773,6 @@ export default function LoginPage() {
             >
               Explore VIP Showcase <ArrowRight size={11} />
             </button>
-          </div>
-        </motion.div>
-
-        {/* Right Side: Live Showroom Intelligence Showcase (Lovable / Cursor aesthetic) */}
-        <motion.div
-          className="showcase-stage"
-          initial={{ opacity: 0, x: 28 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.6, ease: "easeOut", delay: 0.15 }}
-        >
-          {/* Main Showcase Hero Card */}
-          <div className="showcase-hero-card">
-            <div className="showcase-topline">
-              <div className="showcase-badge">
-                <Sparkles size={13} />
-                <span>AI FLEET OS · REAL-TIME TELEMETRY</span>
-              </div>
-              <span style={{ fontSize: 11, color: "#64748b", fontWeight: 600 }}>
-                BANGALORE MAIN HUB
-              </span>
-            </div>
-
-            <div className="showcase-metric-hero">
-              <div className="showcase-metric-label">
-                <TrendingUp size={14} color="#f59e0b" />
-                <span>Live Showroom Inventory Valuation</span>
-              </div>
-              <div className="showcase-metric-val">
-                ₹1,84,50,000
-                <span>+14.8% this month</span>
-              </div>
-            </div>
-
-            {/* 3 Column Showroom Telemetry Grid */}
-            <div className="showcase-stats-grid">
-              <div className="showcase-stat-box">
-                <b>42</b>
-                <span>Vehicles in Fleet</span>
-              </div>
-              <div className="showcase-stat-box">
-                <b>18</b>
-                <span>Deals in Pipeline</span>
-              </div>
-              <div className="showcase-stat-box">
-                <b>100%</b>
-                <span>Biometric Verified</span>
-              </div>
-            </div>
-
-            {/* System Status Indicators */}
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                padding: "12px 14px",
-                background: "rgba(255, 255, 255, 0.03)",
-                borderRadius: "12px",
-                border: "1px solid rgba(255, 255, 255, 0.06)",
-                fontSize: 11.5,
-                color: "#94a3b8",
-              }}
-            >
-              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <CheckCircle2 size={15} color="#10b981" />
-                <span>Google Drive Vault: Auto-Mirror Active</span>
-              </div>
-              <span style={{ color: "#f59e0b", fontWeight: 600 }}>100 GB Plan</span>
-            </div>
-          </div>
-
-          {/* Floating Micro Highlights Stream */}
-          <div className="floating-cards-stream">
-            {/* Card 1: Recent Deal */}
-            <div className="floating-glass-card">
-              <div className="floating-card-header">
-                <div className="floating-card-icon icon-amber">
-                  <Bike size={18} />
-                </div>
-                <div>
-                  <div className="floating-card-title">Royal Enfield Hunter 350</div>
-                  <div className="floating-card-sub">Deal #Bill-042 · Handed Over</div>
-                </div>
-              </div>
-              <div className="floating-card-detail">
-                <Check size={12} color="#10b981" />
-                <span>₹1,42,000 · RC Transferred · Biometric Verified</span>
-              </div>
-            </div>
-
-            {/* Card 2: Biometric Security Status */}
-            <div className="floating-glass-card card-secondary">
-              <div className="floating-card-header">
-                <div className="floating-card-icon icon-cyan">
-                  <Fingerprint size={18} />
-                </div>
-                <div>
-                  <div className="floating-card-title">Biometric RD Service</div>
-                  <div className="floating-card-sub">Port 11100 · Sensor Ready</div>
-                </div>
-              </div>
-              <div className="floating-card-detail">
-                <Zap size={12} color="#38bdf8" />
-                <span>500 DPI Optical Thumbprints Linked to Sale Deed</span>
-              </div>
-            </div>
           </div>
         </motion.div>
       </div>

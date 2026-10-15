@@ -8,6 +8,7 @@ import { PartyIdentityRow } from "@/features/deals/PartyIdentityRow";
 import { WitnessSection } from "@/features/deals/PersonStep";
 import { useSellerAgreement } from "@/hooks/useSellerAgreement";
 import { useLanguage } from "@/features/i18n/LanguageContext";
+import { useAuth } from "@/context/AuthContext";
 import { money } from "@/features/deals/dealModel";
 import BillModal from "@/components/BillModal";
 
@@ -30,6 +31,7 @@ export function Seller({
   group = "seller",
 }: SellerProps) {
   const { t } = useLanguage();
+  const { isOwner } = useAuth();
   const person = deal?.seller || {};
   const payments = deal?.payments || {};
   const purchasePrice = payments.purchase_price ?? "";
@@ -101,77 +103,79 @@ export function Seller({
       </section>
 
       {/* Seller Payment / Pricing section: Price amount, Amount paid, Amount pending */}
-      <section className="wizard-group" data-testid="seller-payments-section">
-        <div className="section-title">
-          <h2>{t("section.seller_payments", "Payment & pricing details")}</h2>
-          {hasAmounts && (
-            <span
-              className={`status-pill ${paidNum >= priceNum && priceNum > 0 ? "green" : paidNum > 0 ? "gold" : "blue"}`}
-              data-testid="seller-payment-status-pill"
-            >
-              {paidNum >= priceNum && priceNum > 0
-                ? t("payment.paid_in_full", "Paid in Full")
-                : paidNum > 0
-                ? `${t("payment.pending", "Pending")}: ${money(pendingNum)}`
-                : t("payment.unpaid", "Unpaid")}
-            </span>
-          )}
-        </div>
-        <div className="form-grid wizard-fields">
-          <label className="form-field wizard-field" htmlFor="seller-payments-purchase-price">
-            <span>{t("field.price_amount", "Price amount (₹)")}</span>
-            <input
-              id="seller-payments-purchase-price"
-              type="number"
-              step="0.01"
-              min="0"
-              value={purchasePrice}
-              onChange={(e: any) => updateSection("payments", "purchase_price", e.target.value)}
-              placeholder="e.g. 150000"
-              data-testid="seller-payments-purchase-price-input"
-              autoComplete="off"
-            />
-            {errors?.["payments.purchase_price"] && (
-              <small className="field-error" id="seller-payments-purchase-price-error">
-                {errors["payments.purchase_price"]}
-              </small>
+      {isOwner && (
+        <section className="wizard-group" data-testid="seller-payments-section">
+          <div className="section-title">
+            <h2>{t("section.seller_payments", "Payment & pricing details")}</h2>
+            {hasAmounts && (
+              <span
+                className={`status-pill ${paidNum >= priceNum && priceNum > 0 ? "green" : paidNum > 0 ? "gold" : "blue"}`}
+                data-testid="seller-payment-status-pill"
+              >
+                {paidNum >= priceNum && priceNum > 0
+                  ? t("payment.paid_in_full", "Paid in Full")
+                  : paidNum > 0
+                  ? `${t("payment.pending", "Pending")}: ${money(pendingNum)}`
+                  : t("payment.unpaid", "Unpaid")}
+              </span>
             )}
-          </label>
+          </div>
+          <div className="form-grid wizard-fields">
+            <label className="form-field wizard-field" htmlFor="seller-payments-purchase-price">
+              <span>{t("field.price_amount", "Price amount (₹)")}</span>
+              <input
+                id="seller-payments-purchase-price"
+                type="number"
+                step="0.01"
+                min="0"
+                value={purchasePrice}
+                onChange={(e: any) => updateSection("payments", "purchase_price", e.target.value)}
+                placeholder="e.g. 150000"
+                data-testid="seller-payments-purchase-price-input"
+                autoComplete="off"
+              />
+              {errors?.["payments.purchase_price"] && (
+                <small className="field-error" id="seller-payments-purchase-price-error">
+                  {errors["payments.purchase_price"]}
+                </small>
+              )}
+            </label>
 
-          <label className="form-field wizard-field" htmlFor="seller-payments-paid-to-seller">
-            <span>{t("field.amount_paid", "Amount paid (₹)")}</span>
-            <input
-              id="seller-payments-paid-to-seller"
-              type="number"
-              step="0.01"
-              min="0"
-              value={paidToSeller}
-              onChange={(e: any) => updateSection("payments", "paid_to_seller", e.target.value)}
-              placeholder="e.g. 50000"
-              data-testid="seller-payments-paid-to-seller-input"
-              autoComplete="off"
-            />
-            {errors?.["payments.paid_to_seller"] && (
-              <small className="field-error" id="seller-payments-paid-to-seller-error">
-                {errors["payments.paid_to_seller"]}
-              </small>
-            )}
-          </label>
+            <label className="form-field wizard-field" htmlFor="seller-payments-paid-to-seller">
+              <span>{t("field.amount_paid", "Amount paid (₹)")}</span>
+              <input
+                id="seller-payments-paid-to-seller"
+                type="number"
+                step="0.01"
+                min="0"
+                value={paidToSeller}
+                onChange={(e: any) => updateSection("payments", "paid_to_seller", e.target.value)}
+                placeholder="e.g. 50000"
+                data-testid="seller-payments-paid-to-seller-input"
+                autoComplete="off"
+              />
+              {errors?.["payments.paid_to_seller"] && (
+                <small className="field-error" id="seller-payments-paid-to-seller-error">
+                  {errors["payments.paid_to_seller"]}
+                </small>
+              )}
+            </label>
 
-          <label className="form-field wizard-field" htmlFor="seller-payments-amount-pending">
-            <span>{t("field.amount_pending", "Amount pending (₹)")}</span>
-            <input
-              id="seller-payments-amount-pending"
-              type="text"
-              readOnly
-              value={purchasePrice !== "" && purchasePrice != null ? money(pendingNum) : "—"}
-              className="amount-pending-display"
-              data-testid="seller-payments-amount-pending-input"
-              disabled
-            />
-          </label>
-        </div>
-      </section>
+            <label className="form-field wizard-field" htmlFor="seller-payments-amount-pending">
+              <span>{t("field.amount_pending", "Amount pending (₹)")}</span>
+              <input
+                id="seller-payments-amount-pending"
+                type="text"
+                readOnly
+                value={purchasePrice !== "" && purchasePrice != null ? money(pendingNum) : "—"}
+                className="amount-pending-display"
+                data-testid="seller-payments-amount-pending-input"
+                disabled
+              />
+            </label>
+          </div>
+        </section>
+      )}
 
       {/* Witness section */}
       <WitnessSection
@@ -191,39 +195,41 @@ export function Seller({
       />
 
       {/* Metro Motors Legal Documents banner at bottom */}
-      <div className="seller-action-strip">
-        <div>
-          <strong className="seller-action-strip-title">{t("legal.strip_title", "Metro Motors Legal Documents")}</strong>
-          <span className="seller-action-strip-sub">
-            {t("legal.strip_sub", "Printable A4 Delivery Note & Sale Agreement between Seller & Purchaser")}
-          </span>
-        </div>
+      {isOwner && (
+        <div className="seller-action-strip">
+          <div>
+            <strong className="seller-action-strip-title">{t("legal.strip_title", "Metro Motors Legal Documents")}</strong>
+            <span className="seller-action-strip-sub">
+              {t("legal.strip_sub", "Printable A4 Delivery Note & Sale Agreement between Seller & Purchaser")}
+            </span>
+          </div>
 
-        {/* Toggle-style action buttons */}
-        <div style={{ display: "flex", gap: "10px", alignItems: "center", flexWrap: "wrap" }}>
-          <button
-            type="button"
-            onClick={() => setPreviewOpen(true)}
-            className="agreement-toggle-btn"
-            data-testid="preview-seller-agreement-button"
-            title="Preview & Edit Seller Bill"
-          >
-            <Printer size={15} />
-            <span>{t("bills.preview_seller_bill", "Preview & Edit Seller Bill")}</span>
-          </button>
+          {/* Toggle-style action buttons */}
+          <div style={{ display: "flex", gap: "10px", alignItems: "center", flexWrap: "wrap" }}>
+            <button
+              type="button"
+              onClick={() => setPreviewOpen(true)}
+              className="agreement-toggle-btn"
+              data-testid="preview-seller-agreement-button"
+              title="Preview & Edit Seller Bill"
+            >
+              <Printer size={15} />
+              <span>{t("bills.preview_seller_bill", "Preview & Edit Seller Bill")}</span>
+            </button>
 
-          <button
-            type="button"
-            onClick={() => setPreviewOpen(true)}
-            className="agreement-toggle-btn"
-            data-testid="generate-seller-agreement-button"
-            title="Preview, Edit & Download Seller Bill PDF"
-          >
-            <FileDown size={15} />
-            <span>{t("legal.generate_seller_bill_btn", "Generate Seller Bill & Download")}</span>
-          </button>
+            <button
+              type="button"
+              onClick={() => setPreviewOpen(true)}
+              className="agreement-toggle-btn"
+              data-testid="generate-seller-agreement-button"
+              title="Preview, Edit & Download Seller Bill PDF"
+            >
+              <FileDown size={15} />
+              <span>{t("legal.generate_seller_bill_btn", "Generate Seller Bill & Download")}</span>
+            </button>
+          </div>
         </div>
-      </div>
+      )}
 
       {successMessage && (
         <div role="status" className="workflow-message seller-msg seller-msg-ok" data-testid="seller-agreement-success">

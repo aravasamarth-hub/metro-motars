@@ -126,7 +126,7 @@ export function AnimeDealJourney({
   }, []);
 
   return (
-    <div className={`relative rounded-2xl border border-neutral-200/80 dark:border-neutral-800/80 bg-white/60 dark:bg-neutral-900/60 backdrop-blur-xl p-5 shadow-xl overflow-hidden ${className}`}>
+    <div className={`relative rounded-2xl border border-neutral-200 dark:border-neutral-800/80 bg-white dark:bg-neutral-900/60 shadow-md shadow-neutral-200/50 dark:shadow-xl p-5 overflow-hidden ${className}`}>
       {/* Background Anime Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
         <div>
@@ -140,7 +140,7 @@ export function AnimeDealJourney({
             5-Stage Showroom Deal & RTO Verification Engine
           </h3>
         </div>
-        <div className="flex items-center gap-2 text-xs font-semibold px-3 py-1.5 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300">
+        <div className="flex items-center gap-2 text-xs font-semibold px-3 py-1.5 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-700">
           <span>Active Phase:</span>
           <span className="text-amber-500">Stage {currentStage} of 5</span>
         </div>
@@ -205,10 +205,10 @@ export function AnimeDealJourney({
                 onMouseLeave={() => setActiveHover(null)}
                 className={`flex flex-col items-center md:items-start text-center md:text-left p-3.5 rounded-xl border transition-all duration-200 cursor-pointer ${
                   isCurrent
-                    ? "bg-amber-500/10 border-amber-500/50 shadow-lg shadow-amber-500/10"
+                    ? "bg-amber-50 dark:bg-amber-500/10 border-amber-300 dark:border-amber-500/50 shadow-md shadow-amber-500/10"
                     : isCompleted
-                    ? "bg-emerald-500/5 border-emerald-500/30 hover:border-emerald-500/50"
-                    : "bg-white/40 dark:bg-neutral-900/40 border-neutral-200 dark:border-neutral-800 hover:border-neutral-700"
+                    ? "bg-emerald-50/60 dark:bg-emerald-500/5 border-emerald-200 dark:border-emerald-500/30 hover:border-emerald-300 dark:hover:border-emerald-500/50"
+                    : "bg-white dark:bg-neutral-900/40 border-neutral-200 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700"
                 }`}
               >
                 {/* Node icon circle */}
@@ -218,8 +218,8 @@ export function AnimeDealJourney({
                       isCurrent
                         ? "bg-gradient-to-br from-amber-400 to-amber-600 text-neutral-950 shadow-md shadow-amber-500/30 font-bold"
                         : isCompleted
-                        ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/40"
-                        : "bg-neutral-100 dark:bg-neutral-800 text-neutral-400"
+                        ? "bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-500/40"
+                        : "bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400"
                     }`}
                   >
                     <Icon size={18} />
@@ -227,10 +227,10 @@ export function AnimeDealJourney({
                   <span
                     className={`text-[10px] font-mono font-bold px-1.5 py-0.5 rounded ${
                       isCurrent
-                        ? "bg-amber-400/20 text-amber-500"
+                        ? "bg-amber-100 dark:bg-amber-400/20 text-amber-700 dark:text-amber-500"
                         : isCompleted
-                        ? "bg-emerald-500/20 text-emerald-400"
-                        : "bg-neutral-200 dark:bg-neutral-800 text-neutral-500"
+                        ? "bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400"
+                        : "bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-500"
                     }`}
                   >
                     {st.badge}
@@ -240,18 +240,18 @@ export function AnimeDealJourney({
                 <div className="font-bold text-xs text-neutral-900 dark:text-neutral-100 leading-tight">
                   {st.title}
                 </div>
-                <div className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-1 leading-snug">
+                <div className="text-[11px] text-neutral-600 dark:text-neutral-400 mt-1 leading-snug">
                   {st.subtitle}
                 </div>
 
-                <div className="mt-3 pt-2 w-full border-t border-neutral-200/60 dark:border-neutral-800/60 flex items-center justify-between text-[10px] font-semibold">
+                <div className="mt-3 pt-2 w-full border-t border-neutral-200 dark:border-neutral-800/60 flex items-center justify-between text-[10px] font-semibold">
                   <span
                     className={
                       isCurrent
-                        ? "text-amber-500 font-bold"
+                        ? "text-amber-600 dark:text-amber-500 font-bold"
                         : isCompleted
-                        ? "text-emerald-500"
-                        : "text-neutral-400"
+                        ? "text-emerald-600 dark:text-emerald-500"
+                        : "text-neutral-500 dark:text-neutral-400"
                     }
                   >
                     {isCurrent ? "● Active Step" : isCompleted ? "✓ Completed" : "○ Scheduled"}

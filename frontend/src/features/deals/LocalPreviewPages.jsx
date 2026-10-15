@@ -23,6 +23,7 @@ import { commission, calculateMaintenanceTotal, money, localDay } from "./dealMo
 import BillDocument from "@/components/BillDocument";
 import BillModal from "@/components/BillModal";
 import { useLanguage } from "@/features/i18n/LanguageContext";
+import { useAuth } from "@/context/AuthContext";
 
 // 1. shadcn/ui
 import { Badge } from "@/components/ui/badge";
@@ -293,8 +294,43 @@ export const LocalBills = () => {
 
 // ── LocalFinances ────────────────────────────────────────────────────────────
 export const LocalFinances = () => {
+  const navigate = useNavigate();
   const { deals, loading, error } = useDeals();
   const { t } = useLanguage();
+  const { isOwner } = useAuth();
+
+  if (!isOwner) {
+    return (
+      <div className="local-page" data-testid="finances-restricted-page">
+        <div className="p-10 text-center max-w-lg mx-auto bg-neutral-900/80 rounded-2xl border border-neutral-800 shadow-2xl mt-12">
+          <div className="w-16 h-16 mx-auto mb-5 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
+            <ShieldCheck size={32} />
+          </div>
+          <h2 className="text-2xl font-bold text-white mb-3">Owner Access Required</h2>
+          <p className="text-neutral-400 text-sm mb-6 leading-relaxed">
+            Financial treasury, vehicle procurement costs, buyer receipts, and dealer profit margins are strictly confidential. This page is restricted to Showroom Owner account (<strong>aravasamarth@gmail.com</strong>).
+          </p>
+          <div className="flex gap-3 justify-center">
+            <button
+              type="button"
+              className="button button-primary"
+              onClick={() => navigate("/deals")}
+            >
+              Back to Deals
+            </button>
+            <button
+              type="button"
+              className="button button-secondary"
+              onClick={() => navigate("/login")}
+            >
+              Switch Account
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   const sum = (key) =>
     deals.reduce((total, d) => total + Number(d.payments[key] || 0), 0);
 

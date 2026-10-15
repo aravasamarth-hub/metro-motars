@@ -75,11 +75,11 @@ export const FloatingPaths = memo(function FloatingPaths({
 }) {
   const primaryPaths: PathData[] = useMemo(
     () =>
-      Array.from({ length: 10 }, (_, i) => ({
-        id: generateUniqueId("mm-primary"),
+      Array.from({ length: 5 }, (_, i) => ({
+        id: `mm-primary-${position}-${i}`,
         d: generateAestheticPath(i, position, "primary"),
-        opacity: 0.18 + i * 0.02,
-        width: 3.5 + i * 0.25,
+        opacity: 0.18 + i * 0.04,
+        width: 3.5 + i * 0.3,
         duration: 22,
         delay: 0,
       })),
@@ -88,25 +88,12 @@ export const FloatingPaths = memo(function FloatingPaths({
 
   const secondaryPaths: PathData[] = useMemo(
     () =>
-      Array.from({ length: 12 }, (_, i) => ({
-        id: generateUniqueId("mm-secondary"),
+      Array.from({ length: 4 }, (_, i) => ({
+        id: `mm-secondary-${position}-${i}`,
         d: generateAestheticPath(i, position, "secondary"),
-        opacity: 0.12 + i * 0.015,
-        width: 2.5 + i * 0.2,
+        opacity: 0.14 + i * 0.03,
+        width: 2.5 + i * 0.25,
         duration: 18,
-        delay: 0,
-      })),
-    [position]
-  );
-
-  const accentPaths: PathData[] = useMemo(
-    () =>
-      Array.from({ length: 8 }, (_, i) => ({
-        id: generateUniqueId("mm-accent"),
-        d: generateAestheticPath(i, position, "accent"),
-        opacity: 0.09 + i * 0.1,
-        width: 1.8 + i * 0.15,
-        duration: 14,
         delay: 0,
       })),
     [position]
@@ -114,17 +101,32 @@ export const FloatingPaths = memo(function FloatingPaths({
 
   const shouldReduceMotion = useReducedMotion();
 
-  const sharedAnimationProps = {
-    opacity: 1,
-    scale: 1,
-    transition: {
-      opacity: { duration: 1.2 },
-      scale: { duration: 1.2 },
-    },
-  };
-
   return (
-    <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
+    <div
+      className="pointer-events-none absolute inset-0 overflow-hidden"
+      style={{ contain: "strict", transform: "translateZ(0)" }}
+      aria-hidden="true"
+    >
+      <style>{`
+        @keyframes mmWaveDrift1 {
+          0% { transform: translate3d(0, 0px, 0); }
+          50% { transform: translate3d(0, -14px, 0); }
+          100% { transform: translate3d(0, 0px, 0); }
+        }
+        @keyframes mmWaveDrift2 {
+          0% { transform: translate3d(0, 0px, 0); }
+          50% { transform: translate3d(0, -8px, 0); }
+          100% { transform: translate3d(0, 0px, 0); }
+        }
+        .mm-gpu-wave-1 {
+          animation: mmWaveDrift1 12s ease-in-out infinite;
+          will-change: transform;
+        }
+        .mm-gpu-wave-2 {
+          animation: mmWaveDrift2 9s ease-in-out infinite;
+          will-change: transform;
+        }
+      `}</style>
       <svg
         className="h-full w-full text-slate-950/40 dark:text-white/40"
         fill="none"
@@ -140,91 +142,28 @@ export const FloatingPaths = memo(function FloatingPaths({
           </linearGradient>
         </defs>
 
-        <g className="primary-waves">
+        <g className={shouldReduceMotion ? "" : "mm-gpu-wave-1"}>
           {primaryPaths.map((path) => (
-            <motion.path
-              animate={
-                shouldReduceMotion
-                  ? { opacity: path.opacity, scale: 1 }
-                  : {
-                      ...sharedAnimationProps,
-                      y: [0, -18, 0],
-                    }
-              }
-              d={path.d}
-              initial={shouldReduceMotion ? { opacity: path.opacity, scale: 1 } : { opacity: 0, scale: 0.85 }}
+            <path
               key={path.id}
+              d={path.d}
               stroke="url(#metroGoldCyanGradient)"
               strokeLinecap="round"
               strokeWidth={path.width}
               style={{ opacity: path.opacity }}
-              transition={
-                shouldReduceMotion
-                  ? { duration: 0 }
-                  : {
-                      ...sharedAnimationProps.transition,
-                      y: {
-                        duration: 8,
-                        repeat: Infinity,
-                        ease: "easeInOut",
-                        repeatType: "reverse",
-                      },
-                    }
-              }
             />
           ))}
         </g>
 
-        <g className="secondary-waves" style={{ opacity: 0.8 }}>
+        <g className={shouldReduceMotion ? "" : "mm-gpu-wave-2"} style={{ opacity: 0.8 }}>
           {secondaryPaths.map((path) => (
-            <motion.path
-              animate={{
-                ...sharedAnimationProps,
-                y: [0, -12, 0],
-              }}
-              d={path.d}
-              initial={{ opacity: 0, scale: 0.9 }}
+            <path
               key={path.id}
+              d={path.d}
               stroke="url(#metroGoldCyanGradient)"
               strokeLinecap="round"
               strokeWidth={path.width}
               style={{ opacity: path.opacity }}
-              transition={{
-                ...sharedAnimationProps.transition,
-                y: {
-                  duration: 6,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                  repeatType: "reverse",
-                },
-              }}
-            />
-          ))}
-        </g>
-
-        <g className="accent-waves" style={{ opacity: 0.65 }}>
-          {accentPaths.map((path) => (
-            <motion.path
-              animate={{
-                ...sharedAnimationProps,
-                y: [0, -6, 0],
-              }}
-              d={path.d}
-              initial={{ opacity: 0, scale: 0.95 }}
-              key={path.id}
-              stroke="url(#metroGoldCyanGradient)"
-              strokeLinecap="round"
-              strokeWidth={path.width}
-              style={{ opacity: path.opacity }}
-              transition={{
-                ...sharedAnimationProps.transition,
-                y: {
-                  duration: 4.5,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                  repeatType: "reverse",
-                },
-              }}
             />
           ))}
         </g>

@@ -70,14 +70,14 @@ export default function SellerBillDocument({ deal = {} }) {
   };
 
   const sellerPhotoSrc = getPhotoSrc(photos["seller-1"] || photos["seller-portrait"] || photos["seller_photo"] || seller.photo);
-  const sellerSignSrc = getPhotoSrc(photos["seller-signature"] || photos["seller-8"] || photos["seller_signature"] || seller.signature);
-  const sellerThumbSrc = getPhotoSrc(photos["seller-thumb"] || photos["seller-thumb-impression"] || photos["seller-2"] || seller.thumb);
+  const sellerSignSrc = getPhotoSrc(photos["seller-signature"] || photos["seller_signature"] || seller.signature);
+  const sellerThumbSrc = getPhotoSrc(photos["seller-thumb"] || photos["seller-thumb-impression"] || seller.thumb);
 
   const vehiclePhotoSrc = getPhotoSrc(photos["vehicle-1"] || photos["vehicle_front"] || vehicle.photo);
 
   const witnessPhotoSrc = getPhotoSrc(photos["witness-1-1"] || photos["witness-1"] || photos["witness_photo"] || witness1.photo);
   const witnessSignSrc = getPhotoSrc(photos["witness-1-signature"] || photos["witness-1-2"] || photos["witness_signature"] || witness1.signature);
-  const witnessThumbSrc = getPhotoSrc(photos["witness-1-thumb"] || photos["witness-1-3"] || photos["witness-1-thumb-impression"] || photos["witness-1"] || witness1.thumb);
+  const witnessThumbSrc = getPhotoSrc(photos["witness-1-thumb"] || photos["witness-1-3"] || photos["witness-1-thumb-impression"] || witness1.thumb);
 
   const billNumber = deal.bill_number || deal.billNumber || "Bill-001";
   const dealId = deal.id ? (deal.id.startsWith("deal-") ? deal.id : deal.id.slice(0, 10).toUpperCase()) : "DEAL-NEW";

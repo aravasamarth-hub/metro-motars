@@ -8,6 +8,7 @@ import { agentFields, dealerFields, paymentFields, personFields, vehicleGroups, 
 import { PhotoSlots } from "@/features/deals/PhotoSlots";
 import { displayDate } from "@/features/deals/dealModel";
 import { useLanguage } from "@/features/i18n/LanguageContext";
+import { useAuth } from "@/context/AuthContext";
 import BillModal from "@/components/BillModal";
 import { AgentWhatsAppModal } from "@/features/deals/AgentWhatsAppModal";
 import { MaintenanceSection } from "@/features/deals/MaintenanceSection";
@@ -58,6 +59,7 @@ export default function DealView() {
   const { state } = useLocation();
   const navigate = useNavigate();
   const { t, language } = useLanguage();
+  const { isOwner } = useAuth();
   const [deal, setDeal] = useState(null);
   const [billOpen, setBillOpen] = useState(false);
   const [docType, setDocType] = useState("buyer-bill");
@@ -99,30 +101,34 @@ export default function DealView() {
         </div>
         {deal && (
           <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-            <button
-              className="button button-primary"
-              onClick={() => { setDocType("buyer-bill"); setBillOpen(true); }}
-              data-testid="deal-view-buyer-bill"
-              title="Open Buyer Bill / Vehicle Sale Receipt"
-            >
-              <FileText size={16}/> <span>Buyer Bill</span>
-            </button>
-            <button
-              className="button button-secondary"
-              onClick={() => { setDocType("seller-bill"); setBillOpen(true); }}
-              data-testid="deal-view-generate-bill"
-              title="Open Seller Agreement"
-            >
-              <FileText size={16}/> <span>{t("bills.generate_bill", "Seller Agreement")}</span>
-            </button>
-            <button
-              className="button button-secondary"
-              onClick={() => { setDocType("bond-agreement"); setBillOpen(true); }}
-              data-testid="deal-view-bond-agreement"
-              title="Open E-Stamp Bond Agreement (7 Pages)"
-            >
-              <ShieldCheck size={16}/> <span>Bond Agreement</span>
-            </button>
+            {isOwner && (
+              <>
+                <button
+                  className="button button-primary"
+                  onClick={() => { setDocType("buyer-bill"); setBillOpen(true); }}
+                  data-testid="deal-view-buyer-bill"
+                  title="Open Buyer Bill / Vehicle Sale Receipt"
+                >
+                  <FileText size={16}/> <span>Buyer Bill</span>
+                </button>
+                <button
+                  className="button button-secondary"
+                  onClick={() => { setDocType("seller-bill"); setBillOpen(true); }}
+                  data-testid="deal-view-generate-bill"
+                  title="Open Seller Agreement"
+                >
+                  <FileText size={16}/> <span>{t("bills.generate_bill", "Seller Agreement")}</span>
+                </button>
+                <button
+                  className="button button-secondary"
+                  onClick={() => { setDocType("bond-agreement"); setBillOpen(true); }}
+                  data-testid="deal-view-bond-agreement"
+                  title="Open E-Stamp Bond Agreement (7 Pages)"
+                >
+                  <ShieldCheck size={16}/> <span>Bond Agreement</span>
+                </button>
+              </>
+            )}
             <button className="button button-secondary" onClick={() => navigate(`/new-deal/${deal.id}`)} data-testid="deal-view-edit">
               <Pencil size={16}/> {t("deal.edit_deal", "Edit Deal")}
             </button>
@@ -193,17 +199,19 @@ export default function DealView() {
               value={deal.buyer}
               prefix="buyer"
               action={
-                <button
-                  type="button"
-                  className="button button-primary"
-                  onClick={() => { setDocType("buyer-bill"); setBillOpen(true); }}
-                  data-testid="deal-view-buyer-bill-btn"
-                  title="Open Buyer Bill / Vehicle Sale Receipt"
-                  style={{ padding: "6px 12px", fontSize: "12px", height: "34px", display: "inline-flex", gap: "6px", alignItems: "center" }}
-                >
-                  <FileText size={13} />
-                  <span>Buyer Bill</span>
-                </button>
+                isOwner ? (
+                  <button
+                    type="button"
+                    className="button button-primary"
+                    onClick={() => { setDocType("buyer-bill"); setBillOpen(true); }}
+                    data-testid="deal-view-buyer-bill-btn"
+                    title="Open Buyer Bill / Vehicle Sale Receipt"
+                    style={{ padding: "6px 12px", fontSize: "12px", height: "34px", display: "inline-flex", gap: "6px", alignItems: "center" }}
+                  >
+                    <FileText size={13} />
+                    <span>Buyer Bill</span>
+                  </button>
+                ) : null
               }
             />
             <PhotoSlots group="buyer" photos={deal.photos} readOnly/>
@@ -216,8 +224,11 @@ export default function DealView() {
             <PhotoSlots group="witness-2" photos={deal.photos} readOnly/>
           </div>
 
-          <ReadGroup title={t("step.payments", "Payments")} fields={paymentFields} value={deal.payments} prefix="payments"/>
-          {deal.agent?.name && (
+          {isOwner && (
+            <ReadGroup title={t("step.payments", "Payments")} fields={paymentFields} value={deal.payments} prefix="payments"/>
+          )}
+
+          {deal.agent?.name && isOwner && (
             <div id="deal-agent-section">
               <ReadGroup
                 title={t("agent.details_title", "Agent details")}

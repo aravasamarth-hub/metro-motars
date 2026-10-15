@@ -34,6 +34,7 @@ export interface BondAgreementPDFProps {
     sellerSignature?: string | null;
     buyerSignature?: string | null;
     witnessSignature?: string | null;
+    witness2Signature?: string | null;
   };
 }
 
@@ -360,9 +361,44 @@ export const BondAgreementPDF: React.FC<BondAgreementPDFProps> = ({
   const chassisNumber = vehicle.chassis_number || vehicle.chassisNumber || "";
   const engineNumber = vehicle.engine_number || vehicle.engineNumber || "";
 
-  const sellerSign = resolvedImages.sellerSignature || deal.photos?.seller_signature || null;
-  const buyerSign = resolvedImages.buyerSignature || deal.photos?.buyer_signature || null;
-  const witness1Sign = resolvedImages.witnessSignature || deal.photos?.witness_signature || null;
+  const resolveImage = (val: any): string | null => {
+    if (!val) return null;
+    if (typeof val === "string") return val;
+    if (val.dataUrl) return val.dataUrl;
+    if (val.url) return val.url;
+    if (val.src) return val.src;
+    return null;
+  };
+
+  const photos = deal.photos || {};
+  const sellerSign = resolveImage(
+    resolvedImages.sellerSignature ||
+    photos["seller-signature"] ||
+    photos["seller_signature"] ||
+    seller.signature ||
+    deal.sellerSignature
+  );
+  const buyerSign = resolveImage(
+    resolvedImages.buyerSignature ||
+    photos["buyer-signature"] ||
+    photos["buyer_signature"] ||
+    buyer.signature ||
+    deal.buyerSignature
+  );
+  const witness1Sign = resolveImage(
+    resolvedImages.witnessSignature ||
+    photos["witness-1-signature"] ||
+    photos["witness-1-2"] ||
+    photos["witness_signature"] ||
+    witness1.signature
+  );
+  const witness2Sign = resolveImage(
+    resolvedImages.witness2Signature ||
+    photos["witness-2-signature"] ||
+    photos["witness-2-2"] ||
+    photos["witness-2_signature"] ||
+    witness2.signature
+  );
 
   const sellerAddress = [seller.address, seller.city, seller.state, seller.pincode].filter(Boolean).join(", ");
   const buyerAddress = [buyer.address, buyer.city, buyer.state, buyer.pincode].filter(Boolean).join(", ");
@@ -850,7 +886,11 @@ export const BondAgreementPDF: React.FC<BondAgreementPDFProps> = ({
               </View>
               <View style={styles.witnessField}>
                 <Text style={styles.witnessFieldLbl}>ಸಹಿ / Witness Signature:</Text>
-                <View style={{ minHeight: 30, borderBottomWidth: 0.6, borderBottomColor: "#475569" }} />
+                <View style={{ minHeight: 30, borderBottomWidth: 0.6, borderBottomColor: "#475569", justifyContent: "center", alignItems: "center" }}>
+                  {witness2Sign ? (
+                    <Image src={witness2Sign} style={{ maxHeight: 26, maxWidth: "80%", objectFit: "contain" }} />
+                  ) : null}
+                </View>
               </View>
             </View>
           </View>

@@ -20,6 +20,7 @@ import { useDeals } from "@/features/deals/useDeals";
 import { DealsTable } from "@/features/deals/DealsTable";
 import { localDay, money, commission, calculateMaintenanceTotal, VEHICLE_CATEGORIES } from "@/features/deals/dealModel";
 import { useLanguage } from "@/features/i18n/LanguageContext";
+import { useAuth } from "@/context/AuthContext";
 
 // 1. shadcn/ui components
 import { Badge } from "@/components/ui/badge";
@@ -47,6 +48,7 @@ import { InventoryDistributionBarChart } from "@/components/bklit/InventoryDistr
 export default function FunctionalDashboard() {
   const navigate = useNavigate();
   const { t } = useLanguage();
+  const { isOwner } = useAuth();
   const { deals, loading, error } = useDeals();
   const [activeFilter, setActiveFilter] = useState("all");
   const [selectedCategory, setSelectedCategory] = useState("all");
@@ -177,27 +179,27 @@ export default function FunctionalDashboard() {
         <SpotlightCard
           spotlightColor="rgba(245, 158, 11, 0.18)"
           onClick={() => navigate("/deals?period=today")}
-          className="p-5 cursor-pointer hover:border-amber-500/50 transition-all border-neutral-800 bg-neutral-900/80 shadow-xl"
+          className="p-5 cursor-pointer hover:border-amber-500/50 transition-all border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900/80 shadow-md shadow-neutral-200/50 dark:shadow-xl"
           data-testid="metric-todays-deals"
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-neutral-400 uppercase tracking-wider">
+            <span className="text-xs font-bold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
               {t("dashboard.todays_deals", "Today's Deals")}
             </span>
-            <div className="w-9 h-9 rounded-xl bg-amber-500/15 text-amber-400 flex items-center justify-center font-bold">
+            <div className="w-9 h-9 rounded-xl bg-amber-500/15 text-amber-500 flex items-center justify-center font-bold">
               <BriefcaseBusiness size={18} />
             </div>
           </div>
-          <div className="text-3xl font-extrabold text-white font-manrope mt-3 mb-2 flex items-baseline gap-1">
+          <div className="text-3xl font-extrabold text-neutral-900 dark:text-white font-manrope mt-3 mb-2 flex items-baseline gap-1">
             {loading ? "…" : <MotionCounter to={todaysDealsCount} />}
-            <span className="text-xs text-neutral-500 font-normal">deals</span>
+            <span className="text-xs text-neutral-400 dark:text-neutral-500 font-normal">deals</span>
           </div>
-          <div className="flex items-center justify-between text-xs pt-2 border-t border-neutral-800/80">
-            <span className="text-amber-400 flex items-center gap-1 font-medium text-[11px]">
+          <div className="flex items-center justify-between text-xs pt-2 border-t border-neutral-200 dark:border-neutral-800/80">
+            <span className="text-amber-500 flex items-center gap-1 font-medium text-[11px]">
               <Sparkles size={12} />
               {todaysDealsCount > 0 ? `${todaysDealsCount} closed today` : "Showroom ready"}
             </span>
-            <ArrowUpRight size={15} className="text-neutral-500" />
+            <ArrowUpRight size={15} className="text-neutral-400 dark:text-neutral-500" />
           </div>
         </SpotlightCard>
 
@@ -205,27 +207,27 @@ export default function FunctionalDashboard() {
         <SpotlightCard
           spotlightColor="rgba(56, 189, 248, 0.18)"
           onClick={() => navigate("/deals?status=In+Stock")}
-          className="p-5 cursor-pointer hover:border-sky-500/50 transition-all border-neutral-800 bg-neutral-900/80 shadow-xl"
+          className="p-5 cursor-pointer hover:border-sky-500/50 transition-all border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900/80 shadow-md shadow-neutral-200/50 dark:shadow-xl"
           data-testid="metric-bikes-in-stock"
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-neutral-400 uppercase tracking-wider">
+            <span className="text-xs font-bold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
               {t("dashboard.bikes_in_stock", "Bikes in Stock")}
             </span>
-            <div className="w-9 h-9 rounded-xl bg-sky-500/15 text-sky-400 flex items-center justify-center font-bold">
+            <div className="w-9 h-9 rounded-xl bg-sky-500/15 text-sky-500 flex items-center justify-center font-bold">
               <Bike size={18} />
             </div>
           </div>
-          <div className="text-3xl font-extrabold text-white font-manrope mt-3 mb-2 flex items-baseline gap-1">
+          <div className="text-3xl font-extrabold text-neutral-900 dark:text-white font-manrope mt-3 mb-2 flex items-baseline gap-1">
             {loading ? "…" : <MotionCounter to={bikesInStockCount} />}
-            <span className="text-xs text-neutral-500 font-normal">units</span>
+            <span className="text-xs text-neutral-400 dark:text-neutral-500 font-normal">units</span>
           </div>
-          <div className="flex items-center justify-between text-xs pt-2 border-t border-neutral-800/80">
-            <span className="text-sky-400 flex items-center gap-1 font-medium text-[11px]">
+          <div className="flex items-center justify-between text-xs pt-2 border-t border-neutral-200 dark:border-neutral-800/80">
+            <span className="text-sky-500 flex items-center gap-1 font-medium text-[11px]">
               <CheckCircle2 size={12} />
               {`${stockRatio}% fleet available`}
             </span>
-            <ArrowUpRight size={15} className="text-neutral-500" />
+            <ArrowUpRight size={15} className="text-neutral-400 dark:text-neutral-500" />
           </div>
         </SpotlightCard>
 
@@ -233,54 +235,62 @@ export default function FunctionalDashboard() {
         <SpotlightCard
           spotlightColor="rgba(249, 115, 22, 0.18)"
           onClick={() => navigate("/deals?rc=Pending")}
-          className="p-5 cursor-pointer hover:border-amber-500/50 transition-all border-neutral-800 bg-neutral-900/80 shadow-xl"
+          className="p-5 cursor-pointer hover:border-amber-500/50 transition-all border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900/80 shadow-md shadow-neutral-200/50 dark:shadow-xl"
           data-testid="metric-pending-rc-transfers"
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-neutral-400 uppercase tracking-wider">
+            <span className="text-xs font-bold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
               {t("dashboard.pending_rc", "Pending RC Transfers")}
             </span>
             <div className="w-9 h-9 rounded-xl bg-amber-500/15 text-amber-500 flex items-center justify-center font-bold">
               <ClipboardList size={18} />
             </div>
           </div>
-          <div className="text-3xl font-extrabold text-white font-manrope mt-3 mb-2 flex items-baseline gap-1">
+          <div className="text-3xl font-extrabold text-neutral-900 dark:text-white font-manrope mt-3 mb-2 flex items-baseline gap-1">
             {loading ? "…" : <MotionCounter to={pendingRcCount} />}
-            <span className="text-xs text-neutral-500 font-normal">in RTO queue</span>
+            <span className="text-xs text-neutral-400 dark:text-neutral-500 font-normal">in RTO queue</span>
           </div>
-          <div className="flex items-center justify-between text-xs pt-2 border-t border-neutral-800/80">
+          <div className="flex items-center justify-between text-xs pt-2 border-t border-neutral-200 dark:border-neutral-800/80">
             <span className="text-amber-500 flex items-center gap-1 font-medium text-[11px]">
               <Clock size={12} />
               {pendingRcCount > 0 ? "RTO transfer tracking" : "All transfers clear"}
             </span>
-            <ArrowUpRight size={15} className="text-neutral-500" />
+            <ArrowUpRight size={15} className="text-neutral-400 dark:text-neutral-500" />
           </div>
         </SpotlightCard>
 
         {/* Card 4: Fleet Valuation & Volume (Emerald Green Spotlight) */}
         <SpotlightCard
           spotlightColor="rgba(16, 185, 129, 0.18)"
-          onClick={() => navigate("/finances")}
-          className="p-5 cursor-pointer hover:border-emerald-500/50 transition-all border-neutral-800 bg-neutral-900/80 shadow-xl"
+          onClick={() => isOwner && navigate("/finances")}
+          className={`p-5 transition-all border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900/80 shadow-md shadow-neutral-200/50 dark:shadow-xl ${
+            isOwner ? "cursor-pointer hover:border-emerald-500/50" : "cursor-default opacity-90"
+          }`}
           data-testid="metric-showroom-volume"
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-neutral-400 uppercase tracking-wider">
+            <span className="text-xs font-bold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
               Showroom Volume
             </span>
-            <div className="w-9 h-9 rounded-xl bg-emerald-500/15 text-emerald-400 flex items-center justify-center font-bold">
+            <div className="w-9 h-9 rounded-xl bg-emerald-500/15 text-emerald-500 flex items-center justify-center font-bold">
               <TrendingUp size={18} />
             </div>
           </div>
-          <div className="text-3xl font-extrabold text-emerald-400 font-manrope mt-3 mb-2 flex items-baseline gap-1">
-            {loading ? "…" : money(totalTurnover)}
+          <div className="text-3xl font-extrabold text-emerald-600 dark:text-emerald-400 font-manrope mt-3 mb-2 flex items-baseline gap-1">
+            {isOwner ? (loading ? "…" : money(totalTurnover)) : "🔒 Confidential"}
           </div>
-          <div className="flex items-center justify-between text-xs pt-2 border-t border-neutral-800/80">
-            <span className="text-emerald-400 flex items-center gap-1 font-medium text-[11px]">
-              <TrendingUp size={12} />
-              +{money(totalMargin)} margin
+          <div className="flex items-center justify-between text-xs pt-2 border-t border-neutral-200 dark:border-neutral-800/80">
+            <span className="text-emerald-600 dark:text-emerald-400 flex items-center gap-1 font-medium text-[11px]">
+              {isOwner ? (
+                <>
+                  <TrendingUp size={12} />
+                  +{money(totalMargin)} margin
+                </>
+              ) : (
+                "Owner Access Only"
+              )}
             </span>
-            <ArrowUpRight size={15} className="text-neutral-500" />
+            {isOwner && <ArrowUpRight size={15} className="text-neutral-400 dark:text-neutral-500" />}
           </div>
         </SpotlightCard>
       </div>
@@ -324,25 +334,27 @@ export default function FunctionalDashboard() {
       {/* ── 1. shadcn/ui Tabs (Cockpit Views: Overview, Live Charts, Fleet Table) ── */}
       <Tabs defaultValue="overview" className="w-full mb-6" onValueChange={setDashboardTab}>
         <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
-          <TabsList className="bg-neutral-900/80 border border-neutral-800 p-1 rounded-xl">
-            <TabsTrigger value="overview" className="data-[state=active]:bg-amber-500 data-[state=active]:text-neutral-950 font-bold text-xs rounded-lg px-4 py-2">
+          <TabsList className="bg-neutral-100 dark:bg-neutral-900/80 border border-neutral-200 dark:border-neutral-800 p-1 rounded-xl">
+            <TabsTrigger value="overview" className="data-[state=active]:bg-amber-500 data-[state=active]:text-neutral-950 text-neutral-600 dark:text-neutral-300 font-bold text-xs rounded-lg px-4 py-2">
               Cockpit &amp; Analytics
             </TabsTrigger>
-            <TabsTrigger value="charts" className="data-[state=active]:bg-amber-500 data-[state=active]:text-neutral-950 font-bold text-xs rounded-lg px-4 py-2">
+            <TabsTrigger value="charts" className="data-[state=active]:bg-amber-500 data-[state=active]:text-neutral-950 text-neutral-600 dark:text-neutral-300 font-bold text-xs rounded-lg px-4 py-2">
               Bklit Charts Suite
             </TabsTrigger>
-            <TabsTrigger value="deals" className="data-[state=active]:bg-amber-500 data-[state=active]:text-neutral-950 font-bold text-xs rounded-lg px-4 py-2">
+            <TabsTrigger value="deals" className="data-[state=active]:bg-amber-500 data-[state=active]:text-neutral-950 text-neutral-600 dark:text-neutral-300 font-bold text-xs rounded-lg px-4 py-2">
               Fleet Table ({filteredDeals.length})
             </TabsTrigger>
           </TabsList>
 
           <div className="flex items-center gap-2">
-            <span className="text-xs text-neutral-400 font-medium">Quick Filter:</span>
+            <span className="text-xs text-neutral-500 dark:text-neutral-400 font-medium">Quick Filter:</span>
             <button
               type="button"
               onClick={() => setActiveFilter("all")}
               className={`text-xs px-2.5 py-1 rounded-md font-semibold transition-all ${
-                activeFilter === "all" ? "bg-amber-500 text-neutral-950" : "bg-neutral-800 text-neutral-400 hover:text-white"
+                activeFilter === "all"
+                  ? "bg-amber-500 text-neutral-950 shadow-sm"
+                  : "bg-white dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 border border-neutral-200 dark:border-transparent hover:text-neutral-900 dark:hover:text-white"
               }`}
             >
               All
@@ -351,7 +363,9 @@ export default function FunctionalDashboard() {
               type="button"
               onClick={() => setActiveFilter("stock")}
               className={`text-xs px-2.5 py-1 rounded-md font-semibold transition-all ${
-                activeFilter === "stock" ? "bg-amber-500 text-neutral-950" : "bg-neutral-800 text-neutral-400 hover:text-white"
+                activeFilter === "stock"
+                  ? "bg-amber-500 text-neutral-950 shadow-sm"
+                  : "bg-white dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 border border-neutral-200 dark:border-transparent hover:text-neutral-900 dark:hover:text-white"
               }`}
             >
               In Stock
@@ -360,7 +374,9 @@ export default function FunctionalDashboard() {
               type="button"
               onClick={() => setActiveFilter("rc")}
               className={`text-xs px-2.5 py-1 rounded-md font-semibold transition-all ${
-                activeFilter === "rc" ? "bg-amber-500 text-neutral-950" : "bg-neutral-800 text-neutral-400 hover:text-white"
+                activeFilter === "rc"
+                  ? "bg-amber-500 text-neutral-950 shadow-sm"
+                  : "bg-white dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 border border-neutral-200 dark:border-transparent hover:text-neutral-900 dark:hover:text-white"
               }`}
             >
               RC Pending
@@ -443,7 +459,7 @@ export default function FunctionalDashboard() {
               prefix="recent-deal"
               title="All Showroom Deals"
               loading={loading}
-              showCommission={true}
+              showCommission={isOwner}
               action={
                 <ParticleButton
                   onClick={() => navigate("/new-deal")}

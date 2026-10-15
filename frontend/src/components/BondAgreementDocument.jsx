@@ -63,10 +63,62 @@ export default function BondAgreementDocument({ deal = {} }) {
   const chassisNumber = vehicle.chassis_number || vehicle.chassisNumber || "";
   const engineNumber = vehicle.engine_number || vehicle.engineNumber || "";
 
+  // Photo resolution helper
+  const photos = deal.photos || {};
+  const getPhotoSrc = (val) => {
+    if (!val) return null;
+    if (typeof val === "string") return val;
+    if (val.dataUrl) return val.dataUrl;
+    if (val.url) return val.url;
+    if (val.src) return val.src;
+    if (val.blob) {
+      try {
+        return URL.createObjectURL(val.blob);
+      } catch (e) {
+        return null;
+      }
+    }
+    return null;
+  };
+
   // Signatures
-  const sellerSignSrc = deal.photos?.seller_signature || null;
-  const buyerSignSrc = deal.photos?.buyer_signature || null;
-  const witness1SignSrc = deal.photos?.witness_signature || null;
+  const sellerSignSrc = getPhotoSrc(
+    photos["seller-signature"] ||
+    photos["seller_signature"] ||
+    photos["seller-sig"] ||
+    seller.signature ||
+    seller.signature_url ||
+    deal.sellerSignature ||
+    deal.signatures?.seller
+  );
+
+  const buyerSignSrc = getPhotoSrc(
+    photos["buyer-signature"] ||
+    photos["buyer_signature"] ||
+    photos["buyer-sig"] ||
+    buyer.signature ||
+    buyer.signature_url ||
+    deal.buyerSignature ||
+    deal.signatures?.buyer
+  );
+
+  const witness1SignSrc = getPhotoSrc(
+    photos["witness-1-signature"] ||
+    photos["witness-1-2"] ||
+    photos["witness-1_signature"] ||
+    photos["witness_signature"] ||
+    photos["witness-signature"] ||
+    witness1.signature ||
+    deal.signatures?.witness1
+  );
+
+  const witness2SignSrc = getPhotoSrc(
+    photos["witness-2-signature"] ||
+    photos["witness-2-2"] ||
+    photos["witness-2_signature"] ||
+    witness2.signature ||
+    deal.signatures?.witness2
+  );
 
   // Address Builders
   const sellerAddress = [seller.address, seller.city, seller.state, seller.pincode].filter(Boolean).join(", ");
@@ -663,7 +715,9 @@ export default function BondAgreementDocument({ deal = {} }) {
               <div className="bond-witness-field">
                 <span className="bond-witness-field-lbl">ಸಹಿ / Witness Signature:</span>
                 <div className="bond-witness-sig-slot">
-                  {/* Blank or line for Witness 2 signature */}
+                  {witness2SignSrc ? (
+                    <img src={witness2SignSrc} alt="Witness 2 Signature" style={{ maxHeight: 34, maxWidth: "90%", objectFit: "contain" }} />
+                  ) : null}
                 </div>
               </div>
             </div>

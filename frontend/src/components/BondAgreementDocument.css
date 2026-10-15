@@ -318,7 +318,8 @@
 }
 
 .bond-sig-preview-slot {
-  height: 40px;
+  min-height: 48px;
+  height: 48px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -326,8 +327,8 @@
 }
 
 .bond-sig-preview-img {
-  max-height: 38px;
-  max-width: 90%;
+  max-height: 46px;
+  max-width: 92%;
   object-fit: contain;
 }
 

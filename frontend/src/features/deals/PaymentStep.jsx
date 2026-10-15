@@ -10,11 +10,13 @@ import {
   Layers,
   Sparkles,
   Wrench,
+  ShieldCheck,
 } from "lucide-react";
 import { FieldGrid } from "./DealField";
 import { paymentFields } from "./fieldConfig";
 import { commission, grossCommission, calculateMaintenanceTotal, money } from "./dealModel";
 import { useLanguage } from "@/features/i18n/LanguageContext";
+import { useAuth } from "@/context/AuthContext";
 
 const PAYMENT_METHODS = [
   { id: "Cash", label: "Cash", desc: "Showroom Counter", icon: Banknote },
@@ -26,6 +28,22 @@ const PAYMENT_METHODS = [
 
 export const PaymentStep = ({ deal, updateSection, errors }) => {
   const { t } = useLanguage();
+  const { isOwner } = useAuth();
+
+  if (!isOwner) {
+    return (
+      <div className="p-8 text-center bg-neutral-900/60 rounded-2xl border border-neutral-800" data-testid="payment-step-restricted">
+        <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
+          <ShieldCheck size={28} />
+        </div>
+        <h3 className="text-lg font-bold text-white mb-2">Payment & Pricing Confidential</h3>
+        <p className="text-neutral-400 text-sm max-w-md mx-auto">
+          Purchase prices, selling prices, cash inflows, and dealer margin calculations are strictly confidential and restricted to Showroom Owner account (aravasamarth@gmail.com).
+        </p>
+      </div>
+    );
+  }
+
   const p = deal?.payments || {};
   const maintenanceExpense = calculateMaintenanceTotal(deal?.maintenance);
   const grossAmount = grossCommission(p);

@@ -22,6 +22,7 @@ import { DealsTable } from "@/features/deals/DealsTable";
 import { ConfirmDialog } from "@/features/deals/LocalUI";
 import { areVehicleAndSellerComplete, localDay, VEHICLE_CATEGORIES } from "@/features/deals/dealModel";
 import { useLanguage } from "@/features/i18n/LanguageContext";
+import { useAuth } from "@/context/AuthContext";
 import BillModal from "@/components/BillModal";
 
 // 1. shadcn/ui
@@ -45,6 +46,7 @@ import { InventoryDistributionBarChart } from "@/components/bklit/InventoryDistr
 export default function FunctionalDeals() {
   const navigate = useNavigate();
   const { t } = useLanguage();
+  const { isOwner } = useAuth();
   const [params, setParams] = useSearchParams();
   const { deals, loading, error } = useDeals();
   const [query, setQuery] = useState("");
@@ -394,7 +396,8 @@ export default function FunctionalDeals() {
         <DealsTable
           deals={visible}
           onDelete={setDeleting}
-          onGenerateBill={setBillDeal}
+          onGenerateBill={isOwner ? setBillDeal : undefined}
+          showCommission={isOwner}
           loading={loading}
         />
       </MotionReveal>
