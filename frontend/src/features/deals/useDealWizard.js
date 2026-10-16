@@ -54,6 +54,8 @@ export const useDealWizard = (dealId, onSaved, initialStep = 0) => {
       status: "In Stock",
       rc_status: "Pending",
       vehicle: {
+        ...current.vehicle,
+        vehicle_type: current.vehicle?.vehicle_type || "2 Wheeler with Gear",
         vehicle_name: "Royal Enfield Hunter 350 Dapper Ash",
         make: "Royal Enfield",
         model: "Hunter 350",
