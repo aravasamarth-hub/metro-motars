@@ -9,7 +9,6 @@ import {
   CheckCircle2,
   Eye,
   EyeOff,
-  Fingerprint,
   KeyRound,
   Layers,
   Lock,
@@ -56,8 +55,6 @@ export default function LoginPage() {
   const [rememberMe, setRememberMe] = useState(true);
 
   const [busy, setBusy] = useState(false);
-  const [scanning, setScanning] = useState(false);
-  const [scanSuccess, setScanSuccess] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 
@@ -189,24 +186,8 @@ export default function LoginPage() {
     }
   };
 
-  const handleBiometricClick = async () => {
-    if (scanning || busy) return;
-    setScanning(true);
-    setErrorMsg("");
-    try {
-      await biometricLogin(activeRole);
-      setScanSuccess(true);
-      await new Promise((r) => setTimeout(r, 450));
-      const dest = location.state?.from?.pathname || "/";
-      navigate(dest, { replace: true });
-    } catch {
-      setErrorMsg("Sensor communication error. Use keyboard credentials.");
-      setScanning(false);
-    }
-  };
-
   const handleQuickPersona = async (personaId) => {
-    if (busy || scanning) return;
+    if (busy) return;
     setBusy(true);
     try {
       await quickLogin(personaId);
@@ -684,37 +665,6 @@ export default function LoginPage() {
             </div>
           )}
 
-          {/* Biometric Sensor Login Box */}
-          <div
-            className={`biometric-scanner-box ${scanning ? "is-scanning" : ""}`}
-            onClick={handleBiometricClick}
-            title="Click to authenticate using optical fingerprint scanner or Passkey"
-            role="button"
-            tabIndex={0}
-            onKeyDown={(e) => e.key === "Enter" && handleBiometricClick()}
-          >
-            <div className="biometric-icon-container">
-              <Fingerprint size={24} />
-              {scanning && <div className="biometric-laser-line" />}
-            </div>
-            <div className="biometric-copy">
-              <h4>
-                {scanning
-                  ? "Scanning Biometric Sensor…"
-                  : scanSuccess
-                  ? "Biometrics Verified ✓"
-                  : "Touch Biometric Sensor"}
-              </h4>
-              <p>Mantra / SecuGen USB Sensor or Device Passkey</p>
-            </div>
-            <div className="biometric-pulse-radar">
-              {scanSuccess ? (
-                <CheckCircle2 size={20} color="#10b981" />
-              ) : (
-                <span className="radar-ring" />
-              )}
-            </div>
-          </div>
 
           {/* Quick Demo Personas (Instant 1-Click Access) */}
           <div className="demo-personas-section">
