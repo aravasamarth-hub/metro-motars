@@ -46,7 +46,7 @@ import { InventoryDistributionBarChart } from "@/components/bklit/InventoryDistr
 export default function FunctionalDeals() {
   const navigate = useNavigate();
   const { t } = useLanguage();
-  const { isOwner } = useAuth();
+  const { isOwner, permissions } = useAuth();
   const [params, setParams] = useSearchParams();
   const { deals, loading, error } = useDeals();
   const [query, setQuery] = useState("");
@@ -128,6 +128,7 @@ export default function FunctionalDeals() {
   });
 
   const remove = async () => {
+    if (!isOwner || !permissions?.canDeleteBills) return;
     const target = deleting;
     if (!target || removing.current) return;
     removing.current = true;
@@ -395,7 +396,7 @@ export default function FunctionalDeals() {
       <MotionReveal className="dashboard-table-wrapper rounded-2xl border border-neutral-800 bg-neutral-900/70 backdrop-blur-xl overflow-hidden p-1 shadow-2xl">
         <DealsTable
           deals={visible}
-          onDelete={setDeleting}
+          onDelete={isOwner && permissions?.canDeleteBills ? setDeleting : undefined}
           onGenerateBill={isOwner ? setBillDeal : undefined}
           showCommission={isOwner}
           loading={loading}
@@ -403,7 +404,7 @@ export default function FunctionalDeals() {
       </MotionReveal>
 
       <ConfirmDialog
-        open={!!deleting}
+        open={Boolean(isOwner && permissions?.canDeleteBills && deleting)}
         onOpenChange={(open) => !open && setDeleting(null)}
         title={`${t("deals.delete_title", "Delete")} ${deleting?.bill_number || "deal"}?`}
         description={t(

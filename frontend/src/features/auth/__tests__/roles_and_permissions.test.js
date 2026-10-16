@@ -16,6 +16,7 @@ describe("Metro Motors — Owner and Worker Role Permissions & Security Specific
       canViewPayments: true,
       canViewBills: true,
       canViewFinances: true,
+      canDeleteBills: true,
     });
   });
 
@@ -30,6 +31,7 @@ describe("Metro Motors — Owner and Worker Role Permissions & Security Specific
       canViewPayments: false,
       canViewBills: false,
       canViewFinances: false,
+      canDeleteBills: false,
     });
   });
 
@@ -55,6 +57,7 @@ describe("Metro Motors — Owner and Worker Role Permissions & Security Specific
     expect(worker.permissions.canViewPayments).toBe(false);
     expect(worker.permissions.canViewBills).toBe(false);
     expect(worker.permissions.canViewFinances).toBe(false);
+    expect(worker.permissions.canDeleteBills).toBe(false);
   });
 
   test("Deal Summary field redaction filter logic for Owner vs Worker", () => {

@@ -236,6 +236,7 @@ const FollowUps = FollowUpsView;
 
 function Settings() {
   const { t } = useLanguage();
+  const { isOwner, permissions } = useAuth();
   const [demoNotice, setDemoNotice] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -254,6 +255,7 @@ function Settings() {
   };
 
   const clearData = async () => {
+    if (!isOwner || !permissions?.canDeleteBills) return;
     if (!window.confirm("Are you sure you want to clear all deals from this browser?")) return;
     setBusy(true);
     setDemoNotice("");
@@ -414,16 +416,18 @@ function Settings() {
                 <RefreshCw size={14} className={busy ? "animate-spin" : ""} />
                 <span>{t("settings.reload_demo", "Reload Complete Demo Details")}</span>
               </ParticleButton>
-              <button
-                type="button"
-                className="px-4 py-2 rounded-xl text-xs font-semibold border border-rose-500/30 bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 transition-colors inline-flex items-center gap-2"
-                onClick={clearData}
-                disabled={busy}
-                data-testid="clear-all-data-button"
-              >
-                <Trash2 size={14} />
-                <span>{t("settings.clear_all_data", "Clear All Records")}</span>
-              </button>
+              {isOwner && permissions?.canDeleteBills && (
+                <button
+                  type="button"
+                  className="px-4 py-2 rounded-xl text-xs font-semibold border border-rose-500/30 bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 transition-colors inline-flex items-center gap-2"
+                  onClick={clearData}
+                  disabled={busy}
+                  data-testid="clear-all-data-button"
+                >
+                  <Trash2 size={14} />
+                  <span>{t("settings.clear_all_data", "Clear All Records")}</span>
+                </button>
+              )}
             </div>
           </div>
 

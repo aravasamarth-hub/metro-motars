@@ -19,6 +19,7 @@ export const SHOWROOM_ACCOUNTS = [
       canViewPayments: true,
       canViewBills: true,
       canViewFinances: true,
+      canDeleteBills: true,
     },
   },
   {
@@ -38,6 +39,7 @@ export const SHOWROOM_ACCOUNTS = [
       canViewPayments: false,
       canViewBills: false,
       canViewFinances: false,
+      canDeleteBills: false,
     },
   },
 ];
@@ -118,6 +120,7 @@ export function AuthProvider({ children }) {
     canViewPayments: isOwner,
     canViewBills: isOwner,
     canViewFinances: isOwner,
+    canDeleteBills: isOwner,
   };
 
   const setPassword = async (email, password) => {
@@ -239,6 +242,7 @@ export function AuthProvider({ children }) {
           canViewPayments: ownerStatus,
           canViewBills: ownerStatus,
           canViewFinances: ownerStatus,
+          canDeleteBills: ownerStatus,
         },
         lastLogin: new Date().toISOString(),
       };
@@ -267,6 +271,7 @@ export function AuthProvider({ children }) {
         canViewPayments: ownerStatus,
         canViewBills: ownerStatus,
         canViewFinances: ownerStatus,
+        canDeleteBills: ownerStatus,
       },
       lastLogin: new Date().toISOString(),
     };
@@ -349,6 +354,7 @@ export function useAuth() {
         canViewPayments: true,
         canViewBills: true,
         canViewFinances: true,
+        canDeleteBills: true,
       },
       login: async () => {},
       logout: () => {},
