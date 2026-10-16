@@ -1,3 +1,4 @@
+import React, { useState } from "react";
 import { Check, ShieldCheck } from "lucide-react";
 import { DealField } from "./DealField";
 import { money } from "./dealModel";
