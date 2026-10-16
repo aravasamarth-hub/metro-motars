@@ -140,6 +140,7 @@
     "**/resolve-url-loader/postcss": "8.5.30",
     "**/axios/form-data": "4.0.6",
     "**/jsdom/form-data": "3.0.5",
+    "svgo": "2.8.4",
     "**/postcss-svgo/svgo": "2.8.4",
     "**/webpack-dev-server/ws": "8.21.0",
     "**/postcss-load-config/yaml": "2.8.3",
