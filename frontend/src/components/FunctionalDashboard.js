@@ -15,6 +15,7 @@ import {
   ShieldCheck,
   BarChart3,
   Flame,
+  UserCheck,
 } from "lucide-react";
 import { useDeals } from "@/features/deals/useDeals";
 import { DealsTable } from "@/features/deals/DealsTable";
@@ -91,6 +92,48 @@ export default function FunctionalDashboard() {
 
   const stockRatio = deals.length ? Math.round((bikesInStockCount / deals.length) * 100) : 0;
   const soldRatio = deals.length ? Math.round((soldCount / deals.length) * 100) : 0;
+
+  // Computed pending agents analytics
+  const pendingAgentsData = useMemo(() => {
+    const groups = {};
+    deals.forEach((deal) => {
+      const agent = deal.agent;
+      if (!agent || !agent.name || !agent.name.trim()) return;
+
+      const name = agent.name.trim();
+      if (!groups[name]) {
+        groups[name] = { name, pending: 0, amountBalance: 0 };
+      }
+
+      const tot = Number(agent.total_amount) || 0;
+      const paid = Number(agent.amount_paid) || 0;
+      const bal =
+        agent.amount_balance !== "" && agent.amount_balance != null
+          ? Number(agent.amount_balance)
+          : Math.max(0, tot - paid);
+
+      const isCompleted =
+        agent.status === "Completed" ||
+        deal.rc_status === "Transferred" ||
+        (agent.status !== "Pending" && bal === 0 && tot > 0) ||
+        deal.status === "Sold";
+
+      if (!isCompleted) {
+        groups[name].pending += 1;
+        groups[name].amountBalance += bal;
+      }
+    });
+
+    const pendingList = Object.values(groups).filter((a) => a.pending > 0);
+    const totalPendingTasks = pendingList.reduce((sum, a) => sum + a.pending, 0);
+    const totalPendingBalance = pendingList.reduce((sum, a) => sum + a.amountBalance, 0);
+
+    return {
+      count: pendingList.length,
+      tasks: totalPendingTasks,
+      balance: totalPendingBalance,
+    };
+  }, [deals]);
 
   // Filtered deals for table
   const filteredDeals = useMemo(() => {
@@ -259,36 +302,35 @@ export default function FunctionalDashboard() {
           </div>
         </SpotlightCard>
 
-        {/* Card 4: Fleet Valuation & Volume (Emerald Green Spotlight) */}
+        {/* Card 4: Pending Agents (Purple Spotlight) */}
         <SpotlightCard
-          spotlightColor="rgba(16, 185, 129, 0.18)"
-          onClick={() => isOwner && navigate("/finances")}
+          spotlightColor="rgba(168, 85, 247, 0.18)"
+          onClick={() => isOwner && navigate("/agents")}
           className={`p-5 transition-all border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900/80 shadow-md shadow-neutral-200/50 dark:shadow-xl ${
-            isOwner ? "cursor-pointer hover:border-emerald-500/50" : "cursor-default opacity-90"
+            isOwner ? "cursor-pointer hover:border-purple-500/50" : "cursor-default opacity-90"
           }`}
-          data-testid="metric-showroom-volume"
+          data-testid="metric-pending-agents"
         >
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
-              Showroom Volume
+              {t("dashboard.pending_agents", "Pending Agents")}
             </span>
-            <div className="w-9 h-9 rounded-xl bg-emerald-500/15 text-emerald-500 flex items-center justify-center font-bold">
-              <TrendingUp size={18} />
+            <div className="w-9 h-9 rounded-xl bg-purple-500/15 text-purple-400 flex items-center justify-center font-bold">
+              <UserCheck size={18} />
             </div>
           </div>
-          <div className="text-3xl font-extrabold text-emerald-600 dark:text-emerald-400 font-manrope mt-3 mb-2 flex items-baseline gap-1">
-            {isOwner ? (loading ? "…" : money(totalTurnover)) : "🔒 Confidential"}
+          <div className="text-3xl font-extrabold text-neutral-900 dark:text-white font-manrope mt-3 mb-2 flex items-baseline gap-1">
+            {loading ? "…" : <MotionCounter to={pendingAgentsData.count} />}
+            <span className="text-xs text-neutral-400 dark:text-neutral-500 font-normal">
+              {pendingAgentsData.count === 1 ? "liaison" : "liaisons"}
+            </span>
           </div>
           <div className="flex items-center justify-between text-xs pt-2 border-t border-neutral-200 dark:border-neutral-800/80">
-            <span className="text-emerald-600 dark:text-emerald-400 flex items-center gap-1 font-medium text-[11px]">
-              {isOwner ? (
-                <>
-                  <TrendingUp size={12} />
-                  +{money(totalMargin)} margin
-                </>
-              ) : (
-                "Owner Access Only"
-              )}
+            <span className="text-purple-600 dark:text-purple-400 flex items-center gap-1 font-medium text-[11px]">
+              <Clock size={12} />
+              {pendingAgentsData.tasks > 0
+                ? `${pendingAgentsData.tasks} tasks (${money(pendingAgentsData.balance)} bal)`
+                : "All tasks cleared"}
             </span>
             {isOwner && <ArrowUpRight size={15} className="text-neutral-400 dark:text-neutral-500" />}
           </div>

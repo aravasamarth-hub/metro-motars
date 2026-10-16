@@ -352,6 +352,7 @@ export const translations = {
     "dashboard.todays_deals": "Today's Deals",
     "dashboard.bikes_in_stock": "Bikes in Stock",
     "dashboard.pending_rc": "Pending RC Transfers",
+    "dashboard.pending_agents": "Pending Agents",
     "dashboard.recent_deals": "Recent Deals",
     "dashboard.view_all": "View all",
 
@@ -916,6 +917,7 @@ export const translations = {
     "dashboard.todays_deals": "आज के सौदे",
     "dashboard.bikes_in_stock": "स्टॉक में बाइक्स",
     "dashboard.pending_rc": "लंबित आरसी ट्रांसफर",
+    "dashboard.pending_agents": "लंबित एजेंट",
     "dashboard.recent_deals": "हाल के सौदे",
     "dashboard.view_all": "सभी देखें",
 
@@ -1480,6 +1482,7 @@ export const translations = {
     "dashboard.todays_deals": "ಇಂದಿನ ವ್ಯವಹಾರಗಳು",
     "dashboard.bikes_in_stock": "ಸ್ಟಾಕ್‌ನಲ್ಲಿರುವ ಬೈಕ್‌ಗಳು",
     "dashboard.pending_rc": "ಬಾಕಿ ಇರುವ ಆರ್‌ಸಿ ವರ್ಗಾವಣೆಗಳು",
+    "dashboard.pending_agents": "ಬಾಕಿ ಇರುವ ಏಜೆಂಟರು",
     "dashboard.recent_deals": "ಇತ್ತೀಚಿನ ವ್ಯವಹಾರಗಳು",
     "dashboard.view_all": "ಎಲ್ಲವನ್ನೂ ವೀಕ್ಷಿಸಿ",
 
