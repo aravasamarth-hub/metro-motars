@@ -46,7 +46,7 @@ const ROLE_OPTIONS = [
 export default function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { login, quickLogin, biometricLogin, setPassword: authSetPass, sendOtp, verifyOtpAndResetPassword, personas } = useAuth();
+  const { login, quickLogin, setPassword: authSetPass, sendOtp, verifyOtpAndResetPassword, personas } = useAuth();
 
   const [activeRole, setActiveRole] = useState("OWNER");
   const [email, setEmail] = useState("aravasamarth@gmail.com");
@@ -445,7 +445,7 @@ export default function LoginPage() {
             <button
               type="submit"
               className="login-submit-btn"
-              disabled={busy || scanning}
+              disabled={busy}
               data-testid={LOGIN.submitButton}
             >
               {busy ? (
