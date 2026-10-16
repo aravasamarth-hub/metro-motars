@@ -1,51 +1,147 @@
 // Complete, production-grade showroom demo dataset for Metro Motors
-// All vehicle details, seller & buyer profiles, witnesses, agent tasks,
-// payment breakdowns, and verified visual photo cards.
+// All 5 deals include 100% comprehensive details (Vehicle specs, Seller profile,
+// Mechanical maintenance breakdown, Buyer profile, RTO agent task, Payment schedule)
+// and high-resolution verified SVG visual photo suites across all required documentation slots.
 
-const makePhotoSvg = (title, subtitle, iconText = "ðŸï¸", accent = "#d97706") => {
+const SVG_ICONS = {
+  car: `<g transform="translate(80, 20)" stroke="currentColor">
+    <path d="M60 115 L95 75 L225 75 L260 115 L305 120 C315 120 325 128 325 138 L325 168 C325 174 320 178 314 178 L290 178 C290 160 274 150 258 150 C242 150 226 160 226 178 L114 178 C114 160 98 150 82 150 C66 150 50 160 50 178 L34 178 C28 178 24 174 24 168 L24 135 C24 125 32 118 45 116 Z" fill="none" stroke-width="5" stroke-linejoin="round"/>
+    <circle cx="82" cy="178" r="18" fill="none" stroke-width="5"/>
+    <circle cx="82" cy="178" r="7" fill="currentColor"/>
+    <circle cx="258" cy="178" r="18" fill="none" stroke-width="5"/>
+    <circle cx="258" cy="178" r="7" fill="currentColor"/>
+    <path d="M102 85 L218 85 L245 115 L78 115 Z" fill="currentColor" opacity="0.22"/>
+    <line x1="160" y1="85" x2="160" y2="115" stroke-width="4"/>
+  </g>`,
+  bike_gear: `<g transform="translate(90, 25)" stroke="currentColor">
+    <circle cx="55" cy="155" r="28" fill="none" stroke-width="5"/>
+    <circle cx="55" cy="155" r="9" fill="currentColor"/>
+    <circle cx="235" cy="155" r="28" fill="none" stroke-width="5"/>
+    <circle cx="235" cy="155" r="9" fill="currentColor"/>
+    <path d="M55 155 L105 85 L185 85 L235 155 L145 155 Z" fill="none" stroke-width="5" stroke-linejoin="round"/>
+    <path d="M105 85 L90 55 L125 55" fill="none" stroke-width="5" stroke-linecap="round"/>
+    <path d="M145 85 L175 125 L115 125 Z" fill="currentColor" opacity="0.3"/>
+    <path d="M175 105 L210 105 L225 130" fill="none" stroke-width="4" stroke-linecap="round"/>
+  </g>`,
+  scooter: `<g transform="translate(90, 25)" stroke="currentColor">
+    <circle cx="58" cy="155" r="26" fill="none" stroke-width="5"/>
+    <circle cx="58" cy="155" r="8" fill="currentColor"/>
+    <circle cx="232" cy="155" r="26" fill="none" stroke-width="5"/>
+    <circle cx="232" cy="155" r="8" fill="currentColor"/>
+    <path d="M90 60 L78 65 L88 100 L145 145 L195 145 L228 120 L218 90 L168 90" fill="none" stroke-width="5" stroke-linejoin="round"/>
+    <path d="M88 100 L145 100 L145 145" fill="none" stroke-width="5"/>
+    <circle cx="190" cy="105" r="10" fill="currentColor" opacity="0.25"/>
+  </g>`,
+  odometer: `<g transform="translate(80, 20)" stroke="currentColor">
+    <circle cx="160" cy="120" r="62" fill="none" stroke-width="5"/>
+    <path d="M115 120 A45 45 0 0 1 205 120" fill="none" stroke-width="4" stroke-dasharray="5 7"/>
+    <line x1="160" y1="120" x2="198" y2="92" stroke-width="5" stroke-linecap="round"/>
+    <circle cx="160" cy="120" r="10" fill="currentColor"/>
+    <rect x="125" y="142" width="70" height="22" rx="4" fill="currentColor" opacity="0.25"/>
+    <text x="160" y="157" font-family="monospace" font-size="12" font-weight="bold" fill="currentColor" text-anchor="middle" stroke="none">KM/H</text>
+  </g>`,
+  engine: `<g transform="translate(85, 20)" stroke="currentColor">
+    <rect x="105" y="75" width="110" height="95" rx="8" fill="none" stroke-width="5"/>
+    <line x1="130" y1="55" x2="130" y2="75" stroke-width="5"/>
+    <line x1="190" y1="55" x2="190" y2="75" stroke-width="5"/>
+    <line x1="105" y1="115" x2="215" y2="115" stroke-width="4"/>
+    <circle cx="160" cy="142" r="18" fill="none" stroke-width="4"/>
+    <line x1="160" y1="124" x2="160" y2="160" stroke-width="3"/>
+  </g>`,
+  chassis: `<g transform="translate(85, 20)" stroke="currentColor">
+    <rect x="85" y="70" width="150" height="105" rx="8" fill="none" stroke-width="5"/>
+    <line x1="105" y1="102" x2="215" y2="102" stroke-width="4" stroke-dasharray="7 5"/>
+    <line x1="105" y1="124" x2="190" y2="124" stroke-width="4" stroke-dasharray="7 5"/>
+    <circle cx="98" cy="84" r="4" fill="currentColor"/>
+    <circle cx="222" cy="84" r="4" fill="currentColor"/>
+    <circle cx="98" cy="161" r="4" fill="currentColor"/>
+    <circle cx="222" cy="161" r="4" fill="currentColor"/>
+    <rect x="110" y="140" width="100" height="18" rx="3" fill="currentColor" opacity="0.25"/>
+  </g>`,
+  id_card: `<g transform="translate(80, 20)" stroke="currentColor">
+    <rect x="85" y="65" width="150" height="110" rx="10" fill="none" stroke-width="5"/>
+    <rect x="100" y="85" width="38" height="42" rx="4" fill="currentColor" opacity="0.28"/>
+    <line x1="152" y1="92" x2="218" y2="92" stroke-width="5" stroke-linecap="round"/>
+    <line x1="152" y1="110" x2="202" y2="110" stroke-width="5" stroke-linecap="round"/>
+    <line x1="100" y1="148" x2="220" y2="148" stroke-width="4" stroke-dasharray="6 4"/>
+  </g>`,
+  person: `<g transform="translate(80, 20)" stroke="currentColor">
+    <circle cx="160" cy="88" r="32" fill="none" stroke-width="5"/>
+    <circle cx="160" cy="88" r="12" fill="currentColor" opacity="0.25"/>
+    <path d="M96 172 C96 135 124 130 160 130 C196 130 224 135 224 172" fill="none" stroke-width="5" stroke-linecap="round"/>
+  </g>`,
+  signature: `<g transform="translate(80, 20)" stroke="currentColor">
+    <path d="M85 135 C110 100 130 85 142 115 C152 145 162 75 178 135 C192 105 208 120 222 100 C232 130 248 125 262 120" fill="none" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+    <line x1="75" y1="152" x2="265" y2="152" stroke-width="2" stroke-dasharray="5 5" opacity="0.5"/>
+  </g>`,
+  thumb: `<g transform="translate(80, 20)" stroke="currentColor">
+    <ellipse cx="160" cy="120" rx="38" ry="52" fill="none" stroke-width="4"/>
+    <ellipse cx="160" cy="120" rx="26" ry="38" fill="none" stroke-width="4"/>
+    <ellipse cx="160" cy="120" rx="14" ry="24" fill="none" stroke-width="4"/>
+    <path d="M160 90 L160 150" stroke-width="3" stroke-linecap="round"/>
+  </g>`,
+};
+
+export const makePhotoSvg = (title, subtitle, iconKey = "bike_gear", accent = "#d97706", badge = "METRO VERIFIED") => {
+  const iconGraphic = SVG_ICONS[iconKey] || SVG_ICONS.bike_gear;
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="480" height="340" viewBox="0 0 480 340">
     <defs>
-      <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stop-color="#111827"/>
-        <stop offset="50%" stop-color="#1f2937"/>
-        <stop offset="100%" stop-color="#0f172a"/>
+      <linearGradient id="cardBg" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#0b1120"/>
+        <stop offset="50%" stop-color="#152033"/>
+        <stop offset="100%" stop-color="#090d16"/>
       </linearGradient>
-      <linearGradient id="badgeG" x1="0%" y1="0%" x2="100%" y2="100%">
+      <linearGradient id="pillGrad" x1="0%" y1="0%" x2="100%" y2="0%">
         <stop offset="0%" stop-color="${accent}"/>
         <stop offset="100%" stop-color="#f59e0b"/>
       </linearGradient>
+      <pattern id="cardGrid" width="20" height="20" patternUnits="userSpaceOnUse">
+        <path d="M 20 0 L 0 0 0 20" fill="none" stroke="rgba(255, 255, 255, 0.025)" stroke-width="1"/>
+      </pattern>
     </defs>
-    <rect width="100%" height="100%" fill="url(#bg)" rx="16"/>
-    <rect x="2" y="2" width="476" height="336" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="2" rx="14"/>
     
-    <!-- Top Brand Bar -->
-    <rect x="20" y="20" width="80" height="24" rx="6" fill="url(#badgeG)"/>
-    <text x="60" y="36" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="11" font-weight="800" fill="#0f172a" text-anchor="middle" letter-spacing="1">METRO</text>
-    <text x="110" y="37" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="600" fill="#9ca3af">VERIFIED RECORD</text>
+    <!-- Outer Card Background & Grid -->
+    <rect width="100%" height="100%" fill="url(#cardBg)" rx="16"/>
+    <rect width="100%" height="100%" fill="url(#cardGrid)" rx="16"/>
+    <rect x="2" y="2" width="476" height="336" fill="none" stroke="rgba(255,255,255,0.09)" stroke-width="1.5" rx="14"/>
     
-    <!-- Center Icon Circle -->
-    <circle cx="240" cy="130" r="54" fill="rgba(255,255,255,0.04)" stroke="${accent}" stroke-width="2"/>
-    <text x="240" y="142" font-family="Apple Color Emoji, Segoe UI Emoji, sans-serif" font-size="34" text-anchor="middle">${iconText}</text>
+    <!-- Top Brand Header Bar -->
+    <g transform="translate(24, 20)">
+      <rect x="0" y="0" width="76" height="24" rx="5" fill="url(#pillGrad)"/>
+      <text x="38" y="16" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="11" font-weight="900" fill="#090d16" text-anchor="middle" letter-spacing="1">METRO</text>
+      
+      <rect x="86" y="0" width="130" height="24" rx="5" fill="rgba(255, 255, 255, 0.05)" stroke="rgba(255,255,255,0.12)" stroke-width="1"/>
+      <text x="151" y="16" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="10" font-weight="700" fill="#cbd5e1" text-anchor="middle" letter-spacing="0.5">${badge}</text>
+      
+      <text x="432" y="16" font-family="monospace" font-size="10" font-weight="600" fill="#64748b" text-anchor="end">ID #MM-${Math.abs((title + subtitle).split("").reduce((a, b) => ((a << 5) - a) + b.charCodeAt(0), 0) % 90000 + 10000)}</text>
+    </g>
     
-    <!-- Title & Subtitle -->
-    <text x="240" y="222" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="17" font-weight="700" fill="#f9fafb" text-anchor="middle">${title}</text>
-    <text x="240" y="248" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="13" font-weight="500" fill="#94a3b8" text-anchor="middle">${subtitle}</text>
+    <!-- Center Graphic Circle & Vector Artwork -->
+    <g transform="translate(0, 10)" color="${accent}">
+      <circle cx="240" cy="135" r="70" fill="rgba(255,255,255,0.03)" stroke="${accent}" stroke-width="1.8" stroke-dasharray="6 3"/>
+      <circle cx="240" cy="135" r="58" fill="rgba(0,0,0,0.3)"/>
+      ${iconGraphic}
+    </g>
     
-    <!-- Bottom Verified Pill -->
-    <g transform="translate(160, 280)">
-      <rect width="160" height="28" rx="14" fill="rgba(34, 197, 94, 0.15)" stroke="#22c55e" stroke-width="1.2"/>
-      <circle cx="20" cy="14" r="5" fill="#22c55e"/>
-      <text x="90" y="19" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="11" font-weight="700" fill="#86efac" text-anchor="middle" letter-spacing="0.5">DOCUMENT VALID</text>
+    <!-- Title & Detailed Subtitle -->
+    <text x="240" y="235" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="17" font-weight="800" fill="#f8fafc" text-anchor="middle" letter-spacing="0.2">${title}</text>
+    <text x="240" y="258" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500" fill="#94a3b8" text-anchor="middle">${subtitle}</text>
+    
+    <!-- Bottom Verified Security Seal -->
+    <g transform="translate(145, 286)">
+      <rect width="190" height="28" rx="14" fill="rgba(34, 197, 94, 0.12)" stroke="#22c55e" stroke-width="1.2"/>
+      <circle cx="22" cy="14" r="5" fill="#22c55e"/>
+      <text x="104" y="18" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="10.5" font-weight="700" fill="#86efac" text-anchor="middle" letter-spacing="0.6">OFFICIAL RECORD VALID</text>
     </g>
   </svg>`;
   return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
 };
 
-const createPhoto = (slotId, title, subtitle, icon, accent) => ({
+export const createPhoto = (slotId, title, subtitle, iconKey, accent = "#d97706", badge = "METRO VERIFIED") => ({
   name: `${slotId}.svg`,
   type: "image/svg+xml",
   size: 2048,
-  url: makePhotoSvg(title, subtitle, icon, accent),
+  url: makePhotoSvg(title, subtitle, iconKey, accent, badge),
 });
 
 export const getTextOnlyDemoDeal = () => {
@@ -55,13 +151,14 @@ export const getTextOnlyDemoDeal = () => {
     id: "deal-demo-hunter-350-no-photos",
     kind: "deal",
     schema_version: 1,
-    bill_number: "Bill-002",
+    bill_number: "Bill-000",
     status: "In Stock",
     rc_status: "Pending",
     commission: 19000,
     created_at: now.toISOString(),
     updated_at: now.toISOString(),
     vehicle: {
+      vehicle_type: "2 Wheeler with Gear",
       vehicle_name: "Royal Enfield Hunter 350 Dapper Ash",
       make: "Royal Enfield",
       model: "Hunter 350",
@@ -82,7 +179,7 @@ export const getTextOnlyDemoDeal = () => {
       bought_date: todayStr,
       sold_date: "",
       keys: "2",
-      service_history: "Fully authorized service at Acclaim Motors Jayanagar. Fresh synthetic engine oil, new brake pads, zero accidental history.",
+      service_history: "Authorized service records up to date. Fresh synthetic oil, zero accidental history.",
       tax: "Lifetime",
       tax_valid_until: "2038-05-17",
       fitness: "Valid",
@@ -125,10 +222,18 @@ export const getTextOnlyDemoDeal = () => {
         name: "Girish Murthy",
         phone: "9900112233",
         address: "#88, 5th Block, Koramangala, Bengaluru",
-        id_type: "Driving License",
+        id_type: "Driving Licence",
         id_number: "KA01 20190008421",
       },
     ],
+    maintenance: {
+      services: [
+        { id: "lof", name: "Lube, Oil, and Filter (LOF)", price: "850", enabled: true },
+        { id: "detailing_wash", name: "Showroom Detailing, Teflon Coating & Wash", price: "600", enabled: true },
+      ],
+      total_expense: "1450",
+      notes: "Full synthetic engine oil replacement and showroom detailing completed.",
+    },
     buyer: {
       name: "Aakash V. Sharma",
       father_name: "Vijay Sharma",
@@ -164,31 +269,33 @@ export const getTextOnlyDemoDeal = () => {
       payment_method: "UPI",
       payment_date: todayStr,
       transaction_reference: "UPI-GPAY-981245012",
-      notes: "Token advance â‚¹30,000 received via UPI. Remaining balance â‚¹1,24,000 due upon physical vehicle handover.",
+      notes: "Token advance received via UPI.",
     },
-    photos: {}, // STRICTLY ZERO PHOTOS
-    notes: "Demo deal created with all text details completely filled (vehicle specs, seller, buyer, agent, payments). Zero photos attached as requested.",
+    photos: {},
+    notes: "Text-only demo record.",
   };
 };
 
 export const getDemoDeals = () => {
   const now = new Date();
   const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
-  const nowIso = now.toISOString();
 
   return [
-    // â”€â”€ 1. Royal Enfield Classic 350 (Sold, Transferred) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ═════════════════════════════════════════════════════════════════════════
+    // 1. Royal Enfield Classic 350 (2 Wheeler with Gear) - In Stock, RC Pending
+    // ═════════════════════════════════════════════════════════════════════════
     {
       id: "deal-demo-re-classic-350",
       kind: "deal",
       schema_version: 1,
       bill_number: "Bill-001",
-      status: "Sold",
-      rc_status: "Transferred",
+      status: "In Stock",
+      rc_status: "Pending",
       commission: 23000,
-      created_at: new Date(Date.now() - 6 * 86400000).toISOString(),
-      updated_at: new Date(Date.now() - 5 * 86400000).toISOString(),
+      created_at: new Date(Date.now() - 4 * 86400000).toISOString(),
+      updated_at: new Date(Date.now() - 3 * 86400000).toISOString(),
       vehicle: {
+        vehicle_type: "2 Wheeler with Gear",
         vehicle_name: "Royal Enfield Classic 350 Stealth Black",
         make: "Royal Enfield",
         model: "Classic 350",
@@ -207,7 +314,7 @@ export const getDemoDeals = () => {
         ownership: "First Owner",
         condition: "Excellent",
         bought_date: "2026-09-10",
-        sold_date: "2026-09-27",
+        sold_date: "",
         keys: "2",
         service_history: "Fully authorized service at King's Royal Enfield Indiranagar. Ceramic coating done, zero scratches, brand new Michelin tires.",
         tax: "Lifetime",
@@ -252,10 +359,20 @@ export const getDemoDeals = () => {
           name: "Pranav Varma",
           phone: "9731234567",
           address: "#105, AECS Layout, Kundalahalli, Bengaluru",
-          id_type: "Driving License",
+          id_type: "Driving Licence",
           id_number: "KA53 20210008124",
         },
       ],
+      maintenance: {
+        services: [
+          { id: "lof", name: "Lube, Oil, and Filter (LOF)", price: "850", enabled: true },
+          { id: "chain_sprocket", name: "Chain Sprocket & Drive Line Lubrication", price: "800", enabled: true },
+          { id: "brakes", name: "Brake Pad & Shoe Replacement", price: "650", enabled: true },
+          { id: "detailing_wash", name: "Showroom Detailing, Teflon Coating & Wash", price: "600", enabled: true },
+        ],
+        total_expense: "2900",
+        notes: "Full synthetic Motul 300V oil service, new rear brake pads, and ceramic polish applied.",
+      },
       buyer: {
         name: "Aditya Mohan",
         father_name: "Mohan Krishnan",
@@ -278,323 +395,110 @@ export const getDemoDeals = () => {
         name: "Ramesh Babu (Indiranagar RTO)",
         phone: "9886012345",
         email: "ramesh.rto.services@gmail.com",
-        task: "RC ownership transfer from KA-03 to KA-53 & Smart Card Dispatch",
+        task: "RC ownership transfer from KA-03 Indiranagar to KA-53 KR Puram & Form 29/30 submission",
         total_amount: "3500",
-        amount_paid: "3500",
-        amount_balance: "0",
+        amount_paid: "2000",
+        amount_balance: "1500",
       },
       payments: {
         purchase_price: "162000",
         selling_price: "185000",
         paid_to_seller: "162000",
-        received_from_buyer: "185000",
+        received_from_buyer: "35000",
         payment_method: "Bank Transfer",
-        payment_date: "2026-09-27",
+        payment_date: todayStr,
         transaction_reference: "NEFT-HDFC-910283741",
-        notes: "Token â‚¹25,000 via UPI on 22nd Sep; balance â‚¹1,60,000 NEFT cleared on delivery. Handover complete.",
+        notes: "Advance booking amount ₹35,000 received. Balance ₹1,50,000 due upon final delivery handover.",
       },
       photos: {
-        "vehicle-1": createPhoto("vehicle-1", "Front View", "Royal Enfield Classic 350 Â· KA-03-JJ-4521", "ðŸï¸", "#d97706"),
-        "vehicle-2": createPhoto("vehicle-2", "Rear View", "Exhaust, tail light & plate intact", "ðŸï¸", "#d97706"),
-        "vehicle-5": createPhoto("vehicle-5", "Odometer: 8,450 km", "Analog-digital display reading verified", "â±ï¸", "#3b82f6"),
-        "vehicle-8": createPhoto("vehicle-8", "RC Smartcard (Front)", "Government of Karnataka Transport Dept", "ðŸ“„", "#10b981"),
-        "seller-1": createPhoto("seller-1", "Seller Portrait", "Vikram R. Shetty", "ðŸ‘¤", "#8b5cf6"),
-        "seller-2": createPhoto("seller-2", "Seller Aadhaar Card", "UIDAI Verified Copy", "ðŸªª", "#6366f1"),
-        "buyer-1": createPhoto("buyer-1", "Buyer Portrait", "Aditya Mohan", "ðŸ‘¤", "#06b6d4"),
-        "buyer-2": createPhoto("buyer-2", "Buyer Aadhaar Card", "UIDAI Verified Copy", "ðŸªª", "#14b8a6"),
-        "witness-1-1": createPhoto("witness-1-1", "Seller Witness Photo", "Deepak S. Nair", "ðŸ¤", "#f59e0b"),
-        "witness-2-1": createPhoto("witness-2-1", "Buyer Witness Photo", "Pranav Varma", "ðŸ¤", "#ec4899"),
+        // Vehicle photo suite
+        "vehicle-1": createPhoto("vehicle-1", "Front Mask & Headlamp", "Royal Enfield Classic 350 · KA-03-JJ-4521", "bike_gear", "#d97706", "2W GEARED"),
+        "vehicle-2": createPhoto("vehicle-2", "Rear Profile & Tail Lamp", "Exhaust, registration plate & indicators intact", "bike_gear", "#d97706", "2W GEARED"),
+        "vehicle-3": createPhoto("vehicle-3", "Left Engine & Crankcase", "Royal Enfield 349cc J-Series engine block", "engine", "#3b82f6", "ENGINE"),
+        "vehicle-4": createPhoto("vehicle-4", "Right Exhaust & Tank", "Stealth Black matte tank badge & chrome exhaust", "bike_gear", "#d97706", "2W GEARED"),
+        "vehicle-5": createPhoto("vehicle-5", "Odometer: 8,450 km", "Analog-digital console reading certified", "odometer", "#10b981", "ODOMETER"),
+        "vehicle-6": createPhoto("vehicle-6", "Engine Stamping", "RE350J23K98411 · Authorized Match", "engine", "#6366f1", "ENGINE NO"),
+        "vehicle-7": createPhoto("vehicle-7", "Chassis VIN Plate", "ME3J3S5K0PA984112 Stamped Headstock", "chassis", "#ec4899", "CHASSIS NO"),
+        "vehicle-8": createPhoto("vehicle-8", "Insurance & Smart Card", "HDFC ERGO Comprehensive Valid 2027", "id_card", "#06b6d4", "DOCUMENTS"),
+        // Seller identity suite
+        "seller-1": createPhoto("seller-1", "Seller Portrait", "Vikram R. Shetty (Verified)", "person", "#8b5cf6", "SELLER"),
+        "seller-signature": createPhoto("seller-signature", "Seller Digital Signature", "Vikram R. Shetty · Form 29/30 Verified", "signature", "#f59e0b", "SIGNATURE"),
+        "seller-thumb": createPhoto("seller-thumb", "Seller Biometric Thumb", "UIDAI Biometric Stamp Valid", "thumb", "#3b82f6", "BIOMETRIC"),
+        "seller-2": createPhoto("seller-2", "Seller Aadhaar Card (Front)", "UIDAI Government of India", "id_card", "#10b981", "AADHAAR"),
+        "seller-3": createPhoto("seller-3", "Seller Aadhaar Card (Back)", "Address: #412 Indiranagar Bengaluru", "id_card", "#10b981", "AADHAAR"),
+        "seller-4": createPhoto("seller-4", "Seller PAN Card", "Income Tax Dept · ABGPS1245K", "id_card", "#6366f1", "PAN CARD"),
+        "seller-5": createPhoto("seller-5", "Seller Driving Licence", "KA RTO Indiranagar · Valid LMV/MCWG", "id_card", "#06b6d4", "DRIVING LICENCE"),
+        "seller-8": createPhoto("seller-8", "Original RC Smartcard (Front)", "Government of Karnataka · KA-03-JJ-4521", "id_card", "#f97316", "RC CARD"),
+        "seller-9": createPhoto("seller-9", "Original RC Smartcard (Back)", "Chip Verified · Hypothecation Cleared", "id_card", "#f97316", "RC CARD"),
+        "seller-11": createPhoto("seller-11", "Seller Purchase Agreement", "Metro Motors Showroom Acquisition Deed", "id_card", "#84cc16", "AGREEMENT"),
+        // Buyer identity suite
+        "buyer-1": createPhoto("buyer-1", "Buyer Portrait", "Aditya Mohan (Verified)", "person", "#06b6d4", "BUYER"),
+        "buyer-signature": createPhoto("buyer-signature", "Buyer Digital Signature", "Aditya Mohan · Sale Agreement Signed", "signature", "#f59e0b", "SIGNATURE"),
+        "buyer-thumb": createPhoto("buyer-thumb", "Buyer Biometric Thumb", "Inked Left Thumb Impression", "thumb", "#3b82f6", "BIOMETRIC"),
+        "buyer-2": createPhoto("buyer-2", "Buyer Aadhaar Card (Front)", "UIDAI Government of India", "id_card", "#10b981", "AADHAAR"),
+        "buyer-3": createPhoto("buyer-3", "Buyer Aadhaar Card (Back)", "Address: Prestige Palms Whitefield", "id_card", "#10b981", "AADHAAR"),
+        "buyer-4": createPhoto("buyer-4", "Buyer PAN Card", "Income Tax Dept · BCKPA8912L", "id_card", "#6366f1", "PAN CARD"),
+        "buyer-5": createPhoto("buyer-5", "Buyer Driving Licence", "KA RTO KR Puram · Valid MCWG", "id_card", "#06b6d4", "DRIVING LICENCE"),
+        "buyer-11": createPhoto("buyer-11", "Buyer Delivery Sale Deed", "Metro Motors Official Delivery Order", "id_card", "#84cc16", "SALE BILL"),
+        // Witnesses
+        "witness-1-1": createPhoto("witness-1-1", "Seller Witness Photo", "Deepak S. Nair", "person", "#f59e0b", "WITNESS 1"),
+        "witness-1-2": createPhoto("witness-1-2", "Witness 1 Signature", "Deepak S. Nair Attestation", "signature", "#f59e0b", "SIGNATURE"),
+        "witness-1-signature": createPhoto("witness-1-signature", "Witness 1 Signature", "Deepak S. Nair Attestation", "signature", "#f59e0b", "SIGNATURE"),
+        "witness-1-3": createPhoto("witness-1-3", "Witness 1 Thumb Impression", "Deepak S. Nair Inked Impression", "thumb", "#3b82f6", "BIOMETRIC"),
+        "witness-1-thumb": createPhoto("witness-1-thumb", "Witness 1 Thumb Impression", "Deepak S. Nair Inked Impression", "thumb", "#3b82f6", "BIOMETRIC"),
+        "witness-2-1": createPhoto("witness-2-1", "Buyer Witness Photo", "Pranav Varma", "person", "#ec4899", "WITNESS 2"),
+        "witness-2-2": createPhoto("witness-2-2", "Witness 2 Signature", "Pranav Varma Attestation", "signature", "#ec4899", "SIGNATURE"),
+        "witness-2-signature": createPhoto("witness-2-signature", "Witness 2 Signature", "Pranav Varma Attestation", "signature", "#ec4899", "SIGNATURE"),
+        "witness-2-3": createPhoto("witness-2-3", "Witness 2 Thumb Impression", "Pranav Varma Inked Impression", "thumb", "#3b82f6", "BIOMETRIC"),
+        "witness-2-thumb": createPhoto("witness-2-thumb", "Witness 2 Thumb Impression", "Pranav Varma Inked Impression", "thumb", "#3b82f6", "BIOMETRIC"),
       },
-      notes: "Clean single-owner flagship cruiser. Immediate buyer turnaround with zero repair cost.",
+      notes: "Showroom flagship cruiser. Clean single-owner machine in showroom condition with both original keys and manual book.",
     },
 
-    // â”€â”€ 2. KTM Duke 390 (In Stock, RC Pending) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ═════════════════════════════════════════════════════════════════════════
+    // 2. Honda Activa 6G DLX Smart Key (2 Wheeler without Gear) - In Stock
+    // ═════════════════════════════════════════════════════════════════════════
     {
-      id: "deal-demo-ktm-duke-390",
+      id: "deal-demo-honda-activa-6g",
       kind: "deal",
       schema_version: 1,
       bill_number: "Bill-002",
       status: "In Stock",
       rc_status: "Pending",
-      commission: 30000,
+      commission: 12500,
       created_at: new Date(Date.now() - 3 * 86400000).toISOString(),
       updated_at: new Date(Date.now() - 2 * 86400000).toISOString(),
       vehicle: {
-        vehicle_name: "KTM Duke 390 ABS Electronic Orange",
-        make: "KTM",
-        model: "Duke 390",
-        variant: "Gen 3 Quickshifter+ Cornering ABS",
-        year: "2024",
-        color: "Electronic Orange",
-        vehicle_number: "KA-01-MJ-8821",
-        registration_number: "KA01MJ8821",
-        registration_date: "2024-01-20",
-        engine_number: "KTM390G984112",
-        chassis_number: "MD2JK94B5RA001823",
-        engine_cc: "399",
-        fuel_type: "Petrol",
-        transmission: "Manual",
-        odometer: "4200",
-        ownership: "First Owner",
-        condition: "Excellent",
-        bought_date: "2026-09-28",
-        sold_date: "",
-        keys: "2",
-        service_history: "1st and 2nd service done at KTM Koramangala. Warranty active until Jan 2027.",
-        tax: "Lifetime",
-        tax_valid_until: "2039-01-19",
-        fitness: "Valid",
-        fitness_valid_until: "2039-01-19",
-        insurance: "Active",
-        insurance_policy: "BAJAJ-ALLIANZ-2024-912",
-        insurance_valid_until: "2027-01-18",
-        puc_valid_until: "2026-12-15",
-        hypothecation: "No",
-        financier: "",
-        noc: "Not Required",
-      },
-      seller: {
-        name: "Arjun N. Mehta",
-        father_name: "Naveen Mehta",
-        phone: "9820123456",
-        alternate_phone: "9820123457",
-        email: "arjun.mehta@techcorp.io",
-        address: "#88, 5th Block, Koramangala",
-        city: "Bengaluru",
-        state: "Karnataka",
-        pincode: "560095",
-        id_type: "Aadhaar",
-        id_number: "XXXX-XXXX-9943",
-        pan_number: "AXCPM9012N",
-        is_dealer: false,
-        dealer_name: "",
-        gst_number: "",
-        dealer_address: "",
-      },
-      witnesses: [
-        {
-          name: "Kunal Bansal",
-          phone: "9820987654",
-          address: "#12, 1st Cross, HSR Layout Sector 4",
-          id_type: "Aadhaar",
-          id_number: "XXXX-XXXX-3341",
-        },
-        { name: "", phone: "", address: "", id_type: "Aadhaar", id_number: "" },
-      ],
-      buyer: {
-        name: "",
-        father_name: "",
-        phone: "",
-        alternate_phone: "",
-        email: "",
-        address: "",
-        city: "",
-        state: "Karnataka",
-        pincode: "",
-        id_type: "Aadhaar",
-        id_number: "",
-        pan_number: "",
-        is_dealer: false,
-        dealer_name: "",
-        gst_number: "",
-        dealer_address: "",
-      },
-      agent: {
-        name: "Shivakumar (Koramangala RTO)",
-        phone: "9448123456",
-        email: "shiva.rto.services@gmail.com",
-        task: "Hypothecation verification & NOC confirmation",
-        total_amount: "2000",
-        amount_paid: "1000",
-        amount_balance: "1000",
-      },
-      payments: {
-        purchase_price: "245000",
-        selling_price: "275000",
-        paid_to_seller: "245000",
-        received_from_buyer: "0",
-        payment_method: "UPI",
-        payment_date: "2026-09-28",
-        transaction_reference: "UPI-428901847192",
-        notes: "Purchased from first owner moving abroad. Displayed on showroom front stage.",
-      },
-      photos: {
-        "vehicle-1": createPhoto("vehicle-1", "Front View", "KTM Duke 390 Â· KA-01-MJ-8821", "ðŸï¸", "#f97316"),
-        "vehicle-3": createPhoto("vehicle-3", "Left Profile", "Trellis frame & WP Apex suspension", "ðŸï¸", "#f97316"),
-        "vehicle-5": createPhoto("vehicle-5", "TFT Dash: 4,200 km", "5-inch color TFT console with Bluetooth", "â±ï¸", "#3b82f6"),
-        "seller-1": createPhoto("seller-1", "Seller Portrait", "Arjun N. Mehta", "ðŸ‘¤", "#8b5cf6"),
-        "witness-1-1": createPhoto("witness-1-1", "Seller Witness", "Kunal Bansal", "ðŸ¤", "#f59e0b"),
-      },
-      notes: "Pristine Gen 3 Duke 390. High inquiry volume; expected booking within 48 hours.",
-    },
-
-    // â”€â”€ 3. Yamaha MT-15 V2 (Today's Deal! In Stock, RC Pending) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-    {
-      id: "deal-demo-yamaha-mt15",
-      kind: "deal",
-      schema_version: 1,
-      bill_number: "Bill-003",
-      status: "In Stock",
-      rc_status: "Pending",
-      commission: 17000,
-      created_at: nowIso, // Today's Deal!
-      updated_at: nowIso,
-      vehicle: {
-        vehicle_name: "Yamaha MT-15 V2 Metallic Black",
-        make: "Yamaha",
-        model: "MT-15 V2",
-        variant: "Deluxe Bluetooth with USD Forks",
-        year: "2023",
-        color: "Metallic Black / Cyan",
-        vehicle_number: "KA-05-NL-6672",
-        registration_number: "KA05NL6672",
-        registration_date: "2023-06-18",
-        engine_number: "YMH155G449102",
-        chassis_number: "ME1RG5410PA098124",
-        engine_cc: "155",
-        fuel_type: "Petrol",
-        transmission: "Manual",
-        odometer: "11200",
-        ownership: "First Owner",
-        condition: "Excellent",
-        bought_date: todayStr,
-        sold_date: "",
-        keys: "2",
-        service_history: "Showroom serviced at Orion Yamaha. Variable Valve Actuation (VVA) inspected.",
-        tax: "Lifetime",
-        tax_valid_until: "2038-06-17",
-        fitness: "Valid",
-        fitness_valid_until: "2038-06-17",
-        insurance: "Active",
-        insurance_policy: "ICICI-LOMBARD-MT-904",
-        insurance_valid_until: "2027-06-15",
-        puc_valid_until: "2027-02-28",
-        hypothecation: "No",
-        financier: "",
-        noc: "Not Required",
-      },
-      seller: {
-        name: "Syed Farooq",
-        father_name: "Syed Ameer",
-        phone: "9880198273",
-        alternate_phone: "9880198274",
-        email: "farooq.syed@gmail.com",
-        address: "#71, Jayanagar 4th Block",
-        city: "Bengaluru",
-        state: "Karnataka",
-        pincode: "560011",
-        id_type: "Aadhaar",
-        id_number: "XXXX-XXXX-6612",
-        pan_number: "DFXPF4412E",
-        is_dealer: false,
-        dealer_name: "",
-        gst_number: "",
-        dealer_address: "",
-      },
-      witnesses: [
-        {
-          name: "Wasim Khan",
-          phone: "9880293847",
-          address: "#34, BTM Layout 1st Stage, Bengaluru",
-          id_type: "Voter ID",
-          id_number: "BLR9812431",
-        },
-        {
-          name: "Gautam Rao",
-          phone: "9741283749",
-          address: "#99, Banashankari 2nd Stage, Bengaluru",
-          id_type: "Aadhaar",
-          id_number: "XXXX-XXXX-4491",
-        },
-      ],
-      buyer: {
-        name: "Chirag Hegde",
-        father_name: "Satish Hegde",
-        phone: "9741283746",
-        alternate_phone: "9741283747",
-        email: "chirag.hegde@techlabs.com",
-        address: "#202, Banashankari 3rd Stage, 7th Main",
-        city: "Bengaluru",
-        state: "Karnataka",
-        pincode: "560085",
-        id_type: "Aadhaar",
-        id_number: "XXXX-XXXX-1123",
-        pan_number: "EPMCH9921K",
-        is_dealer: false,
-        dealer_name: "",
-        gst_number: "",
-        dealer_address: "",
-      },
-      agent: {
-        name: "Manjunath (Jayanagar RTO Services)",
-        phone: "9449812345",
-        email: "manju.rto@rediffmail.com",
-        task: "KA-05 Jayanagar RTO transfer & tax endorsement",
-        total_amount: "2500",
-        amount_paid: "1500",
-        amount_balance: "1000",
-      },
-      payments: {
-        purchase_price: "118000",
-        selling_price: "135000",
-        paid_to_seller: "118000",
-        received_from_buyer: "25000", // Token advance!
-        payment_method: "UPI",
-        payment_date: todayStr,
-        transaction_reference: "UPI-PAYTM-992147102",
-        notes: "Token advance â‚¹25,000 received today. Buyer collecting bike tomorrow afternoon upon paying remaining â‚¹1,10,000.",
-      },
-      photos: {
-        "vehicle-1": createPhoto("vehicle-1", "Front Mask", "Yamaha MT-15 V2 Â· KA-05-NL-6672", "ðŸï¸", "#06b6d4"),
-        "vehicle-4": createPhoto("vehicle-4", "Right Profile", "Cyan Storm wheels & golden USD forks", "ðŸï¸", "#06b6d4"),
-        "vehicle-5": createPhoto("vehicle-5", "Odometer: 11,200 km", "Negative LCD screen checked", "â±ï¸", "#3b82f6"),
-        "seller-1": createPhoto("seller-1", "Seller Portrait", "Syed Farooq", "ðŸ‘¤", "#8b5cf6"),
-        "buyer-1": createPhoto("buyer-1", "Buyer Portrait", "Chirag Hegde", "ðŸ‘¤", "#10b981"),
-      },
-      notes: "Acquired today morning; token advance taken within 4 hours. Pending balance â‚¹1,10,000 due on handover.",
-    },
-
-    // â”€â”€ 4. Honda Activa 6G (Sold, RC Completed) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-    {
-      id: "deal-demo-honda-activa-6g",
-      kind: "deal",
-      schema_version: 1,
-      bill_number: "Bill-004",
-      status: "Sold",
-      rc_status: "Completed",
-      commission: 11500,
-      created_at: new Date(Date.now() - 4 * 86400000).toISOString(),
-      updated_at: new Date(Date.now() - 3 * 86400000).toISOString(),
-      vehicle: {
-        vehicle_name: "Honda Activa 6G Deluxe Pearl White",
+        vehicle_type: "2 Wheeler without Gear",
+        vehicle_name: "Honda Activa 6G DLX Smart Key",
         make: "Honda",
         model: "Activa 6G",
-        variant: "Deluxe LED Headlamp",
-        year: "2022",
-        color: "Pearl Precious White",
+        variant: "DLX Smart Keyless Remote",
+        year: "2024",
+        color: "Pearl Siren Blue",
         vehicle_number: "KA-04-KQ-3319",
         registration_number: "KA04KQ3319",
-        registration_date: "2022-09-05",
+        registration_date: "2024-02-15",
         engine_number: "HND110E981245",
-        chassis_number: "ME4JF9124NA891244",
+        chassis_number: "ME4JF9124RA891244",
         engine_cc: "109",
         fuel_type: "Petrol",
         transmission: "Automatic",
-        odometer: "15300",
+        odometer: "5120",
         ownership: "First Owner",
         condition: "Excellent",
-        bought_date: "2026-09-12",
-        sold_date: "2026-09-29",
+        bought_date: "2026-09-20",
+        sold_date: "",
         keys: "2",
-        service_history: "Serviced regularly at Silicon Honda Malleshwaram. New MRF front tire, fresh battery with warranty card.",
+        service_history: "Maintained exclusively at Silicon Honda Malleshwaram. Smart key remote battery replaced, zero accidental history.",
         tax: "Lifetime",
-        tax_valid_until: "2037-09-04",
+        tax_valid_until: "2039-02-14",
         fitness: "Valid",
-        fitness_valid_until: "2037-09-04",
+        fitness_valid_until: "2039-02-14",
         insurance: "Active",
-        insurance_policy: "TATA-AIG-SCOT-449",
-        insurance_valid_until: "2026-10-30",
-        puc_valid_until: "2026-11-30",
+        insurance_policy: "TATA-AIG-SCOT-992144",
+        insurance_valid_until: "2027-02-12",
+        puc_valid_until: "2026-12-30",
         hypothecation: "No",
         financier: "",
         noc: "Not Required",
@@ -629,10 +533,19 @@ export const getDemoDeals = () => {
           name: "Ananya Deshmukh",
           phone: "9845191828",
           address: "#302, Green Orchid, Yeshwanthpur, Bengaluru",
-          id_type: "Driving License",
+          id_type: "Driving Licence",
           id_number: "KA04 2022001928",
         },
       ],
+      maintenance: {
+        services: [
+          { id: "lof", name: "Lube, Oil, and Filter (LOF)", price: "850", enabled: true },
+          { id: "filters", name: "Filter Replacements", price: "350", enabled: true },
+          { id: "detailing_wash", name: "Showroom Detailing, Teflon Coating & Wash", price: "600", enabled: true },
+        ],
+        total_expense: "1800",
+        notes: "Genuine Honda engine oil and air filter replacement. Foam wash and teflon polished.",
+      },
       buyer: {
         name: "Pooja Deshmukh",
         father_name: "Girish Deshmukh",
@@ -654,72 +567,458 @@ export const getDemoDeals = () => {
       agent: {
         name: "Anand RTO Consult",
         phone: "9844055667",
-        email: "anand.rto@gmail.com",
-        task: "RC ownership transfer to Yeshwanthpur RTO (KA-04)",
-        total_amount: "1800",
-        amount_paid: "1800",
+        email: "anand.rto.services@gmail.com",
+        task: "RC ownership transfer to Yeshwanthpur RTO (KA-04) & Smart Card dispatch",
+        total_amount: "2000",
+        amount_paid: "2000",
         amount_balance: "0",
       },
       payments: {
-        purchase_price: "58000",
-        selling_price: "69500",
-        paid_to_seller: "58000",
-        received_from_buyer: "69500",
-        payment_method: "Cash",
-        payment_date: "2026-09-29",
-        transaction_reference: "CASH-REC-0098",
-        notes: "Full settlement in cash upon delivery. Official delivery note and gate pass issued.",
+        purchase_price: "62000",
+        selling_price: "74500",
+        paid_to_seller: "62000",
+        received_from_buyer: "20000",
+        payment_method: "UPI",
+        payment_date: todayStr,
+        transaction_reference: "UPI-ICICI-88124901",
+        notes: "Token advance ₹20,000 paid. Remaining balance ₹54,500 due on vehicle handover.",
       },
       photos: {
-        "vehicle-1": createPhoto("vehicle-1", "Front Apron", "Honda Activa 6G Â· KA-04-KQ-3319", "ðŸ›µ", "#64748b"),
-        "vehicle-2": createPhoto("vehicle-2", "Rear & Number Plate", "External fuel cap & badging intact", "ðŸ›µ", "#64748b"),
-        "seller-1": createPhoto("seller-1", "Seller Portrait", "Lakshmi Narayanan", "ðŸ‘¤", "#8b5cf6"),
-        "buyer-1": createPhoto("buyer-1", "Buyer Portrait", "Pooja Deshmukh", "ðŸ‘¤", "#ec4899"),
+        // Vehicle photo suite
+        "vehicle-1": createPhoto("vehicle-1", "Front Apron & LED", "Honda Activa 6G DLX · KA-04-KQ-3319", "scooter", "#06b6d4", "2W AUTO"),
+        "vehicle-2": createPhoto("vehicle-2", "Rear & Number Plate", "External fuel lid & chrome badging intact", "scooter", "#06b6d4", "2W AUTO"),
+        "vehicle-3": createPhoto("vehicle-3", "Left Body & Floorboard", "Pristine metallic blue body paint & rubber mat", "scooter", "#06b6d4", "2W AUTO"),
+        "vehicle-4": createPhoto("vehicle-4", "Right Exhaust & Muffler", "Heat shield guard & rear suspension verified", "scooter", "#06b6d4", "2W AUTO"),
+        "vehicle-5": createPhoto("vehicle-5", "Odometer: 5,120 km", "Honda Smart Key digital console reading", "odometer", "#10b981", "ODOMETER"),
+        "vehicle-6": createPhoto("vehicle-6", "Engine Stamping", "HND110E981245 Crankcase Match", "engine", "#6366f1", "ENGINE NO"),
+        "vehicle-7": createPhoto("vehicle-7", "Chassis VIN Number", "ME4JF9124RA891244 Stamped Frame", "chassis", "#ec4899", "CHASSIS NO"),
+        "vehicle-8": createPhoto("vehicle-8", "RC Smartcard & Insurance", "Tata AIG Active Policy & Smart Card Copy", "id_card", "#3b82f6", "DOCUMENTS"),
+        // Seller identity suite
+        "seller-1": createPhoto("seller-1", "Seller Portrait", "Lakshmi Narayanan (Verified)", "person", "#8b5cf6", "SELLER"),
+        "seller-signature": createPhoto("seller-signature", "Seller Digital Signature", "Lakshmi Narayanan · Sale Endorsement", "signature", "#f59e0b", "SIGNATURE"),
+        "seller-thumb": createPhoto("seller-thumb", "Seller Biometric Thumb", "Inked Left Thumb Impression", "thumb", "#3b82f6", "BIOMETRIC"),
+        "seller-2": createPhoto("seller-2", "Seller Aadhaar Card (Front)", "UIDAI Government of India", "id_card", "#10b981", "AADHAAR"),
+        "seller-3": createPhoto("seller-3", "Seller Aadhaar Card (Back)", "Address: Malleshwaram 8th Cross Bengaluru", "id_card", "#10b981", "AADHAAR"),
+        "seller-4": createPhoto("seller-4", "Seller PAN Card", "Income Tax Dept · ALMPL9841P", "id_card", "#6366f1", "PAN CARD"),
+        "seller-5": createPhoto("seller-5", "Seller Driving Licence", "KA-04 Malleshwaram RTO", "id_card", "#06b6d4", "DRIVING LICENCE"),
+        "seller-8": createPhoto("seller-8", "Original RC Smartcard (Front)", "KA-04-KQ-3319 · Honda Motorcycle & Scooter", "id_card", "#f97316", "RC CARD"),
+        "seller-9": createPhoto("seller-9", "Original RC Smartcard (Back)", "First Owner · Lifetime Tax Paid", "id_card", "#f97316", "RC CARD"),
+        "seller-11": createPhoto("seller-11", "Seller Acquisition Receipt", "Metro Motors Showroom Purchase Deed", "id_card", "#84cc16", "AGREEMENT"),
+        // Buyer identity suite
+        "buyer-1": createPhoto("buyer-1", "Buyer Portrait", "Pooja Deshmukh (Verified)", "person", "#ec4899", "BUYER"),
+        "buyer-signature": createPhoto("buyer-signature", "Buyer Digital Signature", "Pooja Deshmukh · Sale Agreement", "signature", "#f59e0b", "SIGNATURE"),
+        "buyer-thumb": createPhoto("buyer-thumb", "Buyer Biometric Thumb", "UIDAI Biometric Stamp Valid", "thumb", "#3b82f6", "BIOMETRIC"),
+        "buyer-2": createPhoto("buyer-2", "Buyer Aadhaar Card (Front)", "UIDAI Government of India", "id_card", "#10b981", "AADHAAR"),
+        "buyer-3": createPhoto("buyer-3", "Buyer Aadhaar Card (Back)", "Address: Yeshwanthpur Bengaluru", "id_card", "#10b981", "AADHAAR"),
+        "buyer-4": createPhoto("buyer-4", "Buyer PAN Card", "Income Tax Dept · BPDPM7712Q", "id_card", "#6366f1", "PAN CARD"),
+        "buyer-5": createPhoto("buyer-5", "Buyer Driving Licence", "KA RTO Yeshwanthpur · MCWOG Valid", "id_card", "#06b6d4", "DRIVING LICENCE"),
+        "buyer-11": createPhoto("buyer-11", "Buyer Vehicle Bill", "Metro Motors Official Booking Invoice", "id_card", "#84cc16", "SALE BILL"),
+        // Witnesses
+        "witness-1-1": createPhoto("witness-1-1", "Seller Witness Photo", "Sridhar Rao", "person", "#f59e0b", "WITNESS 1"),
+        "witness-1-2": createPhoto("witness-1-2", "Witness 1 Signature", "Sridhar Rao Attestation", "signature", "#f59e0b", "SIGNATURE"),
+        "witness-1-signature": createPhoto("witness-1-signature", "Witness 1 Signature", "Sridhar Rao Attestation", "signature", "#f59e0b", "SIGNATURE"),
+        "witness-1-3": createPhoto("witness-1-3", "Witness 1 Thumb Impression", "Sridhar Rao Thumb Impression", "thumb", "#3b82f6", "BIOMETRIC"),
+        "witness-1-thumb": createPhoto("witness-1-thumb", "Witness 1 Thumb Impression", "Sridhar Rao Thumb Impression", "thumb", "#3b82f6", "BIOMETRIC"),
+        "witness-2-1": createPhoto("witness-2-1", "Buyer Witness Photo", "Ananya Deshmukh", "person", "#10b981", "WITNESS 2"),
+        "witness-2-2": createPhoto("witness-2-2", "Witness 2 Signature", "Ananya Deshmukh Attestation", "signature", "#10b981", "SIGNATURE"),
+        "witness-2-signature": createPhoto("witness-2-signature", "Witness 2 Signature", "Ananya Deshmukh Attestation", "signature", "#10b981", "SIGNATURE"),
+        "witness-2-3": createPhoto("witness-2-3", "Witness 2 Thumb Impression", "Ananya Deshmukh Thumb Impression", "thumb", "#3b82f6", "BIOMETRIC"),
+        "witness-2-thumb": createPhoto("witness-2-thumb", "Witness 2 Thumb Impression", "Ananya Deshmukh Thumb Impression", "thumb", "#3b82f6", "BIOMETRIC"),
       },
-      notes: "Top-selling family scooter. 100% genuine vehicle with complete service records.",
+      notes: "High liquidity family scooter with keyless Smart Key remote. 100% genuine vehicle with full service records.",
     },
 
-    // â”€â”€ 5. TVS Apache RTR 200 4V (Today's Deal! In Stock, RC Pending) â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ═════════════════════════════════════════════════════════════════════════
+    // 3. Hyundai Creta 1.5 Turbo DCT (4 Wheeler Car) - Sold, RC Transferred
+    // ═════════════════════════════════════════════════════════════════════════
     {
-      id: "deal-demo-apache-rtr-200",
+      id: "deal-demo-hyundai-creta",
+      kind: "deal",
+      schema_version: 1,
+      bill_number: "Bill-003",
+      status: "Sold",
+      rc_status: "Transferred",
+      commission: 170000,
+      created_at: new Date(Date.now() - 7 * 86400000).toISOString(),
+      updated_at: new Date(Date.now() - 6 * 86400000).toISOString(),
+      vehicle: {
+        vehicle_type: "4 Wheeler Car",
+        vehicle_name: "Hyundai Creta 1.5 Turbo DCT SX (O)",
+        make: "Hyundai",
+        model: "Creta",
+        variant: "1.5 Turbo DCT SX (O) Panoramic Sunroof Dual Tone",
+        year: "2023",
+        color: "Ranger Khaki with Abyss Black",
+        vehicle_number: "KA-01-MJ-8821",
+        registration_number: "KA01MJ8821",
+        registration_date: "2023-08-25",
+        engine_number: "G4LDNU98214",
+        chassis_number: "MALC381CLPM098124",
+        engine_cc: "1482",
+        fuel_type: "Petrol",
+        transmission: "Automatic",
+        odometer: "14200",
+        ownership: "First Owner",
+        condition: "Excellent",
+        bought_date: "2026-09-01",
+        sold_date: "2026-09-28",
+        keys: "2",
+        service_history: "Maintained exclusively at Trident Hyundai Koramangala. 10,000 km periodic service complete. 3M ceramic coating and zero accidental history.",
+        tax: "Lifetime",
+        tax_valid_until: "2038-08-24",
+        fitness: "Valid",
+        fitness_valid_until: "2038-08-24",
+        insurance: "Active",
+        insurance_policy: "BAJAJ-ALLIANZ-CAR-90214",
+        insurance_valid_until: "2026-08-23",
+        puc_valid_until: "2027-02-15",
+        hypothecation: "Closed",
+        financier: "Kotak Mahindra Prime (NOC verified)",
+        noc: "Available",
+      },
+      seller: {
+        name: "Arjun N. Mehta",
+        father_name: "Naveen Mehta",
+        phone: "9820123456",
+        alternate_phone: "9820123457",
+        email: "arjun.mehta@techcorp.io",
+        address: "#88, 5th Block, Koramangala",
+        city: "Bengaluru",
+        state: "Karnataka",
+        pincode: "560095",
+        id_type: "Aadhaar",
+        id_number: "XXXX-XXXX-9943",
+        pan_number: "AXCPM9012N",
+        is_dealer: false,
+        dealer_name: "",
+        gst_number: "",
+        dealer_address: "",
+      },
+      witnesses: [
+        {
+          name: "Kunal Bansal",
+          phone: "9820987654",
+          address: "#12, 1st Cross, HSR Layout Sector 4",
+          id_type: "Aadhaar",
+          id_number: "XXXX-XXXX-3341",
+        },
+        {
+          name: "Rohit Sen",
+          phone: "9820445566",
+          address: "#502, Prestige Ferns, Bellandur, Bengaluru",
+          id_type: "Driving Licence",
+          id_number: "KA01 20200009124",
+        },
+      ],
+      maintenance: {
+        services: [
+          { id: "lof", name: "Lube, Oil, and Filter (LOF)", price: "850", enabled: true },
+          { id: "filters", name: "Filter Replacements", price: "350", enabled: true },
+          { id: "brakes", name: "Brake Pad & Shoe Replacement", price: "650", enabled: true },
+          { id: "detailing_wash", name: "Showroom Detailing, Teflon Coating & Wash", price: "600", enabled: true },
+        ],
+        total_expense: "2450",
+        notes: "Full synthetic Shell Helix Ultra oil service, AC cabin filter replacement, and full showroom polish.",
+      },
+      buyer: {
+        name: "Siddharth V. Menon",
+        father_name: "Venugopal Menon",
+        phone: "9886099887",
+        alternate_phone: "9886099888",
+        email: "siddharth.menon@intel.com",
+        address: "Flat 1204, Rohan Jharoka 2, Bellandur Outer Ring Road",
+        city: "Bengaluru",
+        state: "Karnataka",
+        pincode: "560103",
+        id_type: "Aadhaar",
+        id_number: "XXXX-XXXX-7788",
+        pan_number: "BCMPM8821L",
+        is_dealer: false,
+        dealer_name: "",
+        gst_number: "",
+        dealer_address: "",
+      },
+      agent: {
+        name: "Shivakumar (Koramangala RTO)",
+        phone: "9448123456",
+        email: "shiva.rto.services@gmail.com",
+        task: "KA-01 Koramangala RTO Form 29/30 submission, hypothecation cancellation & RC smart card transfer",
+        total_amount: "6500",
+        amount_paid: "6500",
+        amount_balance: "0",
+      },
+      payments: {
+        purchase_price: "1480000",
+        selling_price: "1650000",
+        paid_to_seller: "1480000",
+        received_from_buyer: "1650000",
+        payment_method: "Bank Transfer",
+        payment_date: "2026-09-28",
+        transaction_reference: "RTGS-HDFC-9912048571",
+        notes: "Full settlement via RTGS. Vehicle delivered with warranty transfer & gate pass.",
+      },
+      photos: {
+        // Vehicle photo suite
+        "vehicle-1": createPhoto("vehicle-1", "Front 3/4 & Parametric Grille", "Hyundai Creta 1.5 Turbo · KA-01-MJ-8821", "car", "#ef4444", "4W CAR"),
+        "vehicle-2": createPhoto("vehicle-2", "Rear Profile & Connected LED", "Connected taillights & twin tip exhaust", "car", "#ef4444", "4W CAR"),
+        "vehicle-3": createPhoto("vehicle-3", "Left Profile & Diamond Alloys", "17-inch alloy wheels & roof rails intact", "car", "#ef4444", "4W CAR"),
+        "vehicle-4": createPhoto("vehicle-4", "Right Profile & Sunroof", "Panoramic sunroof & dual-tone roof", "car", "#ef4444", "4W CAR"),
+        "vehicle-5": createPhoto("vehicle-5", "Odometer: 14,200 km", "10.25-inch digital driver cluster certified", "odometer", "#10b981", "ODOMETER"),
+        "vehicle-6": createPhoto("vehicle-6", "Engine Bay Stamping", "G4LDNU98214 Turbo GDi Engine Block", "engine", "#6366f1", "ENGINE NO"),
+        "vehicle-7": createPhoto("vehicle-7", "Chassis VIN Plate", "MALC381CLPM098124 B-Pillar Stamped", "chassis", "#ec4899", "CHASSIS NO"),
+        "vehicle-8": createPhoto("vehicle-8", "RC Smartcard & Insurance", "Bajaj Allianz Zero Dep Policy Valid 2026", "id_card", "#06b6d4", "DOCUMENTS"),
+        // Seller identity suite
+        "seller-1": createPhoto("seller-1", "Seller Portrait", "Arjun N. Mehta (Verified)", "person", "#8b5cf6", "SELLER"),
+        "seller-signature": createPhoto("seller-signature", "Seller Digital Signature", "Arjun N. Mehta · Form 29/30 Cleared", "signature", "#f59e0b", "SIGNATURE"),
+        "seller-thumb": createPhoto("seller-thumb", "Seller Biometric Thumb", "Inked Left Thumb Impression", "thumb", "#3b82f6", "BIOMETRIC"),
+        "seller-2": createPhoto("seller-2", "Seller Aadhaar Card (Front)", "UIDAI Government of India", "id_card", "#10b981", "AADHAAR"),
+        "seller-3": createPhoto("seller-3", "Seller Aadhaar Card (Back)", "Address: 5th Block Koramangala", "id_card", "#10b981", "AADHAAR"),
+        "seller-4": createPhoto("seller-4", "Seller PAN Card", "Income Tax Dept · AXCPM9012N", "id_card", "#6366f1", "PAN CARD"),
+        "seller-5": createPhoto("seller-5", "Seller Driving Licence", "KA RTO Koramangala · Valid LMV", "id_card", "#06b6d4", "DRIVING LICENCE"),
+        "seller-8": createPhoto("seller-8", "Original RC Smartcard (Front)", "Government of Karnataka · KA-01-MJ-8821", "id_card", "#f97316", "RC CARD"),
+        "seller-9": createPhoto("seller-9", "Original RC Smartcard (Back)", "Hypothecation NOC Attached", "id_card", "#f97316", "RC CARD"),
+        "seller-11": createPhoto("seller-11", "Seller Car Transfer Deed", "Metro Motors Showroom Transfer Deed", "id_card", "#84cc16", "AGREEMENT"),
+        // Buyer identity suite
+        "buyer-1": createPhoto("buyer-1", "Buyer Portrait", "Siddharth V. Menon (Verified)", "person", "#06b6d4", "BUYER"),
+        "buyer-signature": createPhoto("buyer-signature", "Buyer Digital Signature", "Siddharth V. Menon · Bill of Sale", "signature", "#f59e0b", "SIGNATURE"),
+        "buyer-thumb": createPhoto("buyer-thumb", "Buyer Biometric Thumb", "UIDAI Biometric Stamp Valid", "thumb", "#3b82f6", "BIOMETRIC"),
+        "buyer-2": createPhoto("buyer-2", "Buyer Aadhaar Card (Front)", "UIDAI Government of India", "id_card", "#10b981", "AADHAAR"),
+        "buyer-3": createPhoto("buyer-3", "Buyer Aadhaar Card (Back)", "Address: Rohan Jharoka Bellandur", "id_card", "#10b981", "AADHAAR"),
+        "buyer-4": createPhoto("buyer-4", "Buyer PAN Card", "Income Tax Dept · BCMPM8821L", "id_card", "#6366f1", "PAN CARD"),
+        "buyer-5": createPhoto("buyer-5", "Buyer Driving Licence", "KA RTO HSR Layout · LMV Valid", "id_card", "#06b6d4", "DRIVING LICENCE"),
+        "buyer-11": createPhoto("buyer-11", "Buyer Purchase Agreement", "Metro Motors Showroom Delivery Note", "id_card", "#84cc16", "SALE BILL"),
+        // Witnesses
+        "witness-1-1": createPhoto("witness-1-1", "Seller Witness Photo", "Kunal Bansal", "person", "#f59e0b", "WITNESS 1"),
+        "witness-1-2": createPhoto("witness-1-2", "Witness 1 Signature", "Kunal Bansal Attestation", "signature", "#f59e0b", "SIGNATURE"),
+        "witness-1-signature": createPhoto("witness-1-signature", "Witness 1 Signature", "Kunal Bansal Attestation", "signature", "#f59e0b", "SIGNATURE"),
+        "witness-1-3": createPhoto("witness-1-3", "Witness 1 Thumb Impression", "Kunal Bansal Impression", "thumb", "#3b82f6", "BIOMETRIC"),
+        "witness-1-thumb": createPhoto("witness-1-thumb", "Witness 1 Thumb Impression", "Kunal Bansal Impression", "thumb", "#3b82f6", "BIOMETRIC"),
+        "witness-2-1": createPhoto("witness-2-1", "Buyer Witness Photo", "Rohit Sen", "person", "#10b981", "WITNESS 2"),
+        "witness-2-2": createPhoto("witness-2-2", "Witness 2 Signature", "Rohit Sen Attestation", "signature", "#10b981", "SIGNATURE"),
+        "witness-2-signature": createPhoto("witness-2-signature", "Witness 2 Signature", "Rohit Sen Attestation", "signature", "#10b981", "SIGNATURE"),
+        "witness-2-3": createPhoto("witness-2-3", "Witness 2 Thumb Impression", "Rohit Sen Impression", "thumb", "#3b82f6", "BIOMETRIC"),
+        "witness-2-thumb": createPhoto("witness-2-thumb", "Witness 2 Thumb Impression", "Rohit Sen Impression", "thumb", "#3b82f6", "BIOMETRIC"),
+      },
+      notes: "High value 4-wheeler car sale with substantial margin of ₹1,70,000. RC ownership transferred cleanly.",
+    },
+
+    // ═════════════════════════════════════════════════════════════════════════
+    // 4. Yamaha YZF R15 V4 Racing Blue (2 Wheeler with Gear) - In Stock
+    // ═════════════════════════════════════════════════════════════════════════
+    {
+      id: "deal-demo-yamaha-r15-v4",
+      kind: "deal",
+      schema_version: 1,
+      bill_number: "Bill-004",
+      status: "In Stock",
+      rc_status: "Pending",
+      commission: 20000,
+      created_at: new Date(Date.now() - 2 * 86400000).toISOString(),
+      updated_at: new Date(Date.now() - 1 * 86400000).toISOString(),
+      vehicle: {
+        vehicle_type: "2 Wheeler with Gear",
+        vehicle_name: "Yamaha YZF R15 V4 Racing Blue",
+        make: "Yamaha",
+        model: "YZF R15 V4",
+        variant: "Racing Blue Quickshifter Traction Control USD",
+        year: "2023",
+        color: "Racing Blue with Matte Grey",
+        vehicle_number: "KA-05-NL-6672",
+        registration_number: "KA05NL6672",
+        registration_date: "2023-06-18",
+        engine_number: "YMH155G449102",
+        chassis_number: "ME1RG5410PA098124",
+        engine_cc: "155",
+        fuel_type: "Petrol",
+        transmission: "Manual",
+        odometer: "9400",
+        ownership: "First Owner",
+        condition: "Excellent",
+        bought_date: "2026-09-22",
+        sold_date: "",
+        keys: "2",
+        service_history: "Showroom serviced at Orion Yamaha Koramangala. Variable Valve Actuation (VVA) checked, quickshifter calibrated.",
+        tax: "Lifetime",
+        tax_valid_until: "2038-06-17",
+        fitness: "Valid",
+        fitness_valid_until: "2038-06-17",
+        insurance: "Active",
+        insurance_policy: "ICICI-LOMBARD-R15-9042",
+        insurance_valid_until: "2027-06-15",
+        puc_valid_until: "2027-02-28",
+        hypothecation: "No",
+        financier: "",
+        noc: "Not Required",
+      },
+      seller: {
+        name: "Syed Farooq",
+        father_name: "Syed Ameer",
+        phone: "9880198273",
+        alternate_phone: "9880198274",
+        email: "farooq.syed@gmail.com",
+        address: "#71, Jayanagar 4th Block",
+        city: "Bengaluru",
+        state: "Karnataka",
+        pincode: "560011",
+        id_type: "Aadhaar",
+        id_number: "XXXX-XXXX-6612",
+        pan_number: "DFXPF4412E",
+        is_dealer: false,
+        dealer_name: "",
+        gst_number: "",
+        dealer_address: "",
+      },
+      witnesses: [
+        {
+          name: "Wasim Khan",
+          phone: "9880293847",
+          address: "#34, BTM Layout 1st Stage, Bengaluru",
+          id_type: "Aadhaar",
+          id_number: "XXXX-XXXX-9812",
+        },
+        {
+          name: "Gautam Rao",
+          phone: "9741283749",
+          address: "#99, Banashankari 2nd Stage, Bengaluru",
+          id_type: "Aadhaar",
+          id_number: "XXXX-XXXX-4491",
+        },
+      ],
+      maintenance: {
+        services: [
+          { id: "lof", name: "Lube, Oil, and Filter (LOF)", price: "850", enabled: true },
+          { id: "chain_sprocket", name: "Chain Sprocket & Drive Line Lubrication", price: "800", enabled: true },
+          { id: "detailing_wash", name: "Showroom Detailing, Teflon Coating & Wash", price: "600", enabled: true },
+        ],
+        total_expense: "2250",
+        notes: "Yamalube full synthetic oil change, O-ring chain degreased and lubed, body polished.",
+      },
+      buyer: {
+        name: "Chirag Hegde",
+        father_name: "Satish Hegde",
+        phone: "9741283746",
+        alternate_phone: "9741283747",
+        email: "chirag.hegde@techlabs.com",
+        address: "#202, Banashankari 3rd Stage, 7th Main",
+        city: "Bengaluru",
+        state: "Karnataka",
+        pincode: "560085",
+        id_type: "Aadhaar",
+        id_number: "XXXX-XXXX-1123",
+        pan_number: "EPMCH9921K",
+        is_dealer: false,
+        dealer_name: "",
+        gst_number: "",
+        dealer_address: "",
+      },
+      agent: {
+        name: "Manjunath (Jayanagar RTO Services)",
+        phone: "9449812345",
+        email: "manju.rto@rediffmail.com",
+        task: "KA-05 Jayanagar RTO transfer & tax endorsement to KA-51 Electronic City",
+        total_amount: "2800",
+        amount_paid: "1500",
+        amount_balance: "1300",
+      },
+      payments: {
+        purchase_price: "132000",
+        selling_price: "152000",
+        paid_to_seller: "132000",
+        received_from_buyer: "30000",
+        payment_method: "UPI",
+        payment_date: todayStr,
+        transaction_reference: "UPI-PAYTM-992147102",
+        notes: "Token advance ₹30,000 received today. Buyer collecting bike upon paying balance ₹1,22,000.",
+      },
+      photos: {
+        // Vehicle photo suite
+        "vehicle-1": createPhoto("vehicle-1", "Front Fairing & Bi-LED", "Yamaha YZF R15 V4 · KA-05-NL-6672", "bike_gear", "#3b82f6", "2W GEARED"),
+        "vehicle-2": createPhoto("vehicle-2", "Rear Tail Cowl & Plate", "LED tail light & aerodynamic tail section", "bike_gear", "#3b82f6", "2W GEARED"),
+        "vehicle-3": createPhoto("vehicle-3", "Left Fairing & USD Fork", "Golden upside down front forks intact", "bike_gear", "#3b82f6", "2W GEARED"),
+        "vehicle-4": createPhoto("vehicle-4", "Right Profile & Exhaust", "Racing Blue body decals & alloy wheel rims", "bike_gear", "#3b82f6", "2W GEARED"),
+        "vehicle-5": createPhoto("vehicle-5", "Odometer: 9,400 km", "Negative LCD screen with gear position indicator", "odometer", "#10b981", "ODOMETER"),
+        "vehicle-6": createPhoto("vehicle-6", "Engine Stamping", "YMH155G449102 VVA Liquid Cooled", "engine", "#6366f1", "ENGINE NO"),
+        "vehicle-7": createPhoto("vehicle-7", "Chassis VIN Plate", "ME1RG5410PA098124 Stamped Frame", "chassis", "#ec4899", "CHASSIS NO"),
+        "vehicle-8": createPhoto("vehicle-8", "RC Smartcard & Insurance", "ICICI Lombard Active Policy & Smart Card", "id_card", "#06b6d4", "DOCUMENTS"),
+        // Seller identity suite
+        "seller-1": createPhoto("seller-1", "Seller Portrait", "Syed Farooq (Verified)", "person", "#8b5cf6", "SELLER"),
+        "seller-signature": createPhoto("seller-signature", "Seller Digital Signature", "Syed Farooq · Ownership Release", "signature", "#f59e0b", "SIGNATURE"),
+        "seller-thumb": createPhoto("seller-thumb", "Seller Biometric Thumb", "Inked Left Thumb Impression", "thumb", "#3b82f6", "BIOMETRIC"),
+        "seller-2": createPhoto("seller-2", "Seller Aadhaar Card (Front)", "UIDAI Government of India", "id_card", "#10b981", "AADHAAR"),
+        "seller-3": createPhoto("seller-3", "Seller Aadhaar Card (Back)", "Address: Jayanagar 4th Block Bengaluru", "id_card", "#10b981", "AADHAAR"),
+        "seller-4": createPhoto("seller-4", "Seller PAN Card", "Income Tax Dept · DFXPF4412E", "id_card", "#6366f1", "PAN CARD"),
+        "seller-5": createPhoto("seller-5", "Seller Driving Licence", "KA RTO Jayanagar · MCWG Valid", "id_card", "#06b6d4", "DRIVING LICENCE"),
+        "seller-8": createPhoto("seller-8", "Original RC Smartcard (Front)", "KA-05-NL-6672 · India Yamaha Motor", "id_card", "#f97316", "RC CARD"),
+        "seller-9": createPhoto("seller-9", "Original RC Smartcard (Back)", "Lifetime Tax Paid · Commercial Clear", "id_card", "#f97316", "RC CARD"),
+        "seller-11": createPhoto("seller-11", "Seller Purchase Agreement", "Metro Motors Showroom Transfer Receipt", "id_card", "#84cc16", "AGREEMENT"),
+        // Buyer identity suite
+        "buyer-1": createPhoto("buyer-1", "Buyer Portrait", "Chirag Hegde (Verified)", "person", "#10b981", "BUYER"),
+        "buyer-signature": createPhoto("buyer-signature", "Buyer Digital Signature", "Chirag Hegde · Delivery Bill Signed", "signature", "#f59e0b", "SIGNATURE"),
+        "buyer-thumb": createPhoto("buyer-thumb", "Buyer Biometric Thumb", "UIDAI Biometric Stamp Valid", "thumb", "#3b82f6", "BIOMETRIC"),
+        "buyer-2": createPhoto("buyer-2", "Buyer Aadhaar Card (Front)", "UIDAI Government of India", "id_card", "#10b981", "AADHAAR"),
+        "buyer-3": createPhoto("buyer-3", "Buyer Aadhaar Card (Back)", "Address: Banashankari 3rd Stage Bengaluru", "id_card", "#10b981", "AADHAAR"),
+        "buyer-4": createPhoto("buyer-4", "Buyer PAN Card", "Income Tax Dept · EPMCH9921K", "id_card", "#6366f1", "PAN CARD"),
+        "buyer-5": createPhoto("buyer-5", "Buyer Driving Licence", "KA RTO Banashankari · MCWG", "id_card", "#06b6d4", "DRIVING LICENCE"),
+        "buyer-11": createPhoto("buyer-11", "Buyer Sale Delivery Note", "Metro Motors Official Booking Invoice", "id_card", "#84cc16", "SALE BILL"),
+        // Witnesses
+        "witness-1-1": createPhoto("witness-1-1", "Seller Witness Photo", "Wasim Khan", "person", "#f59e0b", "WITNESS 1"),
+        "witness-1-2": createPhoto("witness-1-2", "Witness 1 Signature", "Wasim Khan Attestation", "signature", "#f59e0b", "SIGNATURE"),
+        "witness-1-signature": createPhoto("witness-1-signature", "Witness 1 Signature", "Wasim Khan Attestation", "signature", "#f59e0b", "SIGNATURE"),
+        "witness-1-3": createPhoto("witness-1-3", "Witness 1 Thumb Impression", "Wasim Khan Inked Impression", "thumb", "#3b82f6", "BIOMETRIC"),
+        "witness-1-thumb": createPhoto("witness-1-thumb", "Witness 1 Thumb Impression", "Wasim Khan Inked Impression", "thumb", "#3b82f6", "BIOMETRIC"),
+        "witness-2-1": createPhoto("witness-2-1", "Buyer Witness Photo", "Gautam Rao", "person", "#06b6d4", "WITNESS 2"),
+        "witness-2-2": createPhoto("witness-2-2", "Witness 2 Signature", "Gautam Rao Attestation", "signature", "#06b6d4", "SIGNATURE"),
+        "witness-2-signature": createPhoto("witness-2-signature", "Witness 2 Signature", "Gautam Rao Attestation", "signature", "#06b6d4", "SIGNATURE"),
+        "witness-2-3": createPhoto("witness-2-3", "Witness 2 Thumb Impression", "Gautam Rao Inked Impression", "thumb", "#3b82f6", "BIOMETRIC"),
+        "witness-2-thumb": createPhoto("witness-2-thumb", "Witness 2 Thumb Impression", "Gautam Rao Inked Impression", "thumb", "#3b82f6", "BIOMETRIC"),
+      },
+      notes: "Track-inspired sports commuter with quickshifter. High demand unit with token advance received.",
+    },
+
+    // ═════════════════════════════════════════════════════════════════════════
+    // 5. TVS Jupiter 125 Disc SmartXonnect (2 Wheeler without Gear) - Sold
+    // ═════════════════════════════════════════════════════════════════════════
+    {
+      id: "deal-demo-tvs-jupiter-125",
       kind: "deal",
       schema_version: 1,
       bill_number: "Bill-005",
-      status: "In Stock",
-      rc_status: "Pending",
-      commission: 17000,
-      created_at: nowIso, // Today's Deal!
-      updated_at: nowIso,
+      status: "Sold",
+      rc_status: "Transferred",
+      commission: 11000,
+      created_at: new Date(Date.now() - 5 * 86400000).toISOString(),
+      updated_at: new Date(Date.now() - 4 * 86400000).toISOString(),
       vehicle: {
-        vehicle_name: "TVS Apache RTR 200 4V Dual ABS",
+        vehicle_type: "2 Wheeler without Gear",
+        vehicle_name: "TVS Jupiter 125 Disc SmartXonnect",
         make: "TVS",
-        model: "Apache RTR 200 4V",
-        variant: "Ride Modes + SmartXonnect",
-        year: "2023",
-        color: "Glossy Black with Race Red",
-        vehicle_number: "KA-03-MR-1904",
-        registration_number: "KA03MR1904",
-        registration_date: "2023-04-10",
-        engine_number: "TVS200E981249",
-        chassis_number: "MD625BF84P109812",
-        engine_cc: "197",
+        model: "Jupiter 125",
+        variant: "Disc SmartXonnect Bluetooth TFT Navigation",
+        year: "2024",
+        color: "Titanium Grey Metallic",
+        vehicle_number: "KA-51-EF-2020",
+        registration_number: "KA51EF2020",
+        registration_date: "2024-01-10",
+        engine_number: "TVS125G981249",
+        chassis_number: "MD625BF84R109812",
+        engine_cc: "124",
         fuel_type: "Petrol",
-        transmission: "Manual",
-        odometer: "9800",
+        transmission: "Automatic",
+        odometer: "3850",
         ownership: "First Owner",
         condition: "Excellent",
-        bought_date: todayStr,
-        sold_date: "",
+        bought_date: "2026-09-14",
+        sold_date: "2026-09-29",
         keys: "2",
-        service_history: "Maintained at Tristar TVS Domlur. Slipper clutch and Showa suspension verified.",
+        service_history: "Maintained at Tristar TVS Electronic City. Under-seat dual helmet storage clean, Bluetooth app pairing active.",
         tax: "Lifetime",
-        tax_valid_until: "2038-04-09",
+        tax_valid_until: "2039-01-09",
         fitness: "Valid",
-        fitness_valid_until: "2038-04-09",
+        fitness_valid_until: "2039-01-09",
         insurance: "Active",
-        insurance_policy: "GO-DIGIT-TW-881249",
-        insurance_valid_until: "2027-04-08",
-        puc_valid_until: "2026-11-20",
+        insurance_policy: "GO-DIGIT-TW-9912048",
+        insurance_valid_until: "2027-01-08",
+        puc_valid_until: "2026-12-15",
         hypothecation: "No",
         financier: "",
         noc: "Not Required",
@@ -754,10 +1053,18 @@ export const getDemoDeals = () => {
           name: "Praveen Reddy",
           phone: "9739019284",
           address: "Electronic City Phase 1, Bengaluru",
-          id_type: "Aadhaar",
-          id_number: "XXXX-XXXX-7721",
+          id_type: "Driving Licence",
+          id_number: "KA51 20210008451",
         },
       ],
+      maintenance: {
+        services: [
+          { id: "lof", name: "Lube, Oil, and Filter (LOF)", price: "850", enabled: true },
+          { id: "detailing_wash", name: "Showroom Detailing, Teflon Coating & Wash", price: "600", enabled: true },
+        ],
+        total_expense: "1450",
+        notes: "TVS Tru4 synthetic oil service and showroom deep detailing completed.",
+      },
       buyer: {
         name: "Naveen Reddy",
         father_name: "Pratap Reddy",
@@ -777,267 +1084,67 @@ export const getDemoDeals = () => {
         dealer_address: "",
       },
       agent: {
-        name: "Ramesh Babu (RTO Consultant)",
+        name: "Ramesh Babu (Electronic City RTO)",
         phone: "9886012345",
         email: "ramesh.rto@gmail.com",
-        task: "KA-03 to KA-51 RTO transfer & address endorsement",
+        task: "KA-51 Electronic City RTO transfer, smart card printing & dispatch",
         total_amount: "2200",
-        amount_paid: "1000",
-        amount_balance: "1200",
-      },
-      payments: {
-        purchase_price: "98000",
-        selling_price: "115000",
-        paid_to_seller: "98000",
-        received_from_buyer: "30000",
-        payment_method: "UPI",
-        payment_date: todayStr,
-        transaction_reference: "UPI-GPAY-991204812",
-        notes: "Bought today. Booked by Naveen Reddy within 3 hours with â‚¹30,000 advance. Delivery scheduled for Saturday.",
-      },
-      photos: {
-        "vehicle-1": createPhoto("vehicle-1", "Headlamp & Visor", "TVS Apache RTR 200 Â· KA-03-MR-1904", "ðŸï¸", "#ef4444"),
-        "vehicle-3": createPhoto("vehicle-3", "Side Profile & Tank", "Race Tuned Fuel Injection (RT-Fi)", "ðŸï¸", "#ef4444"),
-        "vehicle-5": createPhoto("vehicle-5", "Odometer: 9,800 km", "Digital speedometer with top speed recorder", "â±ï¸", "#3b82f6"),
-        "seller-1": createPhoto("seller-1", "Seller Portrait", "Harish Gowda", "ðŸ‘¤", "#8b5cf6"),
-        "buyer-1": createPhoto("buyer-1", "Buyer Portrait", "Naveen Reddy", "ðŸ‘¤", "#10b981"),
-      },
-      notes: "Sporty 200cc commuter with race modes. Verified fast moving stock.",
-    },
-
-    // â”€â”€ 6. Kawasaki Ninja 300 (Sold, RC Completed) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-    {
-      id: "deal-demo-kawasaki-ninja-300",
-      kind: "deal",
-      schema_version: 1,
-      bill_number: "Bill-006",
-      status: "Sold",
-      rc_status: "Completed",
-      commission: 32000,
-      created_at: new Date(Date.now() - 15 * 86400000).toISOString(),
-      updated_at: new Date(Date.now() - 14 * 86400000).toISOString(),
-      vehicle: {
-        vehicle_name: "Kawasaki Ninja 300 Lime Green",
-        make: "Kawasaki",
-        model: "Ninja 300",
-        variant: "ABS Special Edition Twin Cylinder",
-        year: "2022",
-        color: "Lime Green / Ebony",
-        vehicle_number: "KA-51-EF-2020",
-        registration_number: "KA51EF2020",
-        registration_date: "2022-02-14",
-        engine_number: "EX300AEA98124",
-        chassis_number: "JKBEX300APA091244",
-        engine_cc: "296",
-        fuel_type: "Petrol",
-        transmission: "Manual",
-        odometer: "7600",
-        ownership: "First Owner",
-        condition: "Excellent",
-        bought_date: "2026-08-20",
-        sold_date: "2026-09-18",
-        keys: "2",
-        service_history: "Maintained exclusively at Rideventur Kawasaki Bangalore. Zero track use, garage parked under cover.",
-        tax: "Lifetime",
-        tax_valid_until: "2037-02-13",
-        fitness: "Valid",
-        fitness_valid_until: "2037-02-13",
-        insurance: "Active",
-        insurance_policy: "NEW-INDIA-KAW-9912",
-        insurance_valid_until: "2027-02-10",
-        puc_valid_until: "2026-12-30",
-        hypothecation: "Closed",
-        financier: "Kotak Mahindra Prime",
-        noc: "Available",
-      },
-      seller: {
-        name: "Rahul S. Kulkarni",
-        father_name: "Shripad Kulkarni",
-        phone: "9845012399",
-        alternate_phone: "9845112399",
-        email: "rahul.kulkarni@gmail.com",
-        address: "#204, Brigade Millennium, JP Nagar 7th Phase",
-        city: "Bengaluru",
-        state: "Karnataka",
-        pincode: "560078",
-        id_type: "Aadhaar",
-        id_number: "XXXX-XXXX-1928",
-        pan_number: "AKLPK9012R",
-        is_dealer: false,
-        dealer_name: "",
-        gst_number: "",
-        dealer_address: "",
-      },
-      witnesses: [
-        {
-          name: "Manoj Joshi",
-          phone: "9845112399",
-          address: "#12, Bannerghatta Road, Bengaluru",
-          id_type: "Passport",
-          id_number: "V9812456",
-        },
-        {
-          name: "Sameer Malhotra",
-          phone: "9988776654",
-          address: "#88, EPIP Zone, Whitefield, Bengaluru",
-          id_type: "Aadhaar",
-          id_number: "XXXX-XXXX-3321",
-        },
-      ],
-      buyer: {
-        name: "Tanmay Bhatia",
-        father_name: "Sunil Bhatia",
-        phone: "9988776655",
-        alternate_phone: "9988776654",
-        email: "tanmay.bhatia@startuphq.com",
-        address: "Villa 14, Palm Meadows, Whitefield",
-        city: "Bengaluru",
-        state: "Karnataka",
-        pincode: "560066",
-        id_type: "Aadhaar",
-        id_number: "XXXX-XXXX-6677",
-        pan_number: "BTPTB1122S",
-        is_dealer: false,
-        dealer_name: "",
-        gst_number: "",
-        dealer_address: "",
-      },
-      agent: {
-        name: "Ramesh Babu",
-        phone: "9886012345",
-        email: "ramesh.rto@gmail.com",
-        task: "RC transfer KA-51 to KA-53 & Form 28/29/30 submission",
-        total_amount: "4500",
-        amount_paid: "4500",
+        amount_paid: "2200",
         amount_balance: "0",
       },
       payments: {
-        purchase_price: "260000",
-        selling_price: "292000",
-        paid_to_seller: "260000",
-        received_from_buyer: "292000",
-        payment_method: "Bank Transfer",
-        payment_date: "2026-09-18",
-        transaction_reference: "RTGS-KOTAK-9812456",
-        notes: "Full payment via RTGS. High value twin-cylinder motorcycle handover completed smoothly.",
+        purchase_price: "68000",
+        selling_price: "79000",
+        paid_to_seller: "68000",
+        received_from_buyer: "79000",
+        payment_method: "UPI",
+        payment_date: "2026-09-29",
+        transaction_reference: "UPI-GPAY-991204812",
+        notes: "Full payment ₹79,000 cleared via Google Pay UPI. Official delivery handover completed.",
       },
       photos: {
-        "vehicle-1": createPhoto("vehicle-1", "Front Fairing", "Kawasaki Ninja 300 Â· KA-51-EF-2020", "ðŸï¸", "#22c55e"),
-        "vehicle-4": createPhoto("vehicle-4", "Twin-Cylinder Engine & Exhaust", "DOHC 8-valve liquid cooled parallel twin", "ðŸï¸", "#22c55e"),
-        "seller-1": createPhoto("seller-1", "Seller Portrait", "Rahul S. Kulkarni", "ðŸ‘¤", "#8b5cf6"),
-        "buyer-1": createPhoto("buyer-1", "Buyer Portrait", "Tanmay Bhatia", "ðŸ‘¤", "#10b981"),
+        // Vehicle photo suite
+        "vehicle-1": createPhoto("vehicle-1", "Front Apron & LED DRL", "TVS Jupiter 125 · KA-51-EF-2020", "scooter", "#10b981", "2W AUTO"),
+        "vehicle-2": createPhoto("vehicle-2", "Rear & Tail Cluster", "Signature LED light guide & number plate intact", "scooter", "#10b981", "2W AUTO"),
+        "vehicle-3": createPhoto("vehicle-3", "Front Fuel Fill & Legroom", "External front fuel filler & front glove box", "scooter", "#10b981", "2W AUTO"),
+        "vehicle-4": createPhoto("vehicle-4", "Disc Brake & Diamond Wheels", "Front petal disc brake & alloy rims", "scooter", "#10b981", "2W AUTO"),
+        "vehicle-5": createPhoto("vehicle-5", "Odometer: 3,850 km", "Color TFT SmartXonnect screen verified", "odometer", "#10b981", "ODOMETER"),
+        "vehicle-6": createPhoto("vehicle-6", "Engine Stamping", "TVS125G981249 ETFi Match", "engine", "#6366f1", "ENGINE NO"),
+        "vehicle-7": createPhoto("vehicle-7", "Chassis VIN Number", "MD625BF84R109812 Stamped Chassis", "chassis", "#ec4899", "CHASSIS NO"),
+        "vehicle-8": createPhoto("vehicle-8", "RC Smartcard & Insurance", "Digit Insurance Policy Valid 2027", "id_card", "#3b82f6", "DOCUMENTS"),
+        // Seller identity suite
+        "seller-1": createPhoto("seller-1", "Seller Portrait", "Harish Gowda (Verified)", "person", "#8b5cf6", "SELLER"),
+        "seller-signature": createPhoto("seller-signature", "Seller Digital Signature", "Harish Gowda · Form 29/30 Cleared", "signature", "#f59e0b", "SIGNATURE"),
+        "seller-thumb": createPhoto("seller-thumb", "Seller Biometric Thumb", "Inked Left Thumb Impression", "thumb", "#3b82f6", "BIOMETRIC"),
+        "seller-2": createPhoto("seller-2", "Seller Aadhaar Card (Front)", "UIDAI Government of India", "id_card", "#10b981", "AADHAAR"),
+        "seller-3": createPhoto("seller-3", "Seller Aadhaar Card (Back)", "Address: Nagarbhavi 2nd Stage Bengaluru", "id_card", "#10b981", "AADHAAR"),
+        "seller-4": createPhoto("seller-4", "Seller PAN Card", "Income Tax Dept · CGHPS9921D", "id_card", "#6366f1", "PAN CARD"),
+        "seller-5": createPhoto("seller-5", "Seller Driving Licence", "KA RTO Nagarbhavi · MCWG/LMV", "id_card", "#06b6d4", "DRIVING LICENCE"),
+        "seller-8": createPhoto("seller-8", "Original RC Smartcard (Front)", "KA-51-EF-2020 · TVS Motor Company", "id_card", "#f97316", "RC CARD"),
+        "seller-9": createPhoto("seller-9", "Original RC Smartcard (Back)", "First Owner · Lifetime Road Tax Paid", "id_card", "#f97316", "RC CARD"),
+        "seller-11": createPhoto("seller-11", "Seller Purchase Agreement", "Metro Motors Showroom Acquisition Deed", "id_card", "#84cc16", "AGREEMENT"),
+        // Buyer identity suite
+        "buyer-1": createPhoto("buyer-1", "Buyer Portrait", "Naveen Reddy (Verified)", "person", "#10b981", "BUYER"),
+        "buyer-signature": createPhoto("buyer-signature", "Buyer Digital Signature", "Naveen Reddy · Final Delivery Deed", "signature", "#f59e0b", "SIGNATURE"),
+        "buyer-thumb": createPhoto("buyer-thumb", "Buyer Biometric Thumb", "UIDAI Biometric Stamp Valid", "thumb", "#3b82f6", "BIOMETRIC"),
+        "buyer-2": createPhoto("buyer-2", "Buyer Aadhaar Card (Front)", "UIDAI Government of India", "id_card", "#10b981", "AADHAAR"),
+        "buyer-3": createPhoto("buyer-3", "Buyer Aadhaar Card (Back)", "Address: Electronic City Phase 1 Bengaluru", "id_card", "#10b981", "AADHAAR"),
+        "buyer-4": createPhoto("buyer-4", "Buyer PAN Card", "Income Tax Dept · DKNPR8812M", "id_card", "#6366f1", "PAN CARD"),
+        "buyer-5": createPhoto("buyer-5", "Buyer Driving Licence", "KA RTO Electronic City · MCWOG", "id_card", "#06b6d4", "DRIVING LICENCE"),
+        "buyer-11": createPhoto("buyer-11", "Buyer Vehicle Bill", "Metro Motors Official Gate Pass & Invoice", "id_card", "#84cc16", "SALE BILL"),
+        // Witnesses
+        "witness-1-1": createPhoto("witness-1-1", "Seller Witness Photo", "Kiran Gowda", "person", "#f59e0b", "WITNESS 1"),
+        "witness-1-2": createPhoto("witness-1-2", "Witness 1 Signature", "Kiran Gowda Attestation", "signature", "#f59e0b", "SIGNATURE"),
+        "witness-1-signature": createPhoto("witness-1-signature", "Witness 1 Signature", "Kiran Gowda Attestation", "signature", "#f59e0b", "SIGNATURE"),
+        "witness-1-3": createPhoto("witness-1-3", "Witness 1 Thumb Impression", "Kiran Gowda Inked Impression", "thumb", "#3b82f6", "BIOMETRIC"),
+        "witness-1-thumb": createPhoto("witness-1-thumb", "Witness 1 Thumb Impression", "Kiran Gowda Inked Impression", "thumb", "#3b82f6", "BIOMETRIC"),
+        "witness-2-1": createPhoto("witness-2-1", "Buyer Witness Photo", "Praveen Reddy", "person", "#ec4899", "WITNESS 2"),
+        "witness-2-2": createPhoto("witness-2-2", "Witness 2 Signature", "Praveen Reddy Attestation", "signature", "#ec4899", "SIGNATURE"),
+        "witness-2-signature": createPhoto("witness-2-signature", "Witness 2 Signature", "Praveen Reddy Attestation", "signature", "#ec4899", "SIGNATURE"),
+        "witness-2-3": createPhoto("witness-2-3", "Witness 2 Thumb Impression", "Praveen Reddy Inked Impression", "thumb", "#3b82f6", "BIOMETRIC"),
+        "witness-2-thumb": createPhoto("witness-2-thumb", "Witness 2 Thumb Impression", "Praveen Reddy Inked Impression", "thumb", "#3b82f6", "BIOMETRIC"),
       },
-      notes: "Flagship super-sport sale. High gross margin of â‚¹32,000.",
-    },
-
-    // â”€â”€ 7. Hero Splendor Plus XTEC (In Stock, Details Pending) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-    {
-      id: "deal-demo-hero-splendor-xtec",
-      kind: "deal",
-      schema_version: 1,
-      bill_number: "Bill-007",
-      status: "In Stock",
-      rc_status: "Pending",
-      commission: 9000,
-      created_at: new Date(Date.now() - 11 * 86400000).toISOString(),
-      updated_at: new Date(Date.now() - 10 * 86400000).toISOString(),
-      vehicle: {
-        vehicle_name: "Hero Splendor Plus XTEC Black Canvas",
-        make: "Hero",
-        model: "Splendor Plus",
-        variant: "XTEC i3S",
-        year: "2021",
-        color: "Black Canvas",
-        vehicle_number: "", // Intentionally pending to test 'Details Pending' filter
-        registration_number: "",
-        registration_date: "2021-08-14",
-        engine_number: "HA10EJ88124",
-        chassis_number: "MBLHA10A0M981240",
-        engine_cc: "97",
-        fuel_type: "Petrol",
-        transmission: "Manual",
-        odometer: "22400",
-        ownership: "First Owner",
-        condition: "Good",
-        bought_date: "2026-09-22",
-        sold_date: "",
-        keys: "1",
-        service_history: "Local authorized Hero service. Clean engine, fresh oil.",
-        tax: "Lifetime",
-        tax_valid_until: "2036-08-13",
-        fitness: "Valid",
-        fitness_valid_until: "2036-08-13",
-        insurance: "Active",
-        insurance_policy: "HDFC-ERGO-SPL-901",
-        insurance_valid_until: "2026-11-15",
-        puc_valid_until: "2026-11-20",
-        hypothecation: "No",
-        financier: "",
-        noc: "Not Required",
-      },
-      seller: {
-        name: "Gopal Krishna",
-        father_name: "Anjaneya Murthy",
-        phone: "9845998877",
-        alternate_phone: "",
-        email: "gopal.krishna@kptcl.gov.in",
-        address: "#102, KPTCL Quarters, Anand Rao Circle",
-        city: "Bengaluru",
-        state: "Karnataka",
-        pincode: "560009",
-        id_type: "Aadhaar",
-        id_number: "XXXX-XXXX-9911",
-        pan_number: "AFPGK8812Z",
-        is_dealer: false,
-        dealer_name: "",
-        gst_number: "",
-        dealer_address: "",
-      },
-      witnesses: [
-        { name: "", phone: "", address: "", id_type: "Aadhaar", id_number: "" },
-        { name: "", phone: "", address: "", id_type: "Aadhaar", id_number: "" },
-      ],
-      buyer: {
-        name: "",
-        father_name: "",
-        phone: "",
-        alternate_phone: "",
-        email: "",
-        address: "",
-        city: "",
-        state: "Karnataka",
-        pincode: "",
-        id_type: "Aadhaar",
-        id_number: "",
-        pan_number: "",
-        is_dealer: false,
-        dealer_name: "",
-        gst_number: "",
-        dealer_address: "",
-      },
-      agent: {
-        name: "",
-        phone: "",
-        email: "",
-        task: "",
-        total_amount: "",
-        amount_paid: "",
-        amount_balance: "",
-      },
-      payments: {
-        purchase_price: "42000",
-        selling_price: "51000",
-        paid_to_seller: "42000",
-        received_from_buyer: "0",
-        payment_method: "Cash",
-        payment_date: "2026-09-22",
-        transaction_reference: "CASH-SPL-01",
-        notes: "Advance purchase from owner. Smart card physical copy awaited from RTO duplicate application.",
-      },
-      photos: {
-        "vehicle-1": createPhoto("vehicle-1", "Front Angle", "Hero Splendor Plus XTEC", "ðŸï¸", "#374151"),
-      },
-      notes: "High mileage commuter. Excellent resale liquidity once RC plate details are verified.",
+      notes: "Feature-packed 125cc family scooter with Bluetooth turn-by-turn navigation. Smooth handover with zero pending tasks.",
     },
   ];
 };

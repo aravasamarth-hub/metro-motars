@@ -33,12 +33,23 @@ export const browserDealAdapter = {
     const request = store.getAll();
     request.onsuccess = () => {
       let deals = request.result.filter(row => row.kind === "deal");
-      // Ensure the complete text-only demo deal with no photos is always seeded
-      const hasTextDemo = deals.some(d => d.id === "deal-demo-hunter-350-no-photos");
-      if (!hasTextDemo && !localStorage.getItem("mm_demo_cleared")) {
-        const textDemo = getTextOnlyDemoDeal();
-        store.put(textDemo);
-        deals.push(textDemo);
+      // Auto-seed the 5 complete demo deals with photos if the store has fewer than 5 deals
+      if (deals.length < 5 && !localStorage.getItem("mm_demo_cleared")) {
+        const demoDeals = getDemoDeals();
+        for (const demoItem of demoDeals) {
+          if (!deals.some(d => d.id === demoItem.id || d.bill_number === demoItem.bill_number)) {
+            store.put(demoItem);
+            deals.push(demoItem);
+          }
+        }
+        const sequenceId = `sequence:${prefix()}`;
+        const seqReq = store.get(sequenceId);
+        seqReq.onsuccess = () => {
+          const currentCount = seqReq.result?.count || 0;
+          if (currentCount < deals.length) {
+            store.put({ id: sequenceId, count: deals.length });
+          }
+        };
       }
       done(deals.sort((a, b) => b.created_at.localeCompare(a.created_at)));
     };
