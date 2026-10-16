@@ -2606,6 +2606,26 @@
   width: 100%;
 }
 
+.vehicle-hud-model-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.vehicle-hud-model-row .vehicle-hud-model-input {
+  flex: 1 1 260px;
+  min-width: 200px;
+  max-width: 480px;
+}
+
+.hud-category-pill {
+  flex: 0 0 auto;
+  min-width: 220px;
+  padding: 7px 12px;
+}
+
 .vehicle-hud-model-input {
   font-size: 22px;
   font-weight: 800;

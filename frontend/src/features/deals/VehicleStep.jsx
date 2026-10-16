@@ -1,4 +1,4 @@
-import { Car, Gauge, Fuel, ShieldCheck, Cog, Award, Sparkles, ChevronDown, Edit3 } from "lucide-react";
+import { Car, Gauge, Fuel, ShieldCheck, Cog, Award, ChevronDown, Edit3 } from "lucide-react";
 import { FieldGrid } from "./DealField";
 import { vehicleGroups } from "./fieldConfig";
 import { PhotoSlots } from "./PhotoSlots";
@@ -37,41 +37,6 @@ export const VehicleStep = ({ deal, update, updateSection, setPhoto, errors }) =
 
   return (
     <div className="vehicle-step-container" data-testid="vehicle-step-container">
-      {/* 1-Click Vehicle Segment / Category Selector */}
-      <div className="vehicle-category-selector" data-testid="vehicle-category-selector">
-        <div className="chips-group-header flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2">
-            <Sparkles size={14} className="text-amber-400" />
-            <span className="text-xs font-bold uppercase tracking-wider text-amber-300">
-              {t("field.vehicle_type", "Vehicle Category / Segment")}
-            </span>
-          </div>
-          <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30">
-            {getCategoryIcon(currentCategory)} {currentCategory}
-          </span>
-        </div>
-        <div className="vehicle-category-grid">
-          {VEHICLE_CATEGORIES.map((cat) => {
-            const isSelected = currentCategory === cat.label;
-            return (
-              <button
-                key={cat.id}
-                type="button"
-                className={`category-select-card ${isSelected ? "active" : ""}`}
-                onClick={() => updateSection("vehicle", "vehicle_type", cat.label)}
-                data-testid={`category-btn-${cat.id}`}
-              >
-                <span className="cat-card-icon">{cat.icon}</span>
-                <span className="cat-card-name">
-                  {t(`type.${cat.id.replace(/-/g, "_")}`, cat.label)}
-                </span>
-                {isSelected && <span className="cat-card-active-dot" />}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
       {/* Live Automotive Specification HUD */}
       <div className="vehicle-hud-container" data-testid="vehicle-hud-card">
         <div className="vehicle-hud-card">
@@ -84,7 +49,7 @@ export const VehicleStep = ({ deal, update, updateSection, setPhoto, errors }) =
                   <Edit3 size={10} /> Live Edit
                 </span>
               </div>
-              <div className="vehicle-hud-model-wrap">
+              <div className="vehicle-hud-model-row">
                 <input
                   type="text"
                   className="vehicle-hud-model-input"
@@ -94,6 +59,31 @@ export const VehicleStep = ({ deal, update, updateSection, setPhoto, errors }) =
                   placeholder={vehicleDisplayName || "Enter Vehicle Make & Model..."}
                   title="Click to edit vehicle name / model directly"
                 />
+
+                {/* Category selector beside the name styled like fuel */}
+                <div className="hud-metric-pill editable hud-category-pill" title="Click to change Vehicle Category">
+                  <div className="hud-metric-icon">
+                    <span className="text-base leading-none">{getCategoryIcon(currentCategory)}</span>
+                  </div>
+                  <div className="hud-metric-details">
+                    <span className="hud-metric-label">{t("field.vehicle_type", "Vehicle Category")}</span>
+                    <div className="hud-metric-val-wrap">
+                      <select
+                        className="hud-metric-select"
+                        data-testid="vehicle-hud-category-select"
+                        value={currentCategory}
+                        onChange={(e) => updateSection("vehicle", "vehicle_type", e.target.value)}
+                      >
+                        {VEHICLE_CATEGORIES.map((cat) => (
+                          <option key={cat.id} value={cat.label}>
+                            {cat.icon} {t(`type.${cat.id.replace(/-/g, "_")}`, cat.label)}
+                          </option>
+                        ))}
+                      </select>
+                      <ChevronDown size={11} className="hud-select-chevron" />
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
 
