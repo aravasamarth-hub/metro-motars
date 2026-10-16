@@ -50,11 +50,6 @@ export const VEHICLE_CATEGORIES = [
   { id: "2-wheeler-with-gear", label: "2 Wheeler with Gear", shortLabel: "2W Geared", icon: "🏍️", badge: "2W Geared" },
   { id: "2-wheeler-without-gear", label: "2 Wheeler without Gear", shortLabel: "2W Auto", icon: "🛵", badge: "2W Auto" },
   { id: "4-wheeler-car", label: "4 Wheeler Car", shortLabel: "Car", icon: "🚗", badge: "Car" },
-  { id: "bus", label: "Bus", shortLabel: "Bus", icon: "🚌", badge: "Bus" },
-  { id: "truck", label: "Truck", shortLabel: "Truck", icon: "🚛", badge: "Truck" },
-  { id: "auto-rickshaws", label: "Auto Rickshaws", shortLabel: "Auto", icon: "🛺", badge: "Auto" },
-  { id: "e-rickshaws", label: "E-Rickshaws", shortLabel: "E-Rickshaw", icon: "⚡🛺", badge: "E-Rickshaw" },
-  { id: "tractors", label: "Tractors", shortLabel: "Tractor", icon: "🚜", badge: "Tractor" },
 ];
 
 const person = () => ({ name: "", phone: "", alternate_phone: "", father_name: "", email: "", address: "", city: "", state: "Karnataka", pincode: "", id_type: "Aadhaar", id_number: "", pan_number: "", is_dealer: false, dealer_name: "", gst_number: "", dealer_address: "" });

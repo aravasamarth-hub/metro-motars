@@ -652,11 +652,6 @@ export default function BillModal({
                         <option value="2 Wheeler with Gear">🏍️ 2 Wheeler with Gear</option>
                         <option value="2 Wheeler without Gear">🛵 2 Wheeler without Gear</option>
                         <option value="4 Wheeler Car">🚗 4 Wheeler Car</option>
-                        <option value="Bus">🚌 Bus</option>
-                        <option value="Truck">🚛 Truck</option>
-                        <option value="Auto Rickshaws">🛺 Auto Rickshaws</option>
-                        <option value="E-Rickshaws">⚡🛺 E-Rickshaws</option>
-                        <option value="Tractors">🚜 Tractors</option>
                       </select>
                     </div>
 

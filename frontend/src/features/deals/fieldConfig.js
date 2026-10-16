@@ -5,11 +5,6 @@ export const vehicleCategoriesList = [
   "2 Wheeler with Gear",
   "2 Wheeler without Gear",
   "4 Wheeler Car",
-  "Bus",
-  "Truck",
-  "Auto Rickshaws",
-  "E-Rickshaws",
-  "Tractors",
 ];
 
 export const vehicleGroups = [

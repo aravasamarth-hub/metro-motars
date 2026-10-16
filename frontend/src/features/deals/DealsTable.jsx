@@ -10,11 +10,6 @@ const getCategoryIcon = (type) => {
     case "2 Wheeler with Gear": return "🏍️";
     case "2 Wheeler without Gear": return "🛵";
     case "4 Wheeler Car": return "🚗";
-    case "Bus": return "🚌";
-    case "Truck": return "🚛";
-    case "Auto Rickshaws": return "🛺";
-    case "E-Rickshaws": return "⚡🛺";
-    case "Tractors": return "🚜";
     default: return "🚗";
   }
 };

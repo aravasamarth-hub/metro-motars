@@ -15,11 +15,6 @@ const SEGMENT_DATA: SegmentInventory[] = [
   { name: "2W Geared", icon: "🏍️", count: 7, avgDaysToSell: 5, color: "#f59e0b" },
   { name: "2W Auto", icon: "🛵", count: 2, avgDaysToSell: 4, color: "#10b981" },
   { name: "4W Car", icon: "🚗", count: 2, avgDaysToSell: 9, color: "#38bdf8" },
-  { name: "Bus", icon: "🚌", count: 1, avgDaysToSell: 14, color: "#818cf8" },
-  { name: "Truck", icon: "🚛", count: 1, avgDaysToSell: 12, color: "#ef4444" },
-  { name: "Auto", icon: "🛺", count: 1, avgDaysToSell: 6, color: "#eab308" },
-  { name: "E-Rickshaw", icon: "⚡🛺", count: 1, avgDaysToSell: 4, color: "#06b6d4" },
-  { name: "Tractor", icon: "🚜", count: 1, avgDaysToSell: 8, color: "#dc2626" },
 ];
 
 const BRAND_DATA: SegmentInventory[] = [
@@ -50,7 +45,7 @@ export function InventoryDistributionBarChart() {
           </div>
           <CardDescription className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
             {viewMode === "segment"
-              ? "Turnaround and inventory volume across all 8 commercial & private segments"
+              ? "Turnaround and inventory volume across all 3 vehicle segments"
               : "Current vehicle count and average showroom turnaround time"}
           </CardDescription>
         </div>
@@ -66,7 +61,7 @@ export function InventoryDistributionBarChart() {
                   : "text-neutral-400 hover:text-white"
               }`}
             >
-              By Segment (8)
+              By Segment (3)
             </button>
             <button
               type="button"
@@ -134,9 +129,9 @@ export function InventoryDistributionBarChart() {
 
         <div className="mt-3 flex items-center justify-between pt-3 border-t border-neutral-100 dark:border-neutral-800 text-xs text-neutral-500 flex-wrap gap-2">
           <span>
-            Fastest Liquidity: <strong className="text-neutral-900 dark:text-white">2W Scooters &amp; E-Rickshaws (4 Days)</strong>
+            Fastest Liquidity: <strong className="text-neutral-900 dark:text-white">2W Scooters (4 Days)</strong>
           </span>
-          <span className="text-[11px] text-neutral-400">Total Showroom Coverage: 8 Segments</span>
+          <span className="text-[11px] text-neutral-400">Total Showroom Coverage: 3 Segments</span>
         </div>
       </CardContent>
     </Card>
