@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { dealRepository } from "@/data/dealRepository";
-import { emptyDeal, isStepFilled, localDay, STEPS, validateDeal, validateStep } from "./dealModel";
+import { emptyDeal, localDay, STEPS, validateDeal, validateStep } from "./dealModel";
 
 export const useDealWizard = (dealId, onSaved, initialStep = 0) => {
   const [deal, setDeal] = useState(emptyDeal);

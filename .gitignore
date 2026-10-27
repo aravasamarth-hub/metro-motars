@@ -86,3 +86,9 @@ android-sdk/
 
 # overlay black-box crash/user-report dumps — session data, never history
 **/.emergent/recordings/
+# Secrets & Environment Gating
+atlas-credentials.env
+
+# Runtime upload and dynamic persistence data
+backend/data/uploads/
+backend/data/*.jsonl

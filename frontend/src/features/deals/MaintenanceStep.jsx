@@ -1,15 +1,15 @@
 import React from "react";
-import { Wrench, Sparkles, AlertCircle } from "lucide-react";
+import { Wrench } from "lucide-react";
 import { MaintenanceSection } from "./MaintenanceSection";
-import { calculateMaintenanceTotal, money } from "./dealModel";
 import { useLanguage } from "@/features/i18n/LanguageContext";
+import { calculateMaintenanceTotal } from "./dealModel";
 
-export const MaintenanceStep = ({ deal, updateSection, errors }) => {
+export const MaintenanceStep = ({ deal, updateSection, errors: _errors }) => {
   const { t } = useLanguage();
   const maintenance = deal?.maintenance || {};
   const services = Array.isArray(maintenance.services) ? maintenance.services : [];
-  const activeCount = services.filter((s) => s.enabled).length;
-  const totalExpense = calculateMaintenanceTotal(deal?.maintenance);
+  const _activeCount = services.filter((s) => s.enabled).length;
+  const _totalExpense = calculateMaintenanceTotal(deal?.maintenance);
 
   return (
     <div className="maintenance-step-container" data-testid="maintenance-step-container">

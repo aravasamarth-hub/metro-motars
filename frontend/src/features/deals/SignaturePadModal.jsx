@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState, useCallback } from "react";
-import { Check, Edit3, Eraser, RotateCcw, X, ZoomIn } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Check, Edit3, Eraser, RotateCcw } from "lucide-react";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { useLanguage } from "@/features/i18n/LanguageContext";
 
@@ -169,7 +169,9 @@ export function SignaturePadModal({
     isDrawing.current = false;
     try {
       e.currentTarget.releasePointerCapture(e.pointerId);
-    } catch {}
+    } catch {
+      // Ignore if pointer capture was already released
+    }
 
     if (currentStroke && currentStroke.points.length > 0) {
       setStrokes((prev) => [...prev, currentStroke]);
@@ -180,7 +182,6 @@ export function SignaturePadModal({
   const handleClear = () => {
     setStrokes([]);
     setCurrentStroke(null);
-    setHasContent(false);
   };
 
   const handleUndo = () => {

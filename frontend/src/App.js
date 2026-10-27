@@ -1,23 +1,30 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import { BrowserRouter, NavLink, Route, Routes, useLocation, useNavigate, Navigate } from "react-router-dom";
-import { ArrowLeft, ArrowUpRight, Bike, BriefcaseBusiness, CalendarDays, Camera, Check, ChevronDown, CircleDollarSign, ClipboardList, Clock, CreditCard, LayoutDashboard, LogOut, Menu, MoreHorizontal, Moon, Pencil, Phone, Plus, Printer, RefreshCw, Search, Settings as SettingsIcon, ShieldCheck, Sparkles, Sun, Trash2, UserCheck, UsersRound, WalletCards, X, Zap } from "lucide-react";
+import { BriefcaseBusiness, CalendarDays, Check, ChevronDown, CircleDollarSign, LayoutDashboard, LogOut, Menu, Moon, Pencil, Plus, RefreshCw, Settings as SettingsIcon, ShieldCheck, Sparkles, Sun, Trash2, UserCheck, Zap } from "lucide-react";
 import "@/App.css";
 import "@/styles/luxury-design.css";
-import FunctionalNewDeal from "@/components/FunctionalNewDeal";
-import FunctionalDashboard from "@/components/FunctionalDashboard";
-import FunctionalDeals from "@/components/FunctionalDeals";
-import DealView from "@/components/DealView";
-import { LocalFinances as FunctionalFinances } from "@/features/deals/LocalPreviewPages";
 import "@/features/deals/deals.css";
 import { dealRepository } from "@/data/dealRepository";
-import AgentsView from "@/features/deals/AgentsView";
-import FollowUpsView from "@/features/deals/FollowUpsView";
-import LoginPage from "@/features/auth/LoginPage";
-import ShowcasePage from "@/features/showcase/ShowcasePage";
 import { AuthProvider, useAuth } from "@/context/AuthContext";
+
+// Lazy-loaded route chunks for optimal initial bundle size and rapid LCP
+const FunctionalNewDeal = lazy(() => import("@/components/FunctionalNewDeal"));
+const FunctionalDashboard = lazy(() => import("@/components/FunctionalDashboard"));
+const FunctionalDeals = lazy(() => import("@/components/FunctionalDeals"));
+const DealView = lazy(() => import("@/components/DealView"));
+const FunctionalFinances = lazy(() => import("@/features/deals/LocalPreviewPages").then(m => ({ default: m.LocalFinances })));
+const AgentsView = lazy(() => import("@/features/deals/AgentsView"));
+const FollowUpsView = lazy(() => import("@/features/deals/FollowUpsView"));
+const LoginPage = lazy(() => import("@/features/auth/LoginPage"));
+const MarketplacePage = lazy(() => import("@/features/marketplace/MarketplacePage"));
+// Diagnostic route lazy-loaded only in development
+const MotionDevTest = process.env.NODE_ENV !== "production"
+  ? lazy(() => import("@/features/motion/MotionDevTest"))
+  : null;
 
 import { LanguageProvider, useLanguage } from "@/features/i18n/LanguageContext";
 import { LanguageSwitcher } from "@/features/i18n/LanguageSwitcher";
+import MobileBottomNav from "@/components/navigation/MobileBottomNav";
 
 // 1. shadcn/ui
 import { Badge } from "@/components/ui/badge";
@@ -29,7 +36,6 @@ import ParticleButton from "@/components/kokonut/ParticleButton";
 
 // 3. Motion (motion.dev)
 import { motion } from "motion/react";
-import { MotionCounter } from "@/components/motion/MotionCounter";
 
 // 4. Anime.js v4
 import AnimePulseBeacon from "@/components/anime/AnimePulseBeacon";
@@ -38,7 +44,7 @@ import AnimePulseBeacon from "@/components/anime/AnimePulseBeacon";
 import { InspectionRadialGauge } from "@/components/bklit/InspectionRadialGauge";
 
 const navItems = [
-  ["nav.dashboard", "Dashboard", "/", LayoutDashboard],
+  ["nav.dashboard", "Dashboard", "/dashboard", LayoutDashboard],
   ["nav.deals", "Deals", "/deals", BriefcaseBusiness],
   ["nav.new_deal", "New Deal", "/new-deal", Plus],
   ["nav.agents", "Agents", "/agents", UserCheck],
@@ -47,6 +53,22 @@ const navItems = [
   ["nav.settings", "Settings", "/settings", SettingsIcon],
 ];
 
+function resolvePageName(pathname, t, currentNav) {
+  if (currentNav) {
+    return t(currentNav[0], currentNav[1]);
+  }
+  if (pathname.startsWith("/agents")) {
+    return t("nav.agents", "Agents");
+  }
+  if (pathname.startsWith("/new-deal")) {
+    return t("nav.new_deal", "New Deal");
+  }
+  if (pathname.startsWith("/deals")) {
+    return t("nav.deals", "Deals");
+  }
+  return t("nav.dashboard", "Dashboard");
+}
+
 function AppShell({ children, dark, setDark }) {
   const { t } = useLanguage();
   const location = useLocation();
@@ -54,25 +76,23 @@ function AppShell({ children, dark, setDark }) {
   const { user, logout, isOwner } = useAuth();
   const [mobileNav, setMobileNav] = useState(false);
 
-  if (location.pathname === "/login" || location.pathname === "/portal" || location.pathname === "/showcase") {
-    return <div className={`showcase-fullscreen-wrapper ${dark ? "theme-dark dark" : "theme-light"}`}>{children}</div>;
+  const isPublicRoute =
+    location.pathname === "/" ||
+    location.pathname === "/bikes" ||
+    location.pathname === "/login" ||
+    location.pathname === "/portal" ||
+    location.pathname === "/showcase";
+
+  if (isPublicRoute) {
+    return <div className={`marketplace-fullscreen-wrapper ${dark ? "theme-dark dark" : "theme-light"}`}>{children}</div>;
   }
 
-  const visibleNavItems = navItems.filter(([, , path]) => {
-    if (!isOwner && (path === "/agents" || path === "/finances")) return false;
-    return true;
-  });
+  const visibleNavItems = navItems.filter(
+    ([, , path]) => isOwner || (path !== "/agents" && path !== "/finances")
+  );
 
   const currentNav = navItems.find(([, , path]) => path === location.pathname);
-  const pageName = currentNav
-    ? t(currentNav[0], currentNav[1])
-    : location.pathname.startsWith("/agents")
-    ? t("nav.agents", "Agents")
-    : location.pathname.startsWith("/new-deal")
-    ? t("nav.new_deal", "New Deal")
-    : location.pathname.startsWith("/deals")
-    ? t("nav.deals", "Deals")
-    : t("nav.dashboard", "Dashboard");
+  const pageName = resolvePageName(location.pathname, t, currentNav);
 
   return (
     <div className={`app-shell ${dark ? "dark theme-dark" : "light theme-light"}`}>
@@ -102,19 +122,6 @@ function AppShell({ children, dark, setDark }) {
           ))}
         </nav>
         <div className="sidebar-footer">
-          <button
-            type="button"
-            className="sidebar-vip-pill"
-            onClick={() => navigate("/showcase")}
-            title="Open 5-Library VIP Automotive Showcase"
-            data-testid="sidebar-vip-showcase"
-          >
-            <span style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-              <Sparkles size={14} className="text-amber-400" />
-              <span>VIP Showcase</span>
-            </span>
-            <span style={{ fontSize: "10px", background: "rgba(245, 158, 11, 0.2)", padding: "1px 6px", borderRadius: "4px" }}>5 Libs</span>
-          </button>
           <div className="support-card">
             <Zap size={17} />
             <div>
@@ -123,11 +130,19 @@ function AppShell({ children, dark, setDark }) {
             </div>
           </div>
           <button
+            type="button"
             className="logout-link"
             data-testid="logout-button"
-            onClick={() => {
-              logout();
-              navigate("/login");
+            onClick={async () => {
+              try {
+                await logout();
+                await navigate("/login");
+              } catch (err) {
+                console.error("Logout error", err);
+                await navigate("/login").catch(() => {
+                  window.location.href = "/login";
+                });
+              }
             }}
           >
             <LogOut size={17} /> {t("nav.logout", "Logout")}
@@ -147,21 +162,42 @@ function AppShell({ children, dark, setDark }) {
       )}
       <main className="main-content">
         <header className="topbar">
-          <button
-            className="icon-button mobile-menu"
-            onClick={() => setMobileNav(true)}
-            aria-label="Open menu"
-            data-testid="mobile-menu-button"
-          >
-            <Menu size={21} />
-          </button>
-          <div className="breadcrumb">
-            <span>Metro Motors</span>
-            <span>/</span>
-            <b>{pageName}</b>
+          <div className="topbar-left-group">
+            <button
+              type="button"
+              className="icon-button mobile-menu"
+              onClick={() => setMobileNav(true)}
+              aria-label="Open menu"
+              data-testid="mobile-menu-button"
+            >
+              <Menu size={21} />
+            </button>
+            <button
+              type="button"
+              className="mobile-brand-mark"
+              onClick={() => navigate("/")}
+              title="Metro Motors Home"
+              style={{ background: "none", border: "none", padding: 0, textAlign: "left", cursor: "pointer" }}
+            >
+              <div className="mobile-brand-badge">MM</div>
+              <div className="mobile-brand-text">
+                <strong>METRO MOTORS</strong>
+                <small>EXECUTIVE FLEET</small>
+              </div>
+            </button>
+            <div className="breadcrumb">
+              <span>Metro Motors</span>
+              <span>/</span>
+              <b>{pageName}</b>
+            </div>
           </div>
           <div className="topbar-actions">
-            <div className="theme-toggle-switch" role="group" aria-label="Theme selector" data-testid="theme-toggle">
+            <fieldset
+              className="theme-toggle-switch"
+              aria-label="Theme selector"
+              data-testid="theme-toggle"
+              style={{ border: 0, margin: 0, padding: 0 }}
+            >
               <button
                 type="button"
                 className={`theme-switch-btn ${!dark ? "active" : ""}`}
@@ -171,7 +207,7 @@ function AppShell({ children, dark, setDark }) {
                 title="Light Mode (Bright & White)"
               >
                 <Sun size={14} strokeWidth={2.2} className="theme-toggle-icon" />
-                <span>{t("topbar.light", "Light")}</span>
+                <span className="theme-label">{t("topbar.light", "Light")}</span>
               </button>
               <button
                 type="button"
@@ -182,9 +218,9 @@ function AppShell({ children, dark, setDark }) {
                 title="Dark Mode"
               >
                 <Moon size={14} strokeWidth={2.2} className="theme-toggle-icon" />
-                <span>{t("topbar.dark", "Dark")}</span>
+                <span className="theme-label">{t("topbar.dark", "Dark")}</span>
               </button>
-            </div>
+            </fieldset>
             <LanguageSwitcher />
             <span
               className="owner-badge"
@@ -197,11 +233,12 @@ function AppShell({ children, dark, setDark }) {
             >
               {user?.roleKey || t("topbar.owner", "OWNER")}
             </span>
-            <div
+            <button
+              type="button"
               className="user-chip"
               data-testid="user-area"
               onClick={() => navigate("/login")}
-              style={{ cursor: "pointer" }}
+              style={{ background: "none", border: "none", padding: 0, textAlign: "left", cursor: "pointer" }}
               title="Showroom Account & Switch Persona"
             >
               <div
@@ -218,10 +255,11 @@ function AppShell({ children, dark, setDark }) {
                 <span>{user?.role || t("topbar.administrator", "Administrator")}</span>
               </div>
               <ChevronDown size={15} />
-            </div>
+            </button>
           </div>
         </header>
         <div className="page-content">{children}</div>
+        <MobileBottomNav />
       </main>
     </div>
   );
@@ -244,8 +282,8 @@ function Settings() {
     setBusy(true);
     setDemoNotice("");
     try {
-      await dealRepository.resetDemoData();
-      setDemoNotice(t("settings.demo_loaded_msg", "All 7 comprehensive demo deals, party details, agent tasks and verified photos reloaded!"));
+      const reloaded = await dealRepository.resetDemoData();
+      setDemoNotice(t("settings.demo_loaded_msg", `All ${reloaded.length} comprehensive demo deals, party details, agent tasks and verified photos reloaded!`));
       setTimeout(() => setDemoNotice(""), 6000);
     } catch (e) {
       setDemoNotice(e.message);
@@ -401,10 +439,14 @@ function Settings() {
               {t("settings.demo_data_desc", "Metro Motors comes pre-configured with 7 rich demo vehicle deals (Royal Enfield, KTM Duke, Yamaha MT-15, Honda Activa, Apache RTR, Kawasaki Ninja, and Hero Splendor) complete with vehicle specs, parties, witness details, agent transfers, payments, and verified photo documentation.")}
             </p>
             {demoNotice && (
-              <div className="workflow-message mt-4 flex items-center gap-2 p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs" role="status" data-testid="settings-demo-message">
+              <output
+                className="workflow-message mt-4 flex items-center gap-2 p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs"
+                data-testid="settings-demo-message"
+                aria-live="polite"
+              >
                 <Sparkles size={16} className="text-amber-400 flex-shrink-0" />
                 <span>{demoNotice}</span>
-              </div>
+              </output>
             )}
             <div className="demo-vault-actions flex gap-3 mt-5 flex-wrap">
               <ParticleButton
@@ -458,7 +500,13 @@ function LocalModeLabel() {
   const location = useLocation();
   const [reloading, setReloading] = useState(false);
 
-  if (location.pathname === "/login" || location.pathname === "/portal" || location.pathname === "/showcase") return null;
+  const isPublic =
+    location.pathname === "/" ||
+    location.pathname === "/bikes" ||
+    location.pathname === "/login" ||
+    location.pathname === "/portal" ||
+    location.pathname === "/showcase";
+  if (isPublic) return null;
 
   const handleReload = async () => {
     setReloading(true);
@@ -469,19 +517,21 @@ function LocalModeLabel() {
     }
   };
   return (
-    <div className="local-mode-label" data-testid="browser-local-mode" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", flexWrap: "wrap" }}>
-      <span>{t("common.browser_local_mode", "Browser-local preview · No cloud sync")}</span>
+    <div className="local-mode-banner" data-testid="browser-local-mode">
+      <div className="local-mode-info">
+        <span className="local-mode-pulse" />
+        <span className="local-mode-text">{t("common.browser_local_mode", "Browser-local preview · No cloud sync")}</span>
+      </div>
       <button
         type="button"
         onClick={handleReload}
         disabled={reloading}
-        className="text-button"
-        style={{ fontSize: "11px", fontWeight: "600", padding: "2px 8px", background: "rgba(217, 119, 6, 0.15)", borderRadius: "4px", color: "#f59e0b", border: "1px solid rgba(245, 158, 11, 0.3)", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "4px" }}
+        className="local-mode-reload-btn"
         data-testid="quick-reload-demo"
         title="Reload all demo details"
       >
         <RefreshCw size={12} className={reloading ? "animate-spin" : ""}/>
-        {reloading ? t("common.reloading", "Reloading…") : t("common.reload_demo", "Reload Demo Data")}
+        <span>{reloading ? t("common.reloading", "Reloading…") : t("common.reload_demo", "Reload Demo Data")}</span>
       </button>
     </div>
   );
@@ -500,7 +550,9 @@ function App() {
   useEffect(() => {
     try {
       localStorage.setItem("mm_theme", dark ? "dark" : "light");
-    } catch {}
+    } catch {
+      // Storage quota exceeded or disabled in private mode
+    }
     if (dark) {
       document.documentElement.classList.add("dark", "theme-dark");
       document.documentElement.classList.remove("light", "theme-light");
@@ -520,23 +572,39 @@ function App() {
         <BrowserRouter>
           <AppShell dark={dark} setDark={setDark}>
             <LocalModeLabel />
-            <Routes>
-              <Route path="/portal" element={<ShowcasePage dark={dark} setDark={setDark} />} />
-              <Route path="/showcase" element={<ShowcasePage dark={dark} setDark={setDark} />} />
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/" element={<FunctionalDashboard />} />
-              <Route path="/deals" element={<FunctionalDeals />} />
-              <Route path="/deals/:dealId" element={<DealView />} />
-              <Route path="/bills" element={<Navigate to="/deals" replace />} />
-              <Route path="/new-deal" element={<FunctionalNewDeal />} />
-              <Route path="/new-deal/:dealId" element={<FunctionalNewDeal />} />
-              <Route path="/agents" element={<AgentsView />} />
-              <Route path="/agents/:agentName" element={<AgentsView />} />
-              <Route path="/finances" element={<FunctionalFinances />} />
-              <Route path="/follow-ups" element={<FollowUps />} />
-              <Route path="/settings" element={<Settings />} />
-              <Route path="*" element={<FunctionalDashboard />} />
-            </Routes>
+            <Suspense fallback={
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "60vh", flexDirection: "column", gap: "16px" }}>
+                <div style={{ width: "36px", height: "36px", border: "3px solid rgba(245, 158, 11, 0.2)", borderTopColor: "#f59e0b", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
+                <span style={{ fontSize: "13px", color: "#94a3b8", fontWeight: 600, letterSpacing: "0.5px" }}>Loading Showroom Atelier…</span>
+              </div>
+            }>
+              <Routes>
+                {/* Customer-Facing Public Motorcycle Marketplace */}
+                <Route path="/" element={<MarketplacePage dark={dark} setDark={setDark} />} />
+                <Route path="/bikes" element={<MarketplacePage dark={dark} setDark={setDark} />} />
+                <Route path="/portal" element={<MarketplacePage dark={dark} setDark={setDark} />} />
+                <Route path="/showcase" element={<MarketplacePage dark={dark} setDark={setDark} />} />
+
+                {/* Showroom Staff & Management Console */}
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/console" element={<FunctionalDashboard />} />
+                <Route path="/dashboard" element={<FunctionalDashboard />} />
+                <Route path="/deals" element={<FunctionalDeals />} />
+                <Route path="/deals/:dealId" element={<DealView />} />
+                <Route path="/bills" element={<Navigate to="/deals" replace />} />
+                <Route path="/new-deal" element={<FunctionalNewDeal />} />
+                <Route path="/new-deal/:dealId" element={<FunctionalNewDeal />} />
+                <Route path="/agents" element={<AgentsView />} />
+                <Route path="/agents/:agentName" element={<AgentsView />} />
+                <Route path="/finances" element={<FunctionalFinances />} />
+                <Route path="/follow-ups" element={<FollowUps />} />
+                <Route path="/settings" element={<Settings />} />
+                {process.env.NODE_ENV !== "production" && MotionDevTest && (
+                  <Route path="/motion-test" element={<MotionDevTest />} />
+                )}
+                <Route path="*" element={<MarketplacePage dark={dark} setDark={setDark} />} />
+              </Routes>
+            </Suspense>
           </AppShell>
         </BrowserRouter>
       </AuthProvider>

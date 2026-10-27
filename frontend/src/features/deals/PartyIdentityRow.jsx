@@ -4,14 +4,12 @@ import {
   Check,
   Download,
   Edit3,
-  Eye,
   Fingerprint,
   PenTool,
   Replace,
   Trash2,
   Upload,
   User,
-  X,
   ZoomIn,
 } from "lucide-react";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";

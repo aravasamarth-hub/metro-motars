@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
 import { LANGUAGES, translations } from "./translations";
 
 const LanguageContext = createContext({
@@ -16,8 +16,8 @@ export const LanguageProvider = ({ children }) => {
       if (saved && (saved === "en" || saved === "hi" || saved === "kn")) {
         return saved;
       }
-    } catch (e) {
-      // fallback
+    } catch {
+      // Storage unavailable; fallback to default
     }
     return "en";
   });
@@ -26,7 +26,9 @@ export const LanguageProvider = ({ children }) => {
     setLanguageState(lang);
     try {
       localStorage.setItem("mm_language", lang);
-    } catch (e) {}
+    } catch {
+      // Storage quota exceeded or disabled in private mode
+    }
   };
 
   useEffect(() => {

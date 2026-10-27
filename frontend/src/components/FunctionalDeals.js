@@ -7,14 +7,11 @@ import {
   Search,
   X,
   Bike,
-  ClipboardList,
-  Sparkles,
   Layers,
   CheckCircle2,
   Clock,
   Filter,
   BarChart2,
-  ArrowUpRight,
 } from "lucide-react";
 import { dealRepository } from "@/data/dealRepository";
 import { useDeals } from "@/features/deals/useDeals";
@@ -176,7 +173,7 @@ export default function FunctionalDeals() {
             className="border-neutral-700 hover:border-amber-500/40 text-xs font-semibold gap-2"
           >
             <BarChart2 size={15} className="text-amber-400" />
-            <span>{showBklitAnalytics ? "Hide Fleet Analytics" : "Bklit Brand Breakdown"}</span>
+            <span>{showBklitAnalytics ? "Hide Fleet Analytics" : "Fleet Brand Analytics"}</span>
           </Button>
 
           {/* KokonutUI ParticleButton */}
@@ -344,37 +341,39 @@ export default function FunctionalDeals() {
           )}
         </div>
 
-        <label className="select-field deals-luxury-select bg-neutral-900/80 border border-neutral-800 rounded-xl px-3 py-2 flex items-center gap-2 text-xs">
-          <span className="text-neutral-400">{t("deals.stock_label", "Stock")}</span>
-          <select
-            value={status}
-            onChange={(e) => filter("status", e.target.value)}
-            data-testid="status-filter"
-            className="bg-transparent text-white font-semibold outline-none cursor-pointer"
-          >
-            <option value="All" className="bg-neutral-900">{t("deals.all_deals", "All deals")}</option>
-            <option value="In Stock" className="bg-neutral-900">{t("status.in_stock", "In Stock")}</option>
-            <option value="Out of Stock" className="bg-neutral-900">{t("status.out_of_stock", "Out of Stock")}</option>
-            <option value="Sold" className="bg-neutral-900">{t("status.sold", "Sold")}</option>
-          </select>
-          <ChevronDown size={14} className="text-neutral-400" />
-        </label>
+        <div className="deals-filter-row">
+          <label className="select-field deals-luxury-select bg-neutral-900/80 border border-neutral-800 rounded-xl px-3 py-2 flex items-center gap-2 text-xs">
+            <span className="text-neutral-400">{t("deals.stock_label", "Stock")}</span>
+            <select
+              value={status}
+              onChange={(e) => filter("status", e.target.value)}
+              data-testid="status-filter"
+              className="bg-transparent text-white font-semibold outline-none cursor-pointer"
+            >
+              <option value="All" className="bg-neutral-900">{t("deals.all_deals", "All deals")}</option>
+              <option value="In Stock" className="bg-neutral-900">{t("status.in_stock", "In Stock")}</option>
+              <option value="Out of Stock" className="bg-neutral-900">{t("status.out_of_stock", "Out of Stock")}</option>
+              <option value="Sold" className="bg-neutral-900">{t("status.sold", "Sold")}</option>
+            </select>
+            <ChevronDown size={14} className="text-neutral-400" />
+          </label>
 
-        <label className="select-field deals-luxury-select bg-neutral-900/80 border border-neutral-800 rounded-xl px-3 py-2 flex items-center gap-2 text-xs">
-          <span className="text-neutral-400">{t("deals.rc_label", "Status")}</span>
-          <select
-            value={rc}
-            onChange={(e) => filter("rc", e.target.value)}
-            data-testid="rc-filter"
-            className="bg-transparent text-white font-semibold outline-none cursor-pointer"
-          >
-            <option value="All" className="bg-neutral-900">{t("deals.all_transfers", "All status")}</option>
-            <option value="Details Pending" className="bg-neutral-900">{t("status.details_pending", "Details Pending")}</option>
-            <option value="Pending" className="bg-neutral-900">{t("status.rc_pending", "RC Pending")}</option>
-            <option value="Transferred" className="bg-neutral-900">{t("status.rc_transferred", "RC Transferred")}</option>
-          </select>
-          <ChevronDown size={14} className="text-neutral-400" />
-        </label>
+          <label className="select-field deals-luxury-select bg-neutral-900/80 border border-neutral-800 rounded-xl px-3 py-2 flex items-center gap-2 text-xs">
+            <span className="text-neutral-400">{t("deals.rc_label", "Status")}</span>
+            <select
+              value={rc}
+              onChange={(e) => filter("rc", e.target.value)}
+              data-testid="rc-filter"
+              className="bg-transparent text-white font-semibold outline-none cursor-pointer"
+            >
+              <option value="All" className="bg-neutral-900">{t("deals.all_transfers", "All status")}</option>
+              <option value="Details Pending" className="bg-neutral-900">{t("status.details_pending", "Details Pending")}</option>
+              <option value="Pending" className="bg-neutral-900">{t("status.rc_pending", "RC Pending")}</option>
+              <option value="Transferred" className="bg-neutral-900">{t("status.rc_transferred", "RC Transferred")}</option>
+            </select>
+            <ChevronDown size={14} className="text-neutral-400" />
+          </label>
+        </div>
 
         {(query || status !== "All" || rc !== "All" || today) && (
           <button

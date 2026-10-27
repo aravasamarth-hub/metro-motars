@@ -5,7 +5,6 @@ import {
   NavigationMenu,
   NavigationMenuItem,
   NavigationMenuList,
-  navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
 import {
   Sheet,
@@ -15,7 +14,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { Menu, Sun, Moon, LogIn, Shield, Bike, PhoneCall, Sparkles } from "lucide-react";
+import { Menu, Sun, Moon, LogIn, Bike } from "lucide-react";
 
 interface ShowcaseNavbarProps {
   dark: boolean;

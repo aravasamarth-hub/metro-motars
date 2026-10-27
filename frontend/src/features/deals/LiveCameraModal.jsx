@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from "react";
-import { Camera, Check, RefreshCw, SwitchCamera, Upload, X } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Camera, Check, RefreshCw, SwitchCamera, Upload } from "lucide-react";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { useLanguage } from "@/features/i18n/LanguageContext";
 
@@ -22,15 +22,15 @@ export function LiveCameraModal({
   const [loadingCamera, setLoadingCamera] = useState(false);
 
   // Stop current active stream
-  const stopStream = () => {
+  const stopStream = useCallback(() => {
     if (streamRef.current) {
       streamRef.current.getTracks().forEach((track) => track.stop());
       streamRef.current = null;
     }
-  };
+  }, []);
 
   // Start webcam stream
-  const startCamera = async (facing) => {
+  const startCamera = useCallback(async (facing) => {
     stopStream();
     setCameraError("");
     setLoadingCamera(true);
@@ -64,7 +64,12 @@ export function LiveCameraModal({
     } finally {
       setLoadingCamera(false);
     }
-  };
+  }, [stopStream]);
+
+  const capturedUrlRef = useRef(capturedUrl);
+  useEffect(() => {
+    capturedUrlRef.current = capturedUrl;
+  }, [capturedUrl]);
 
   useEffect(() => {
     if (isOpen) {
@@ -74,15 +79,14 @@ export function LiveCameraModal({
       startCamera(facingMode);
     } else {
       stopStream();
-      if (capturedUrl) {
-        URL.revokeObjectURL(capturedUrl);
+      if (capturedUrlRef.current) {
+        URL.revokeObjectURL(capturedUrlRef.current);
       }
     }
     return () => {
       stopStream();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen, facingMode]);
+  }, [isOpen, facingMode, startCamera, stopStream]);
 
   // Capture snapshot from current video frame
   const handleSnap = () => {
@@ -160,7 +164,9 @@ export function LiveCameraModal({
         reader.onerror = () => resolve(null);
         reader.readAsDataURL(file);
       });
-    } catch {}
+    } catch {
+      // File read error; fallback to URL.createObjectURL(file)
+    }
 
     onCapture({
       name: file.name,

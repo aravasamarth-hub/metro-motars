@@ -1,9 +1,9 @@
 import { DEMO_PERSONAS } from "../../../context/AuthContext";
-import { LOGIN, REGISTER, LOGOUT } from "../../../constants/testIds/auth";
+import { LOGIN, LOGOUT } from "../../../constants/testIds/auth";
 
 describe("Metro Motors - Enterprise Login & Auth System", () => {
-  test("DEMO_PERSONAS defines all 3 core showroom roles with verified profiles", () => {
-    expect(DEMO_PERSONAS).toHaveLength(3);
+  test("DEMO_PERSONAS defines OWNER and WORKER showroom roles with verified profiles and no AGENT access", () => {
+    expect(DEMO_PERSONAS).toHaveLength(2);
 
     const owner = DEMO_PERSONAS.find((p) => p.roleKey === "OWNER");
     expect(owner).toBeDefined();
@@ -12,19 +12,16 @@ describe("Metro Motors - Enterprise Login & Auth System", () => {
     expect(owner.role).toContain("Showroom Owner");
     expect(owner.badgeColor).toBe("#f59e0b");
 
-    const agent = DEMO_PERSONAS.find((p) => p.roleKey === "AGENT");
-    expect(agent).toBeDefined();
-    expect(agent.name).toBe("Rajesh Sharma");
-    expect(agent.email).toBe("rajesh@metromotors.in");
-    expect(agent.role).toContain("Sales Lead");
-    expect(agent.badgeColor).toBe("#38bdf8");
+    const worker = DEMO_PERSONAS.find((p) => p.roleKey === "WORKER");
+    expect(worker).toBeDefined();
+    expect(worker.name).toBe("Rahul Verma");
+    expect(worker.email).toBe("rahul@metromotors.in");
+    expect(worker.role).toContain("Showroom Operations");
+    expect(worker.badgeColor).toBe("#38bdf8");
 
-    const manager = DEMO_PERSONAS.find((p) => p.roleKey === "MANAGER");
-    expect(manager).toBeDefined();
-    expect(manager.name).toBe("Priya Nair");
-    expect(manager.email).toBe("priya@metromotors.in");
-    expect(manager.role).toContain("Finance");
-    expect(manager.badgeColor).toBe("#a855f7");
+    // Verify AGENT access has been removed
+    const agent = DEMO_PERSONAS.find((p) => p.roleKey === "AGENT");
+    expect(agent).toBeUndefined();
   });
 
   test("LOGIN test IDs are properly formatted and accessible", () => {
@@ -35,13 +32,13 @@ describe("Metro Motors - Enterprise Login & Auth System", () => {
     expect(LOGOUT.button).toBe("logout-button");
   });
 
-  test("Persona email matching resolves correctly for all roles", () => {
+  test("Persona email matching resolves correctly for OWNER and WORKER roles", () => {
     const findByEmail = (email) =>
       DEMO_PERSONAS.find((p) => p.email.toLowerCase() === email.toLowerCase());
 
     expect(findByEmail("alex@metromotors.in")?.name).toBe("Alex Kumar");
-    expect(findByEmail("rajesh@metromotors.in")?.name).toBe("Rajesh Sharma");
-    expect(findByEmail("priya@metromotors.in")?.name).toBe("Priya Nair");
+    expect(findByEmail("rahul@metromotors.in")?.name).toBe("Rahul Verma");
+    expect(findByEmail("rajesh@metromotors.in")).toBeUndefined();
     expect(findByEmail("unknown@email.com")).toBeUndefined();
   });
 });

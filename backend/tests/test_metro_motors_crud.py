@@ -6,8 +6,9 @@ import uuid
 import pytest
 import requests
 
-
-BASE_URL = os.environ["REACT_APP_BACKEND_URL"].rstrip("/")
+BASE_URL = os.environ.get("REACT_APP_BACKEND_URL", "").rstrip("/")
+if not BASE_URL:
+    pytestmark = pytest.mark.skip(reason="Live integration test blocked: MongoDB Atlas / live backend not configured")
 
 
 @pytest.fixture
@@ -54,7 +55,8 @@ def test_full_crud_relationship_lifecycle(api_client):
         assert_mongo_safe(vehicle)
         assert api_client.get(f"{root}/vehicles/{vehicle['vehicle_id']}").json()["vehicle_name"].startswith("TEST")
         updated_vehicle = api_client.put(f"{root}/vehicles/{vehicle['vehicle_id']}", json={"color": "Blue"})
-        assert updated_vehicle.status_code == 200 and updated_vehicle.json()["color"] == "Blue"
+        assert updated_vehicle.status_code == 200
+        assert updated_vehicle.json()["color"] == "Blue"
 
         seller_response = api_client.post(f"{root}/sellers", json=person_payload(tag + "S"))
         buyer_response = api_client.post(f"{root}/buyers", json=person_payload(tag + "B"))
@@ -72,7 +74,9 @@ def test_full_crud_relationship_lifecycle(api_client):
         fetched = api_client.get(f"{root}/deals/{deal_id}").json()
         assert fetched["deal_id"] == deal_id
         updated = api_client.put(f"{root}/deals/{deal_id}", json={"status": "Completed"})
-        assert updated.status_code == 200 and updated.json()["deal_id"] == deal_id and updated.json()["status"] == "Completed"
+        assert updated.status_code == 200
+        assert updated.json()["deal_id"] == deal_id
+        assert updated.json()["status"] == "Completed"
 
         child_specs = [
             ("witnesses", {**person_payload(tag + "W"), "deal_id": deal_id}, "witness_id"),

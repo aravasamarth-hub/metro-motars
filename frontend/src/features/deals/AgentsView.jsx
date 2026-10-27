@@ -10,19 +10,10 @@ import {
   ArrowUpRight,
   Phone,
   Mail,
-  ChevronRight,
   X,
-  ExternalLink,
   Plus,
-  Bike,
-  FileText,
-  CreditCard,
-  RefreshCw,
   Eye,
   Check,
-  AlertCircle,
-  BarChart2,
-  Sparkles,
   ShieldCheck,
 } from "lucide-react";
 import { useDeals } from "./useDeals";
@@ -43,7 +34,6 @@ import ParticleButton from "@/components/kokonut/ParticleButton";
 
 // 3. Motion (motion.dev)
 import { MotionCounter } from "@/components/motion/MotionCounter";
-import { MotionReveal } from "@/components/motion/MotionReveal";
 
 // 4. Anime.js v4
 import AnimePulseBeacon from "@/components/anime/AnimePulseBeacon";
@@ -210,13 +200,39 @@ export default function AgentsView() {
 
   const agentChartData = useMemo(() => {
     if (!agentGroups.length) return [];
-    return agentGroups.slice(0, 6).map((a) => ({
-      name: a.name,
-      deals: a.totalClients,
-      commission: Math.round(a.totalAmount / 1000) || 12,
-      payoutStatus: a.amountBalance === 0 ? "settled" : "pending",
-    }));
+    return agentGroups.slice(0, 6).map((a) => {
+      // Calculate turnaround time in days for this agent's deals
+      let totalDays = 0;
+      let validDeals = 0;
+      (a.deals || []).forEach((d) => {
+        const start = d.created_at ? new Date(d.created_at).getTime() : Date.now() - 3 * 86400000;
+        const end = d.agent?.completed_at
+          ? new Date(d.agent.completed_at).getTime()
+          : (d.updated_at ? new Date(d.updated_at).getTime() : Date.now());
+        const diffDays = Math.max(1, Math.round((end - start) / (1000 * 60 * 60 * 24)));
+        totalDays += diffDays;
+        validDeals++;
+      });
+      const daysTaken = validDeals > 0 ? Math.max(1, Math.round(totalDays / validDeals)) : 3;
+
+      const paidK = Number(((a.amountPaid || 0) / 1000).toFixed(1));
+      const balanceK = Number(((a.amountBalance || 0) / 1000).toFixed(1));
+
+      return {
+        name: a.name,
+        deals: a.totalClients,
+        amountPaid: paidK,
+        amountBalance: balanceK,
+        daysTaken,
+        rawPaid: a.amountPaid,
+        rawBalance: a.amountBalance,
+        totalAmount: a.totalAmount,
+        payoutStatus: a.amountBalance === 0 ? "settled" : "pending",
+        commission: Math.round(a.totalAmount / 1000) || 12,
+      };
+    });
   }, [agentGroups]);
+
 
   if (!isOwner) {
     return (

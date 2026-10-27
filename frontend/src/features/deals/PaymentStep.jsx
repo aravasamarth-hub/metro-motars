@@ -46,7 +46,7 @@ export const PaymentStep = ({ deal, updateSection, errors }) => {
 
   const p = deal?.payments || {};
   const maintenanceExpense = calculateMaintenanceTotal(deal?.maintenance);
-  const grossAmount = grossCommission(p);
+  const _grossAmount = grossCommission(p);
   const netAmount = commission(p, maintenanceExpense);
 
   const purchaseNum = Number(p.purchase_price) || 0;

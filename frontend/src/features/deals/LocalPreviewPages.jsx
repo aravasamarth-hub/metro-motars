@@ -4,7 +4,6 @@ import { motion } from "motion/react";
 import {
   ArrowUpRight,
   FilePlus2,
-  Printer,
   X,
   Search,
   TrendingUp,
@@ -13,10 +12,8 @@ import {
   WalletCards,
   Sparkles,
   Building2,
-  CheckCircle2,
   ShieldCheck,
   Download,
-  BarChart3,
 } from "lucide-react";
 import { useDeals } from "./useDeals";
 import { commission, calculateMaintenanceTotal, money, localDay } from "./dealModel";
@@ -27,15 +24,11 @@ import { useAuth } from "@/context/AuthContext";
 
 // 1. shadcn/ui
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 
 // 2. KokonutUI
 import FloatingPaths from "@/components/kokonut/BackgroundPaths";
 import SpotlightCard from "@/components/kokonut/SpotlightCard";
 import ParticleButton from "@/components/kokonut/ParticleButton";
-
-// 3. Motion (motion.dev)
-import { MotionCounter } from "@/components/motion/MotionCounter";
 
 // 4. Anime.js v4
 import AnimePulseBeacon from "@/components/anime/AnimePulseBeacon";

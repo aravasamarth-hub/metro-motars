@@ -64,17 +64,22 @@ export function emptyDeal() {
 }
 export function validateStep(deal, step) {
   const errors = {};
+  if (!deal) return errors;
   const required = (key, value, label) => { if (!String(value ?? "").trim()) errors[key] = `${label} is required.`; };
+  const vehicle = deal.vehicle || {};
+  const witnesses = deal.witnesses || [];
+  const payments = deal.payments || {};
+
   if (step === 0) {
-    required("vehicle.vehicle_name", deal.vehicle.vehicle_name, "Vehicle name");
-    if (deal.vehicle.year && (!/^\d{4}$/.test(String(deal.vehicle.year).trim()) || +deal.vehicle.year < 1900 || +deal.vehicle.year > new Date().getFullYear() + 1)) errors["vehicle.year"] = "Enter a valid four-digit year.";
-    ["engine_cc", "odometer"].forEach(key => { if (deal.vehicle[key] !== "" && (!Number.isFinite(+deal.vehicle[key]) || +deal.vehicle[key] < 0)) errors[`vehicle.${key}`] = "Enter a non-negative number."; });
-    if (deal.vehicle.sold_date && deal.vehicle.bought_date && deal.vehicle.sold_date < deal.vehicle.bought_date) errors["vehicle.sold_date"] = "Sold date cannot be before bought date.";
+    required("vehicle.vehicle_name", vehicle.vehicle_name, "Vehicle name");
+    if (vehicle.year && (!/^\d{4}$/.test(String(vehicle.year).trim()) || +vehicle.year < 1900 || +vehicle.year > new Date().getFullYear() + 1)) errors["vehicle.year"] = "Enter a valid four-digit year.";
+    ["engine_cc", "odometer"].forEach(key => { if (vehicle[key] !== "" && vehicle[key] != null && (!Number.isFinite(+vehicle[key]) || +vehicle[key] < 0)) errors[`vehicle.${key}`] = "Enter a non-negative number."; });
+    if (vehicle.sold_date && vehicle.bought_date && vehicle.sold_date < vehicle.bought_date) errors["vehicle.sold_date"] = "Sold date cannot be before bought date.";
   }
   if (step === 1) {
     const people = [
       ["seller", deal.seller],
-      ["witnesses.0", deal.witnesses[0]],
+      ["witnesses.0", witnesses[0]],
     ];
     people.forEach(([prefix, p]) => {
       if (!p) return;
@@ -96,7 +101,7 @@ export function validateStep(deal, step) {
   if (step === 3) {
     const people = [
       ["buyer", deal.buyer],
-      ["witnesses.1", deal.witnesses[1]],
+      ["witnesses.1", witnesses[1]],
     ];
     people.forEach(([prefix, p]) => {
       if (!p) return;
@@ -116,11 +121,11 @@ export function validateStep(deal, step) {
   }
   if (step === 5) {
     ["purchase_price", "selling_price", "paid_to_seller", "received_from_buyer"].forEach(key => {
-      const value = deal.payments[key];
-      if (value !== "" && (!Number.isFinite(+value) || +value < 0 || +value > 999999999)) errors[`payments.${key}`] = "Enter an amount between 0 and 999,999,999.";
+      const value = payments[key];
+      if (value !== "" && value != null && (!Number.isFinite(+value) || +value < 0 || +value > 999999999)) errors[`payments.${key}`] = "Enter an amount between 0 and 999,999,999.";
     });
-    if (deal.payments.purchase_price !== "" && +deal.payments.paid_to_seller > +deal.payments.purchase_price) errors["payments.paid_to_seller"] = "Cannot exceed the purchase price.";
-    if (deal.payments.selling_price !== "" && +deal.payments.received_from_buyer > +deal.payments.selling_price) errors["payments.received_from_buyer"] = "Cannot exceed the selling price.";
+    if (payments.purchase_price !== "" && payments.purchase_price != null && +payments.paid_to_seller > +payments.purchase_price) errors["payments.paid_to_seller"] = "Cannot exceed the purchase price.";
+    if (payments.selling_price !== "" && payments.selling_price != null && +payments.received_from_buyer > +payments.selling_price) errors["payments.received_from_buyer"] = "Cannot exceed the selling price.";
   }
   return errors;
 }

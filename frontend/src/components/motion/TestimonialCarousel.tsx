@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from "react";
-import { motion } from "motion/react";
+import { motion, AnimatePresence } from "motion/react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Star, ChevronLeft, ChevronRight, Quote } from "lucide-react";
@@ -62,51 +62,53 @@ export function TestimonialCarousel() {
   return (
     <div className="relative w-full max-w-4xl mx-auto" ref={containerRef}>
       <div className="overflow-hidden px-2 py-4">
-        <motion.div
-          key={currentIndex}
-          initial={{ opacity: 0, x: 40 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -40 }}
-          transition={{ duration: 0.45, ease: "easeOut" }}
-        >
-          <Card className="border-neutral-200 dark:border-neutral-800 bg-white/70 dark:bg-neutral-900/70 backdrop-blur-xl shadow-2xl p-6 md:p-8 rounded-3xl relative overflow-hidden">
-            <Quote
-              className="absolute right-6 top-6 text-amber-500/10 dark:text-amber-500/10 pointer-events-none"
-              size={120}
-            />
-            <CardContent className="p-0 flex flex-col md:flex-row items-start md:items-center gap-6 relative z-10">
-              <Avatar className="h-16 w-16 md:h-20 md:w-20 border-2 border-amber-500/40 shadow-lg shrink-0">
-                <AvatarFallback className="bg-gradient-to-br from-amber-500 to-amber-700 text-white font-extrabold text-xl">
-                  {TESTIMONIALS[currentIndex].avatar}
-                </AvatarFallback>
-              </Avatar>
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={currentIndex}
+            initial={{ opacity: 0, x: 40 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -40 }}
+            transition={{ duration: 0.35, ease: "easeOut" }}
+          >
+            <Card className="border-neutral-200 dark:border-neutral-800 bg-white/70 dark:bg-neutral-900/70 backdrop-blur-xl shadow-2xl p-6 md:p-8 rounded-3xl relative overflow-hidden">
+              <Quote
+                className="absolute right-6 top-6 text-amber-500/10 dark:text-amber-500/10 pointer-events-none"
+                size={120}
+              />
+              <CardContent className="p-0 flex flex-col md:flex-row items-start md:items-center gap-6 relative z-10">
+                <Avatar className="h-16 w-16 md:h-20 md:w-20 border-2 border-amber-500/40 shadow-lg shrink-0">
+                  <AvatarFallback className="bg-gradient-to-br from-amber-500 to-amber-700 text-white font-extrabold text-xl">
+                    {TESTIMONIALS[currentIndex].avatar}
+                  </AvatarFallback>
+                </Avatar>
 
-              <div className="flex-1">
-                <div className="flex items-center gap-1 mb-2 text-amber-500">
-                  {[...Array(TESTIMONIALS[currentIndex].rating)].map((_, i) => (
-                    <Star key={i} size={16} fill="currentColor" />
-                  ))}
-                </div>
-
-                <p className="text-base md:text-lg italic text-neutral-800 dark:text-neutral-200 leading-relaxed mb-4">
-                  "{TESTIMONIALS[currentIndex].comment}"
-                </p>
-
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 pt-3 border-t border-neutral-100 dark:border-neutral-800">
-                  <div>
-                    <h4 className="font-bold text-neutral-950 dark:text-white text-base">
-                      {TESTIMONIALS[currentIndex].name}
-                    </h4>
-                    <p className="text-xs text-neutral-500">{TESTIMONIALS[currentIndex].role}</p>
+                <div className="flex-1">
+                  <div className="flex items-center gap-1 mb-2 text-amber-500">
+                    {[...Array(TESTIMONIALS[currentIndex].rating)].map((_, i) => (
+                      <Star key={i} size={16} fill="currentColor" />
+                    ))}
                   </div>
-                  <span className="text-xs font-semibold px-3 py-1 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 inline-block w-fit mt-1 sm:mt-0">
-                    {TESTIMONIALS[currentIndex].vehicle}
-                  </span>
+
+                  <p className="text-base md:text-lg italic text-neutral-800 dark:text-neutral-200 leading-relaxed mb-4">
+                    "{TESTIMONIALS[currentIndex].comment}"
+                  </p>
+
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 pt-3 border-t border-neutral-100 dark:border-neutral-800">
+                    <div>
+                      <h4 className="font-bold text-neutral-950 dark:text-white text-base">
+                        {TESTIMONIALS[currentIndex].name}
+                      </h4>
+                      <p className="text-xs text-neutral-500">{TESTIMONIALS[currentIndex].role}</p>
+                    </div>
+                    <span className="text-xs font-semibold px-3 py-1 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 inline-block w-fit mt-1 sm:mt-0">
+                      {TESTIMONIALS[currentIndex].vehicle}
+                    </span>
+                  </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        </AnimatePresence>
       </div>
 
       {/* Navigation Buttons */}

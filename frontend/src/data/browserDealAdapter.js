@@ -1,6 +1,6 @@
 // Browser-only persistence. No server, external database, or network requests.
 // Records and photo Blobs share a transaction; sequence allocation is atomic across tabs.
-import { getDemoDeals, getTextOnlyDemoDeal } from "./demoDeals";
+import { getDemoDeals } from "./demoDeals";
 
 const STORE = "records";
 let connection;
@@ -25,31 +25,40 @@ async function transaction(mode, operation) {
   });
 }
 
-const prefix = () => "Bill-";
-const billNumber = count => `${prefix()}${String(count).padStart(3, "0")}`;
+const prefix = () => `MM-${String(new Date().getFullYear()).slice(-2)}`;
+const billNumber = count => `${prefix()}-${String(count).padStart(4, "0")}`;
 
 export const browserDealAdapter = {
   list: () => transaction("readwrite", (store, done) => {
     const request = store.getAll();
     request.onsuccess = () => {
       let deals = request.result.filter(row => row.kind === "deal");
-      // Auto-seed the 5 complete demo deals with photos if the store has fewer than 5 deals
-      if (deals.length < 5 && !localStorage.getItem("mm_demo_cleared")) {
+      // Auto-seed complete demo deals with photos if any are missing and storage is not explicitly cleared
+      if (!localStorage.getItem("mm_demo_cleared")) {
         const demoDeals = getDemoDeals();
+        let addedNew = false;
         for (const demoItem of demoDeals) {
-          if (!deals.some(d => d.id === demoItem.id || d.bill_number === demoItem.bill_number)) {
+          const existing = deals.find(d => d.id === demoItem.id || d.bill_number === demoItem.bill_number);
+          if (!existing) {
             store.put(demoItem);
             deals.push(demoItem);
+            addedNew = true;
+          } else if (demoItem.id === "deal-demo-himalayan-450") {
+            store.put(demoItem);
+            const idx = deals.indexOf(existing);
+            if (idx !== -1) deals[idx] = demoItem;
           }
         }
-        const sequenceId = `sequence:${prefix()}`;
-        const seqReq = store.get(sequenceId);
-        seqReq.onsuccess = () => {
-          const currentCount = seqReq.result?.count || 0;
-          if (currentCount < deals.length) {
-            store.put({ id: sequenceId, count: deals.length });
-          }
-        };
+        if (addedNew) {
+          const sequenceId = `sequence:${prefix()}`;
+          const seqReq = store.get(sequenceId);
+          seqReq.onsuccess = () => {
+            const currentCount = seqReq.result?.count || 0;
+            if (currentCount < deals.length) {
+              store.put({ id: sequenceId, count: deals.length });
+            }
+          };
+        }
       }
       done(deals.sort((a, b) => b.created_at.localeCompare(a.created_at)));
     };

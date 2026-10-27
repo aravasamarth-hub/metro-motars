@@ -100,7 +100,7 @@ export default function DealView() {
           <h1 data-testid="page-title">{deal?.bill_number || t("dealview.details_title", "Deal details")}</h1>
         </div>
         {deal && (
-          <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+          <div className="deal-view-actions" style={{ display: "flex", gap: "8px", alignItems: "center", flexWrap: "wrap" }}>
             {isOwner && (
               <>
                 <button

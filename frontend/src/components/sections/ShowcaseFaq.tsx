@@ -7,7 +7,6 @@ import {
 } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
 import { MotionReveal } from "@/components/motion/MotionReveal";
-import { HelpCircle } from "lucide-react";
 
 export function ShowcaseFaq() {
   const faqs = [

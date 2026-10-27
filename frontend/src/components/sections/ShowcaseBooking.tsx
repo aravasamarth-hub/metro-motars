@@ -9,7 +9,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { ParticleButton } from "@/components/kokonut/ParticleButton";
+import { ShimmerButton } from "@/components/motion-ui/ShimmerButton";
 import { MotionReveal } from "@/components/motion/MotionReveal";
 import { toast } from "sonner";
 import {
@@ -21,7 +21,6 @@ import {
   Sparkles,
   MapPin,
   ShieldCheck,
-  CheckCircle2,
 } from "lucide-react";
 
 export function ShowcaseBooking() {
@@ -213,15 +212,15 @@ export function ShowcaseBooking() {
                     </div>
                   </div>
 
-                  {/* Submit Button with KokonutUI Particle burst */}
+                  {/* Submit Button with Magic UI Shimmer */}
                   <div className="pt-3">
-                    <ParticleButton
+                    <ShimmerButton
                       type="submit"
                       disabled={submitting}
-                      className="w-full bg-gradient-to-r from-amber-500 via-amber-400 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-neutral-950 font-black py-6 rounded-xl shadow-xl shadow-amber-500/20 text-xs sm:text-sm uppercase tracking-wider"
+                      className="w-full text-neutral-950 font-black py-4 rounded-xl shadow-xl shadow-amber-500/25 text-xs sm:text-sm uppercase tracking-wider"
                     >
                       {submitting ? "Reserving Slot…" : "Confirm VIP Slot & Generate Gate Pass"}
-                    </ParticleButton>
+                    </ShimmerButton>
                   </div>
 
                   <p className="text-[11px] text-center text-neutral-500 pt-1">

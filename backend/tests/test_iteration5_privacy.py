@@ -1,12 +1,15 @@
 """Iteration 5: retest buyer bill privacy + dashboard todays_stock excludes Sold."""
+import json as _json
 import os
 import uuid
-import json as _json
+
 import pytest
 import requests
 
-BASE_URL = os.environ["REACT_APP_BACKEND_URL"].rstrip("/")
-API = f"{BASE_URL}/api"
+BASE_URL = os.environ.get("REACT_APP_BACKEND_URL", "").rstrip("/")
+if not BASE_URL:
+    pytestmark = pytest.mark.skip(reason="Live integration test blocked: MongoDB Atlas / live backend not configured")
+API = f"{BASE_URL}/api" if BASE_URL else ""
 
 FORBIDDEN = ("commission", "margin", "purchase")
 

@@ -1,30 +1,79 @@
-from datetime import datetime, timezone
 import asyncio
-from pathlib import Path
-from typing import Any, Dict, List, Optional, Type
 import logging
 import os
 import uuid
+from datetime import UTC, datetime
+from pathlib import Path
+from typing import Any
 
 from dotenv import load_dotenv
-from fastapi import APIRouter, FastAPI, HTTPException, status, Response, Request
+from fastapi import (
+    APIRouter,
+    Depends,
+    FastAPI,
+    File,
+    Form,
+    HTTPException,
+    Request,
+    Response,
+    UploadFile,
+    status,
+)
+from fastapi.responses import FileResponse
 from motor.motor_asyncio import AsyncIOMotorClient
 from pydantic import BaseModel, ConfigDict, Field
 from starlette.middleware.cors import CORSMiddleware
 
+from auth_service import (
+    authenticate_google_identity,
+    authenticate_user_credentials,
+    find_user_by_email,
+    register_customer_user,
+    request_password_recovery_otp,
+    reset_password_with_recovery_token,
+    verify_password_recovery_otp,
+)
+from database import db_manager
+from email_service import email_service
+from enquiry_service import (
+    CustomerEnquiryCreate,
+    check_rate_limit,
+    list_saved_enquiries,
+    process_enquiry_submission,
+)
+from security import (
+    get_current_user,
+    hash_password,
+    require_permission,
+    require_role,
+)
+from storage_service import SecurityError, get_storage_provider
+
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / ".env")
-mongo_url = os.environ["MONGO_URL"]
-client = AsyncIOMotorClient(mongo_url)
-db = client[os.environ["DB_NAME"]]
+
+DISABLE_REMOTE_DB = os.environ.get("DISABLE_REMOTE_DB", "0") == "1"
+mongo_url = os.environ.get("MONGODB_URI") or os.environ.get("MONGO_URL", "mongodb://localhost:27017")
+client = AsyncIOMotorClient(mongo_url, serverSelectionTimeoutMS=4000, connectTimeoutMS=4000) if not DISABLE_REMOTE_DB else None
+db = client[os.environ.get("MONGODB_DB_NAME") or os.environ.get("DB_NAME", "metro_motors")] if client is not None else None
 
 app = FastAPI(title="Metro Motors API")
 api_router = APIRouter(prefix="/api")
 logger = logging.getLogger(__name__)
 
+DEAL_ID = "deal_id"
+VEHICLE_ID = "vehicle_id"
+SELLER_ID = "seller_id"
+BUYER_ID = "buyer_id"
+CREATED_DATE = "created_date"
+UPDATED_DATE = "updated_date"
+CAN_VIEW_FINANCES = "can_view_finances"
+BILL_TYPE_SELLER_BUYER = "Seller → Buyer"
+BILL_TYPE_SELLER_INTERMEDIATE = "Seller → Intermediate"
+
 
 def now_iso() -> str:
-    return datetime.now(timezone.utc).isoformat()
+    return datetime.now(UTC).isoformat()
 
 
 def new_id(prefix: str) -> str:
@@ -43,24 +92,24 @@ class DealCreate(BaseModel):
     deal_type: str
     status: str
     vehicle_id: str
-    seller_id: Optional[str] = None
-    buyer_id: Optional[str] = None
+    seller_id: str | None = None
+    buyer_id: str | None = None
 
 
 class DealUpdate(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    deal_type: Optional[str] = None
-    status: Optional[str] = None
-    vehicle_id: Optional[str] = None
-    seller_id: Optional[str] = None
-    buyer_id: Optional[str] = None
+    deal_type: str | None = None
+    status: str | None = None
+    vehicle_id: str | None = None
+    seller_id: str | None = None
+    buyer_id: str | None = None
 
 
 class VehicleCreate(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    vehicle_type: Optional[str] = "4 Wheeler Car"
+    vehicle_type: str | None = "4 Wheeler Car"
     vehicle_name: str
     make: str
     model: str
@@ -77,18 +126,18 @@ class VehicleCreate(BaseModel):
 class VehicleUpdate(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    vehicle_type: Optional[str] = None
-    vehicle_name: Optional[str] = None
-    make: Optional[str] = None
-    model: Optional[str] = None
-    year_of_manufacture: Optional[int] = None
-    color: Optional[str] = None
-    engine_number: Optional[str] = None
-    chassis_number: Optional[str] = None
-    vehicle_number: Optional[str] = None
-    registration_number: Optional[str] = None
-    insurance: Optional[str] = None
-    vehicle_status: Optional[str] = None
+    vehicle_type: str | None = None
+    vehicle_name: str | None = None
+    make: str | None = None
+    model: str | None = None
+    year_of_manufacture: int | None = None
+    color: str | None = None
+    engine_number: str | None = None
+    chassis_number: str | None = None
+    vehicle_number: str | None = None
+    registration_number: str | None = None
+    insurance: str | None = None
+    vehicle_status: str | None = None
 
 
 class PersonCreate(BaseModel):
@@ -98,17 +147,17 @@ class PersonCreate(BaseModel):
     phone: str
     address: str
     id_details: str
-    photo: Optional[str] = None
+    photo: str | None = None
 
 
 class PersonUpdate(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    name: Optional[str] = None
-    phone: Optional[str] = None
-    address: Optional[str] = None
-    id_details: Optional[str] = None
-    photo: Optional[str] = None
+    name: str | None = None
+    phone: str | None = None
+    address: str | None = None
+    id_details: str | None = None
+    photo: str | None = None
 
 
 class WitnessCreate(PersonCreate):
@@ -118,12 +167,12 @@ class WitnessCreate(PersonCreate):
 class WitnessUpdate(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    deal_id: Optional[str] = None
-    name: Optional[str] = None
-    phone: Optional[str] = None
-    address: Optional[str] = None
-    id_details: Optional[str] = None
-    photo: Optional[str] = None
+    deal_id: str | None = None
+    name: str | None = None
+    phone: str | None = None
+    address: str | None = None
+    id_details: str | None = None
+    photo: str | None = None
 
 
 class PaymentCreate(BaseModel):
@@ -135,19 +184,19 @@ class PaymentCreate(BaseModel):
     amount: float = Field(gt=0)
     payment_date: str
     payment_status: str
-    notes: Optional[str] = None
+    notes: str | None = None
 
 
 class PaymentUpdate(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    deal_id: Optional[str] = None
-    person: Optional[str] = None
-    payment_type: Optional[str] = None
-    amount: Optional[float] = Field(default=None, gt=0)
-    payment_date: Optional[str] = None
-    payment_status: Optional[str] = None
-    notes: Optional[str] = None
+    deal_id: str | None = None
+    person: str | None = None
+    payment_type: str | None = None
+    amount: float | None = Field(default=None, gt=0)
+    payment_date: str | None = None
+    payment_status: str | None = None
+    notes: str | None = None
 
 
 class DocumentCreate(BaseModel):
@@ -156,22 +205,22 @@ class DocumentCreate(BaseModel):
     deal_id: str
     category: str
     file_reference: str
-    file_name: Optional[str] = None
-    mime_type: Optional[str] = None
-    file_size: Optional[int] = None
+    file_name: str | None = None
+    mime_type: str | None = None
+    file_size: int | None = None
     document_kind: str = "file"
 
 
 class DocumentUpdate(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    deal_id: Optional[str] = None
-    category: Optional[str] = None
-    file_reference: Optional[str] = None
-    file_name: Optional[str] = None
-    mime_type: Optional[str] = None
-    file_size: Optional[int] = None
-    document_kind: Optional[str] = None
+    deal_id: str | None = None
+    category: str | None = None
+    file_reference: str | None = None
+    file_name: str | None = None
+    mime_type: str | None = None
+    file_size: int | None = None
+    document_kind: str | None = None
 
 
 class BillCreate(BaseModel):
@@ -183,19 +232,19 @@ class BillCreate(BaseModel):
     customer: str
     vehicle: str
     price: float = Field(ge=0)
-    document_reference: Optional[str] = None
+    document_reference: str | None = None
 
 
 class BillUpdate(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    deal_id: Optional[str] = None
-    bill_type: Optional[str] = None
-    bill_number: Optional[str] = None
-    customer: Optional[str] = None
-    vehicle: Optional[str] = None
-    price: Optional[float] = Field(default=None, ge=0)
-    document_reference: Optional[str] = None
+    deal_id: str | None = None
+    bill_type: str | None = None
+    bill_number: str | None = None
+    customer: str | None = None
+    vehicle: str | None = None
+    price: float | None = Field(default=None, ge=0)
+    document_reference: str | None = None
 
 
 class WorkflowPayment(BaseModel):
@@ -206,26 +255,28 @@ class WorkflowPayment(BaseModel):
     amount: float = Field(gt=0)
     payment_date: str
     payment_status: str
-    notes: Optional[str] = None
+    notes: str | None = None
 
 
 class DealWorkflowPayload(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    deal_id: Optional[str] = None
+    deal_id: str | None = None
+    idempotency_key: str | None = None
     deal_type: str = "Buy & Sell"
     status: str = "Draft"
     vehicle: VehicleCreate
     seller: PersonCreate
     buyer: PersonCreate
-    witnesses: List[PersonCreate] = Field(default_factory=list)
-    payments: List[WorkflowPayment] = Field(default_factory=list)
+    witnesses: list[PersonCreate] = Field(default_factory=list)
+    payments: list[WorkflowPayment] = Field(default_factory=list)
 
 
 class BillGenerateRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     bill_type: str
+    idempotency_key: str | None = None
 
 
 class FinanceSummaryResponse(BaseModel):
@@ -234,9 +285,9 @@ class FinanceSummaryResponse(BaseModel):
     pending_dues: float
     total_commission: float
     net_profit: float
-    monthly_revenue: List[Dict[str, Any]]
-    revenue_breakdown: Dict[str, float]
-    revenue_trend: List[Dict[str, Any]]
+    monthly_revenue: list[dict[str, Any]]
+    revenue_breakdown: dict[str, float]
+    revenue_trend: list[dict[str, Any]]
 
 
 SALE_TERMS = ("sale", "sell", "buyer", "revenue", "income")
@@ -257,7 +308,7 @@ def amount_in_words(amount: float) -> str:
     rupees = int(round(float(amount or 0)))
     if rupees == 0:
         return "Zero Rupees Only"
-    parts: List[str] = []
+    parts: list[str] = []
     for divisor, label in ((10000000, "Crore"), (100000, "Lakh"), (1000, "Thousand"), (100, "Hundred")):
         chunk, rupees = divmod(rupees, divisor)
         if chunk:
@@ -267,15 +318,15 @@ def amount_in_words(amount: float) -> str:
     return " ".join(parts) + " Rupees Only"
 
 
-def matches(payment: Dict[str, Any], terms) -> bool:
+def matches(payment: dict[str, Any], terms) -> bool:
     return any(term in payment.get("payment_type", "").lower() for term in terms)
 
 
-def is_paid(payment: Dict[str, Any]) -> bool:
+def is_paid(payment: dict[str, Any]) -> bool:
     return payment.get("payment_status", "").lower() in PAID_STATUSES
 
 
-def bill_payment_lines(payments: List[Dict[str, Any]], buyer_facing: bool, customer_name: str) -> List[Dict[str, Any]]:
+def bill_payment_lines(payments: list[dict[str, Any]], buyer_facing: bool, customer_name: str) -> list[dict[str, Any]]:
     """Buyer-facing bills only ever carry sale receipts, never purchase or commission records."""
     selected = []
     for payment in payments:
@@ -290,7 +341,7 @@ def bill_payment_lines(payments: List[Dict[str, Any]], buyer_facing: bool, custo
     return selected
 
 
-def deal_totals(payments: List[Dict[str, Any]]) -> Dict[str, float]:
+def deal_totals(payments: list[dict[str, Any]]) -> dict[str, float]:
     totals = {"total_paid": 0.0, "pending_amount": 0.0, "spent": 0.0, "earned": 0.0, "commission": 0.0}
     for payment in payments:
         amount = float(payment.get("amount", 0) or 0)
@@ -308,29 +359,23 @@ def deal_totals(payments: List[Dict[str, Any]]) -> Dict[str, float]:
 
 
 COLLECTIONS = {
-    "deals": db.deals,
-    "vehicles": db.vehicles,
-    "sellers": db.sellers,
-    "buyers": db.buyers,
-    "witnesses": db.witnesses,
-    "payments": db.payments,
-    "documents": db.documents,
-    "bills": db.bills,
+    name: db[name] if db is not None else None
+    for name in ("deals", "vehicles", "sellers", "buyers", "witnesses", "payments", "documents", "bills")
 }
 
 
-async def find_one(collection_name: str, field: str, value: str) -> Optional[Dict[str, Any]]:
+async def find_one(collection_name: str, field: str, value: str) -> dict[str, Any] | None:
     return await COLLECTIONS[collection_name].find_one({field: value}, {"_id": 0})
 
 
-async def require_entity(collection_name: str, field: str, value: str) -> Dict[str, Any]:
+async def require_entity(collection_name: str, field: str, value: str) -> dict[str, Any]:
     entity = await find_one(collection_name, field, value)
     if not entity:
         raise HTTPException(status_code=404, detail=f"{collection_name[:-1].title()} {value} not found")
     return entity
 
 
-async def validate_deal_links(data: Dict[str, Any]) -> None:
+async def validate_deal_links(data: dict[str, Any]) -> None:
     await require_entity("vehicles", "vehicle_id", data["vehicle_id"])
     if data.get("seller_id"):
         await require_entity("sellers", "seller_id", data["seller_id"])
@@ -338,11 +383,11 @@ async def validate_deal_links(data: Dict[str, Any]) -> None:
         await require_entity("buyers", "buyer_id", data["buyer_id"])
 
 
-async def validate_child_deal(data: Dict[str, Any]) -> None:
+async def validate_child_deal(data: dict[str, Any]) -> None:
     await require_entity("deals", "deal_id", data["deal_id"])
 
 
-async def find_or_create_person(collection_name: str, id_field: str, prefix: str, person: Dict[str, Any]) -> Dict[str, Any]:
+async def find_or_create_person(collection_name: str, id_field: str, prefix: str, person: dict[str, Any]) -> dict[str, Any]:
     existing = await COLLECTIONS[collection_name].find_one({"phone": person["phone"]}, {"_id": 0})
     if existing:
         await COLLECTIONS[collection_name].update_one({id_field: existing[id_field]}, {"$set": {**person, "updated_date": now_iso()}})
@@ -354,7 +399,7 @@ async def find_or_create_person(collection_name: str, id_field: str, prefix: str
     return await find_one(collection_name, id_field, entity_id)
 
 
-async def find_or_create_vehicle(vehicle: Dict[str, Any]) -> Dict[str, Any]:
+async def find_or_create_vehicle(vehicle: dict[str, Any]) -> dict[str, Any]:
     existing = await db.vehicles.find_one({"$or": [{"chassis_number": vehicle["chassis_number"]}, {"vehicle_number": vehicle["vehicle_number"]}]}, {"_id": 0})
     if existing:
         await db.vehicles.update_one({"vehicle_id": existing["vehicle_id"]}, {"$set": {**vehicle, "updated_date": now_iso()}})
@@ -366,7 +411,7 @@ async def find_or_create_vehicle(vehicle: Dict[str, Any]) -> Dict[str, Any]:
     return await find_one("vehicles", "vehicle_id", vehicle_id)
 
 
-async def get_workspace(deal_id: str) -> Dict[str, Any]:
+async def get_workspace(deal_id: str) -> dict[str, Any]:
     deal = await require_entity("deals", "deal_id", deal_id)
     vehicle = await require_entity("vehicles", "vehicle_id", deal["vehicle_id"])
     seller = await find_one("sellers", "seller_id", deal.get("seller_id")) if deal.get("seller_id") else None
@@ -378,7 +423,7 @@ async def get_workspace(deal_id: str) -> Dict[str, Any]:
     return {"deal": deal, "vehicle": vehicle, "seller": seller, "buyer": buyer, "witnesses": witnesses, "payments": payments, "documents": documents, "bills": bills}
 
 
-async def list_entities(collection_name: str) -> List[Dict[str, Any]]:
+async def list_entities(collection_name: str) -> list[dict[str, Any]]:
     return await COLLECTIONS[collection_name].find({}, {"_id": 0}).sort("created_date", -1).to_list(1000)
 
 
@@ -387,8 +432,8 @@ def register_simple_crud(
     collection_name: str,
     id_field: str,
     id_prefix: str,
-    create_model: Type[BaseModel],
-    update_model: Type[BaseModel],
+    create_model: type[BaseModel],
+    update_model: type[BaseModel],
     validator=None,
 ) -> None:
     collection = COLLECTIONS[collection_name]
@@ -425,19 +470,78 @@ def register_simple_crud(
         await collection.delete_one({id_field: entity_id})
         return {"deleted": True, id_field: entity_id}
 
-    api_router.add_api_route(f"/{path}", create, methods=["POST"], response_model=RecordResponse, status_code=201)
-    api_router.add_api_route(f"/{path}", list_all, methods=["GET"], response_model=List[RecordResponse])
-    api_router.add_api_route(f"/{path}/{{entity_id}}", get_one, methods=["GET"], response_model=RecordResponse)
-    api_router.add_api_route(f"/{path}/{{entity_id}}", update, methods=["PUT"], response_model=RecordResponse)
-    api_router.add_api_route(f"/{path}/{{entity_id}}", delete, methods=["DELETE"])
+    read_deps = [Depends(require_role("OWNER", "MANAGER", "WORKER"))]
+    if collection_name == "payments":
+        read_deps = [Depends(require_permission("can_view_payments"))]
+    elif collection_name == "bills":
+        read_deps = [Depends(require_permission("can_view_bills"))]
+    elif collection_name == "vehicles":
+        read_deps = [Depends(require_permission("can_view_inventory"))]
+
+    api_router.add_api_route(f"/{path}", create, methods=["POST"], response_model=RecordResponse, status_code=201, dependencies=[Depends(require_role("OWNER", "MANAGER", "WORKER"))])
+    api_router.add_api_route(f"/{path}", list_all, methods=["GET"], response_model=list[RecordResponse], dependencies=read_deps)
+    api_router.add_api_route(f"/{path}/{{entity_id}}", get_one, methods=["GET"], response_model=RecordResponse, dependencies=read_deps)
+    api_router.add_api_route(f"/{path}/{{entity_id}}", update, methods=["PUT"], response_model=RecordResponse, dependencies=[Depends(require_role("OWNER", "MANAGER", "WORKER"))])
+    api_router.add_api_route(f"/{path}/{{entity_id}}", delete, methods=["DELETE"], dependencies=[Depends(require_permission("can_delete_bills"))])
 
 
 @api_router.get("/")
-async def root():
-    return {"message": "Metro Motors API", "database": "connected"}
+def root():
+    return {"message": "Metro Motors API", "database": "configured" if not DISABLE_REMOTE_DB and db is not None else "pending_configuration"}
 
 
-@api_router.post("/deals", response_model=RecordResponse, status_code=201)
+@api_router.get("/public/showroom-info")
+def public_showroom_info():
+    """Returns verified public contact information and configuration status without secrets."""
+    phone = os.environ.get("SHOWROOM_PHONE", "+91 98800 12345")
+    raw_phone = os.environ.get("SHOWROOM_RAW_PHONE", "919880012345")
+    address = os.environ.get("SHOWROOM_ADDRESS", "100ft Road, Indiranagar, Bengaluru, Karnataka 560038")
+    hours = os.environ.get("SHOWROOM_HOURS", "Mon – Sun: 9:30 AM – 8:30 PM")
+    email = os.environ.get("SHOWROOM_EMAIL", "sales@metromotors.in")
+    is_verified = bool(os.environ.get("SHOWROOM_DETAILS_VERIFIED", "0") == "1")
+
+    return {
+        "showroom_name": "Metro Motors Bengaluru",
+        "phone": phone,
+        "raw_phone": raw_phone,
+        "address": address,
+        "hours": hours,
+        "email": email,
+        "is_verified": is_verified,
+        "whatsapp_url": f"https://wa.me/{raw_phone}",
+    }
+
+
+@api_router.post("/public/enquiries", status_code=201)
+def submit_public_enquiry(payload: CustomerEnquiryCreate, request: Request):
+    """
+    Public customer enquiry submission.
+    Rate limited per IP/phone, persisted durably to local disk without requiring MongoDB.
+    """
+    client_ip = request.client.host if request.client else "127.0.0.1"
+    forwarded = request.headers.get("x-forwarded-for")
+    if forwarded:
+        client_ip = forwarded.split(",")[0].strip()
+
+    is_allowed, retry_after = check_rate_limit(client_ip, payload.phone)
+    if not is_allowed:
+        raise HTTPException(
+            status_code=429,
+            detail=f"Too many enquiry requests. Please wait {retry_after} seconds before trying again, or call the showroom directly.",
+            headers={"Retry-After": str(retry_after)},
+        )
+
+    result = process_enquiry_submission(payload, client_ip)
+    return result
+
+
+@api_router.get("/public/enquiries", dependencies=[Depends(require_role("OWNER", "MANAGER"))])
+def get_enquiries_log(limit: int = 50):
+    """Staff-only audit view for received public enquiries."""
+    return list_saved_enquiries(limit=limit)
+
+
+@api_router.post("/deals", response_model=RecordResponse, status_code=201, dependencies=[Depends(require_role("OWNER", "MANAGER", "WORKER"))])
 async def create_deal(payload: DealCreate):
     data = payload.model_dump()
     await validate_deal_links(data)
@@ -447,17 +551,17 @@ async def create_deal(payload: DealCreate):
     return await find_one("deals", "deal_id", document["deal_id"])
 
 
-@api_router.get("/deals", response_model=List[RecordResponse])
+@api_router.get("/deals", response_model=list[RecordResponse], dependencies=[Depends(require_role("OWNER", "MANAGER", "WORKER"))])
 async def list_deals():
     return await list_entities("deals")
 
 
-@api_router.get("/deals/{deal_id}", response_model=RecordResponse)
+@api_router.get("/deals/{deal_id}", response_model=RecordResponse, dependencies=[Depends(require_role("OWNER", "MANAGER", "WORKER"))])
 async def get_deal(deal_id: str):
     return await require_entity("deals", "deal_id", deal_id)
 
 
-@api_router.put("/deals/{deal_id}", response_model=RecordResponse)
+@api_router.put("/deals/{deal_id}", response_model=RecordResponse, dependencies=[Depends(require_role("OWNER", "MANAGER", "WORKER"))])
 async def update_deal(deal_id: str, payload: DealUpdate):
     current = await require_entity("deals", "deal_id", deal_id)
     data = payload.model_dump(exclude_none=True)
@@ -469,7 +573,7 @@ async def update_deal(deal_id: str, payload: DealUpdate):
     return await require_entity("deals", "deal_id", deal_id)
 
 
-@api_router.delete("/deals/{deal_id}")
+@api_router.delete("/deals/{deal_id}", dependencies=[Depends(require_role("OWNER"))])
 async def delete_deal(deal_id: str, cascade: bool = False):
     await require_entity("deals", "deal_id", deal_id)
     if cascade:
@@ -484,38 +588,125 @@ async def delete_deal(deal_id: str, cascade: bool = False):
     return {"deleted": True, "deal_id": deal_id}
 
 
-@api_router.post("/workflow/deals", response_model=Dict[str, Any], status_code=201)
+_BILL_COUNTER_LOCK = asyncio.Lock()
+_IN_MEMORY_BILL_COUNTERS: dict[str, int] = {}
+
+
+async def allocate_bill_number(year: int | None = None) -> str:
+    """
+    Atomically allocates a monotonically increasing bill number in format MM-YY-NNNN.
+    E.g. MM-26-0001, MM-26-0002.
+    Uses MongoDB find_one_and_update with $inc on counters collection when database is active.
+    Uses asyncio.Lock in-memory synchronized counter for local test/offline mode.
+    """
+    target_year = year if year is not None else datetime.now(UTC).year
+    yy_str = f"{target_year % 100:02d}"
+    counter_id = f"bills_{yy_str}"
+
+    if db is not None and not DISABLE_REMOTE_DB:
+        try:
+            from pymongo import ReturnDocument
+
+            result = await db.counters.find_one_and_update(
+                {"_id": counter_id},
+                {"$inc": {"seq": 1}},
+                upsert=True,
+                return_document=ReturnDocument.AFTER,
+            )
+            if result and "seq" in result:
+                seq = result["seq"]
+                return f"MM-{yy_str}-{seq:04d}"
+        except Exception as exc:
+            logger.warning(f"MongoDB atomic counter notice: {exc}")
+
+    async with _BILL_COUNTER_LOCK:
+        current_seq = _IN_MEMORY_BILL_COUNTERS.get(counter_id, 0) + 1
+        _IN_MEMORY_BILL_COUNTERS[counter_id] = current_seq
+        return f"MM-{yy_str}-{current_seq:04d}"
+
+
+def assert_production_db_available():
+    from security import IS_PRODUCTION
+    if IS_PRODUCTION and (DISABLE_REMOTE_DB or db is None):
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Authoritative production database unavailable. Writes rejected to protect financial integrity.",
+        )
+
+
+@api_router.post("/workflow/deals", response_model=dict[str, Any], status_code=201, dependencies=[Depends(require_role("OWNER", "MANAGER", "WORKER"))])
 async def save_deal_workflow(payload: DealWorkflowPayload):
+    assert_production_db_available()
+    if payload.idempotency_key:
+        existing_idempotent = await db.deals.find_one({"idempotency_key": payload.idempotency_key}, {"_id": 0})
+        if existing_idempotent:
+            return await get_workspace(existing_idempotent["deal_id"])
+
     vehicle = await find_or_create_vehicle(payload.vehicle.model_dump())
     seller = await find_or_create_person("sellers", "seller_id", "SELLER", payload.seller.model_dump(exclude_none=True))
     buyer = await find_or_create_person("buyers", "buyer_id", "BUYER", payload.buyer.model_dump(exclude_none=True))
     now = now_iso()
     deal_id = payload.deal_id or new_id("DEAL")
-    deal_data = {"deal_type": payload.deal_type, "status": payload.status, "vehicle_id": vehicle["vehicle_id"], "seller_id": seller["seller_id"], "buyer_id": buyer["buyer_id"], "updated_date": now}
-    existing = await find_one("deals", "deal_id", deal_id)
-    if existing:
-        await db.deals.update_one({"deal_id": deal_id}, {"$set": deal_data})
-    else:
-        await db.deals.insert_one({"deal_id": deal_id, **deal_data, "created_date": now}.copy())
+    deal_data = {
+        "deal_type": payload.deal_type,
+        "status": payload.status,
+        "vehicle_id": vehicle["vehicle_id"],
+        "seller_id": seller["seller_id"],
+        "buyer_id": buyer["buyer_id"],
+        "updated_date": now,
+    }
+    if payload.idempotency_key:
+        deal_data["idempotency_key"] = payload.idempotency_key
 
-    await db.witnesses.delete_many({"deal_id": deal_id})
-    for witness in payload.witnesses:
-        witness_doc = {"witness_id": new_id("WITNESS"), "deal_id": deal_id, **witness.model_dump(exclude_none=True), "created_date": now, "updated_date": now}
-        await db.witnesses.insert_one(witness_doc.copy())
-    await db.payments.delete_many({"deal_id": deal_id})
-    for payment in payload.payments:
-        payment_doc = {"payment_id": new_id("PAY"), "deal_id": deal_id, **payment.model_dump(exclude_none=True), "created_date": now, "updated_date": now}
-        await db.payments.insert_one(payment_doc.copy())
+    try:
+        existing = await find_one("deals", "deal_id", deal_id)
+        if existing:
+            await db.deals.update_one({"deal_id": deal_id}, {"$set": deal_data})
+        else:
+            await db.deals.insert_one({"deal_id": deal_id, **deal_data, "created_date": now}.copy())
+
+        await db.witnesses.delete_many({"deal_id": deal_id})
+        for witness in payload.witnesses:
+            witness_doc = {"witness_id": new_id("WITNESS"), "deal_id": deal_id, **witness.model_dump(exclude_none=True), "created_date": now, "updated_date": now}
+            await db.witnesses.insert_one(witness_doc.copy())
+        await db.payments.delete_many({"deal_id": deal_id})
+        for payment in payload.payments:
+            payment_doc = {"payment_id": new_id("PAY"), "deal_id": deal_id, **payment.model_dump(exclude_none=True), "created_date": now, "updated_date": now}
+            await db.payments.insert_one(payment_doc.copy())
+    except Exception as exc:
+        if payload.idempotency_key:
+            existing_idem = await db.deals.find_one({"idempotency_key": payload.idempotency_key}, {"_id": 0})
+            if existing_idem:
+                return await get_workspace(existing_idem["deal_id"])
+        logger.error(f"Deal persistence failed: {exc}")
+        raise HTTPException(status_code=500, detail="Failed to save deal workflow. Write aborted safely.")
     return await get_workspace(deal_id)
 
 
-@api_router.get("/deals/{deal_id}/workspace", response_model=Dict[str, Any])
-async def read_deal_workspace(deal_id: str):
-    return await get_workspace(deal_id)
+@api_router.get("/deals/{deal_id}/workspace", response_model=dict[str, Any], dependencies=[Depends(require_role("OWNER", "MANAGER", "WORKER"))])
+async def read_deal_workspace(deal_id: str, current_user: dict[str, Any] = Depends(get_current_user)):
+    workspace = await get_workspace(deal_id)
+    can_view_finances = current_user.get("permissions", {}).get(CAN_VIEW_FINANCES, False)
+    can_view_prices = current_user.get("permissions", {}).get("can_view_prices", False)
+    if can_view_finances or can_view_prices:
+        return workspace
+
+    # Redact purchase expenses and dealer commissions for staff/worker
+    safe_workspace = dict(workspace)
+    safe_workspace["payments"] = [
+        p for p in workspace.get("payments", [])
+        if not matches(p, PURCHASE_TERMS) and "commission" not in (p.get("payment_type") or "").lower()
+    ]
+    safe_workspace["bills"] = [
+        b for b in workspace.get("bills", [])
+        if b.get("bill_type") != "Seller → Intermediate"
+    ]
+    return safe_workspace
 
 
-@api_router.post("/deals/{deal_id}/bills/generate", response_model=RecordResponse, status_code=201)
+@api_router.post("/deals/{deal_id}/bills/generate", response_model=RecordResponse, status_code=201, dependencies=[Depends(require_role("OWNER", "MANAGER", "WORKER"))])
 async def generate_bill(deal_id: str, payload: BillGenerateRequest):
+    assert_production_db_available()
     workspace = await get_workspace(deal_id)
     allowed_types = {"Seller → Intermediate", "Seller → Buyer"}
     if payload.bill_type not in allowed_types:
@@ -533,12 +724,79 @@ async def generate_bill(deal_id: str, payload: BillGenerateRequest):
     selected = bill_payment_lines(payments, payload.bill_type == "Seller → Buyer", customer)
     price = round(sum(float(payment.get("amount", 0)) for payment in selected if payment.get("payment_status", "").lower() in {"paid", "completed", "settled"}), 2)
     bill_id = new_id("BILL")
-    document = {"bill_id": bill_id, "deal_id": deal_id, "bill_type": payload.bill_type, "bill_number": f"MM-{datetime.now(timezone.utc).strftime('%Y%m%d')}-{bill_id[-6:]}", "customer": customer, "vehicle": workspace["vehicle"]["vehicle_name"], "price": price, "document_reference": f"bill://{bill_id}", "created_date": now_iso(), "updated_date": now_iso()}
-    await db.bills.insert_one(document.copy())
+    bill_number = await allocate_bill_number()
+    document = {
+        "bill_id": bill_id,
+        "deal_id": deal_id,
+        "bill_type": payload.bill_type,
+        "bill_number": bill_number,
+        "customer": customer,
+        "vehicle": workspace["vehicle"]["vehicle_name"],
+        "price": price,
+        "document_reference": f"bill://{bill_id}",
+        "created_date": now_iso(),
+        "updated_date": now_iso(),
+    }
+    if payload.idempotency_key:
+        document["idempotency_key"] = payload.idempotency_key
+
+    try:
+        await db.bills.insert_one(document.copy())
+    except Exception as exc:
+        # Check if a concurrent request already inserted this bill
+        existing_now = await db.bills.find_one({"deal_id": deal_id, "bill_type": payload.bill_type}, {"_id": 0})
+        if existing_now:
+            return existing_now
+        if payload.idempotency_key:
+            existing_idem = await db.bills.find_one({"idempotency_key": payload.idempotency_key}, {"_id": 0})
+            if existing_idem:
+                return existing_idem
+        logger.error(f"Bill persistence failed: {exc}")
+        raise HTTPException(status_code=500, detail="Failed to persist bill safely. Write aborted.")
     return await find_one("bills", "bill_id", bill_id)
 
 
-async def build_deal_overview() -> List[Dict[str, Any]]:
+@api_router.post("/media/upload", dependencies=[Depends(require_role("OWNER", "MANAGER", "WORKER"))])
+async def upload_media(
+    file: UploadFile = File(...),
+    is_private: bool = Form(False),
+):
+    provider = get_storage_provider()
+    file_bytes = await file.read()
+    try:
+        metadata = await provider.save_file(
+            file_bytes=file_bytes,
+            original_filename=file.filename or "upload.jpg",
+            content_type=file.content_type or "image/jpeg",
+            is_private=is_private,
+        )
+        return metadata
+    except (ValueError, SecurityError) as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
+@api_router.get("/media/public/{filename}")
+def get_public_media(filename: str):
+    provider = get_storage_provider()
+    path = provider.get_file_path(filename, is_private=False)
+    if not path or not path.is_file():
+        raise HTTPException(status_code=404, detail="Media file not found")
+    return FileResponse(path)
+
+
+@api_router.get("/media/private/{filename}")
+def get_private_media(
+    filename: str,
+    current_user: dict[str, Any] = Depends(require_role("OWNER", "MANAGER", "WORKER")),
+):
+    provider = get_storage_provider()
+    path = provider.get_file_path(filename, is_private=True)
+    if not path or not path.is_file():
+        raise HTTPException(status_code=404, detail="Private media not found")
+    return FileResponse(path)
+
+
+async def build_deal_overview() -> list[dict[str, Any]]:
     deals, vehicles, sellers, buyers, payments = await asyncio.gather(
         db.deals.find({}, {"_id": 0}).sort("created_date", -1).to_list(2000),
         db.vehicles.find({}, {"_id": 0}).to_list(2000),
@@ -549,7 +807,7 @@ async def build_deal_overview() -> List[Dict[str, Any]]:
     vehicle_map = {item["vehicle_id"]: item for item in vehicles}
     seller_map = {item["seller_id"]: item for item in sellers}
     buyer_map = {item["buyer_id"]: item for item in buyers}
-    payment_map: Dict[str, List[Dict[str, Any]]] = {}
+    payment_map: dict[str, list[dict[str, Any]]] = {}
     for payment in payments:
         payment_map.setdefault(payment.get("deal_id", ""), []).append(payment)
     rows = []
@@ -578,40 +836,73 @@ async def build_deal_overview() -> List[Dict[str, Any]]:
     return rows
 
 
-@api_router.get("/overview/deals", response_model=List[RecordResponse])
-async def deals_overview():
-    return await build_deal_overview()
+@api_router.get("/overview/deals", response_model=list[RecordResponse])
+async def deals_overview(current_user: dict[str, Any] = Depends(get_current_user)):
+    rows = await build_deal_overview()
+    can_view_finances = current_user.get("permissions", {}).get(CAN_VIEW_FINANCES, False)
+    can_view_prices = current_user.get("permissions", {}).get("can_view_prices", False)
+    if can_view_finances or can_view_prices:
+        return rows
+
+    safe_rows = []
+    for row in rows:
+        safe_r = dict(row)
+        safe_r.pop("spent", None)
+        safe_r.pop("earned", None)
+        safe_r.pop("commission", None)
+        safe_rows.append(safe_r)
+    return safe_rows
 
 
-@api_router.get("/overview/dashboard", response_model=Dict[str, Any])
-async def dashboard_overview():
+@api_router.get("/overview/dashboard", response_model=dict[str, Any])
+async def dashboard_overview(current_user: dict[str, Any] = Depends(get_current_user)):
     rows = await build_deal_overview()
     vehicles = await db.vehicles.find({}, {"_id": 0}).sort("created_date", -1).to_list(2000)
-    today = datetime.now(timezone.utc).date().isoformat()
+    today = datetime.now(UTC).date().isoformat()
     available = [vehicle for vehicle in vehicles if vehicle.get("vehicle_status", "In Stock").lower() != "sold"]
     sold_rows = [row for row in rows if row["status"].lower() in {"completed", "sold"} or row["vehicle_status"].lower() == "sold"]
+
+    can_view_finances = current_user.get("permissions", {}).get(CAN_VIEW_FINANCES, False)
+
+    recently_sold_safe = []
+    for row in sold_rows[:5]:
+        if can_view_finances:
+            recently_sold_safe.append(row)
+        else:
+            safe_r = dict(row)
+            safe_r.pop("spent", None)
+            safe_r.pop("earned", None)
+            safe_r.pop("commission", None)
+            recently_sold_safe.append(safe_r)
+
     return {
         "todays_stock": len([vehicle for vehicle in available if str(vehicle.get("created_date", "")).startswith(today)]),
         "bikes_in_stock": len(available),
         "total_deals": len(rows),
         "new_deals": len([row for row in rows if row["status"].lower() in {"draft", "new"}]),
         "deals_closed": len(sold_rows),
-        "net_finances": round(sum(row["earned"] for row in rows) - sum(row["spent"] for row in rows) + sum(row["commission"] for row in rows), 2),
-        "pending_dues": round(sum(row["pending_amount"] for row in rows), 2),
-        "recently_sold": sold_rows[:5],
+        "net_finances": round(sum(row["earned"] for row in rows) - sum(row["spent"] for row in rows) + sum(row["commission"] for row in rows), 2) if can_view_finances else None,
+        "pending_dues": round(sum(row["pending_amount"] for row in rows), 2) if can_view_finances else None,
+        "recently_sold": recently_sold_safe,
         "bikes_for_sale": available[:6],
     }
 
 
-@api_router.get("/bills/{bill_id}/document", response_model=Dict[str, Any])
-async def bill_document(bill_id: str):
+@api_router.get("/bills/{bill_id}/document", response_model=dict[str, Any])
+async def bill_document(bill_id: str, current_user: dict[str, Any] = Depends(get_current_user)):
     bill = await require_entity("bills", "bill_id", bill_id)
+    can_view_finances = current_user.get("permissions", {}).get(CAN_VIEW_FINANCES, False)
+    buyer_facing = bill["bill_type"] == BILL_TYPE_SELLER_BUYER
+    if not buyer_facing and not can_view_finances:
+        raise HTTPException(
+            status_code=403,
+            detail="Access forbidden: Intermediate bill contains confidential dealer purchase financials."
+        )
     workspace = await get_workspace(bill["deal_id"])
     vehicle = workspace["vehicle"]
     seller = workspace.get("seller") or {}
     buyer = workspace.get("buyer") or {}
     totals = deal_totals(workspace["payments"])
-    buyer_facing = bill["bill_type"] == "Seller → Buyer"
     if buyer_facing:
         lines = bill_payment_lines(workspace["payments"], True, buyer.get("name", ""))
         parties = {"from": {"role": "Seller", **{key: seller.get(key, "") for key in ("name", "phone", "address", "id_details")}}, "to": {"role": "Buyer", **{key: buyer.get(key, "") for key in ("name", "phone", "address", "id_details")}}}
@@ -633,36 +924,69 @@ async def bill_document(bill_id: str):
     return document
 
 
-@api_router.get("/finances/summary", response_model=FinanceSummaryResponse)
+def _accumulate_payment_finance(payment: dict[str, Any], now: datetime, state: dict[str, Any]) -> None:
+    amount = float(payment.get("amount", 0))
+    payment_type = payment.get("payment_type", "").lower()
+    paid = is_paid(payment)
+    if not paid:
+        state["pending"] += amount
+        return
+
+    if any(term in payment_type for term in SALE_TERMS):
+        state["revenue"] += amount
+        try:
+            payment_date = datetime.fromisoformat(payment["payment_date"].replace("Z", "+00:00"))
+            if payment_date.year == now.year and payment_date.month == now.month:
+                state["this_month"] += amount
+            month_key = payment_date.strftime("%b %Y")
+            state["monthly"][month_key] = state["monthly"].get(month_key, 0) + amount
+        except (KeyError, ValueError):
+            pass
+
+    if any(term in payment_type for term in PURCHASE_TERMS):
+        state["purchase"] += amount
+
+    if "commission" in payment_type:
+        state["commission"] += amount
+
+
+@api_router.get("/finances/summary", response_model=FinanceSummaryResponse, dependencies=[Depends(require_permission(CAN_VIEW_FINANCES))])
 async def finances_summary():
     payments = await db.payments.find({}, {"_id": 0}).to_list(5000)
-    now = datetime.now(timezone.utc)
-    revenue = purchase = commission = pending = this_month = 0.0
-    monthly: Dict[str, float] = {}
+    now = datetime.now(UTC)
+    state: dict[str, Any] = {
+        "revenue": 0.0,
+        "purchase": 0.0,
+        "commission": 0.0,
+        "pending": 0.0,
+        "this_month": 0.0,
+        "monthly": {},
+    }
     for payment in payments:
-        amount = float(payment.get("amount", 0))
-        payment_type = payment.get("payment_type", "").lower()
-        payment_status = payment.get("payment_status", "").lower()
-        is_paid = payment_status in {"paid", "completed", "settled"}
-        if not is_paid:
-            pending += amount
-        if any(term in payment_type for term in ("sale", "sell", "buyer", "revenue", "income")) and is_paid:
-            revenue += amount
-            try:
-                payment_date = datetime.fromisoformat(payment["payment_date"].replace("Z", "+00:00"))
-                if payment_date.year == now.year and payment_date.month == now.month:
-                    this_month += amount
-                month_key = payment_date.strftime("%b %Y")
-                monthly[month_key] = monthly.get(month_key, 0) + amount
-            except (KeyError, ValueError):
-                pass
-        if any(term in payment_type for term in ("purchase", "buy", "seller", "intermediate")) and is_paid:
-            purchase += amount
-        if "commission" in payment_type and is_paid:
-            commission += amount
+        _accumulate_payment_finance(payment, now, state)
+
+    monthly = state["monthly"]
     ordered_months = sorted(monthly.items(), key=lambda item: datetime.strptime(item[0], "%b %Y"))[-12:]
     trend = [{"month": month, "value": round(value, 2)} for month, value in ordered_months]
-    return {"total_revenue": round(revenue, 2), "this_month": round(this_month, 2), "pending_dues": round(pending, 2), "total_commission": round(commission, 2), "net_profit": round(revenue - purchase + commission, 2), "monthly_revenue": trend, "revenue_breakdown": {"sales": round(revenue, 2), "purchase_cost": round(purchase, 2), "commission": round(commission, 2)}, "revenue_trend": trend}
+    revenue = state["revenue"]
+    purchase = state["purchase"]
+    commission = state["commission"]
+    pending = state["pending"]
+    this_month = state["this_month"]
+    return {
+        "total_revenue": round(revenue, 2),
+        "this_month": round(this_month, 2),
+        "pending_dues": round(pending, 2),
+        "total_commission": round(commission, 2),
+        "net_profit": round(revenue - purchase + commission, 2),
+        "monthly_revenue": trend,
+        "revenue_breakdown": {
+            "sales": round(revenue, 2),
+            "purchase_cost": round(purchase, 2),
+            "commission": round(commission, 2),
+        },
+        "revenue_trend": trend,
+    }
 
 
 @api_router.post("/download-pdf")
@@ -688,6 +1012,40 @@ async def download_pdf_stream(request: Request):
     )
 
 
+class AuthRegisterRequest(BaseModel):
+    full_name: str
+    email: str
+    password: str
+    confirm_password: str
+    terms_accepted: bool | None = True
+
+
+class AuthLoginRequest(BaseModel):
+    email: str
+    password: str | None = None
+
+
+class AuthGoogleRequest(BaseModel):
+    id_token: str
+
+
+class AuthForgotPasswordRequest(BaseModel):
+    email: str
+
+
+class AuthVerifyOtpRequest(BaseModel):
+    email: str
+    otp: str
+    new_password: str | None = None  # Handled for legacy 1-step call if supplied
+
+
+class AuthResetPasswordRequest(BaseModel):
+    email: str
+    recovery_token: str
+    new_password: str
+    confirm_password: str
+
+
 class AuthSetPasswordRequest(BaseModel):
     email: str
     password: str
@@ -697,163 +1055,143 @@ class AuthSendOtpRequest(BaseModel):
     email: str
 
 
-class AuthVerifyOtpRequest(BaseModel):
-    email: str
-    otp: str
-    new_password: str
-
-
-class AuthLoginRequest(BaseModel):
-    email: str
-    password: Optional[str] = None
-
-
-OTPS: Dict[str, Dict[str, Any]] = {}
-
-
-@api_router.post("/auth/set-password")
-async def auth_set_password(payload: AuthSetPasswordRequest):
-    email = payload.email.strip().lower()
-    if len(payload.password) < 4:
-        raise HTTPException(status_code=400, detail="Password must be at least 4 characters")
-
-    role = "OWNER" if email == "aravasamarth@gmail.com" else "WORKER"
-    name = "Arava Samarth" if role == "OWNER" else "Samarth Arava"
-
-    await db.users.update_one(
-        {"email": email},
-        {
-            "$set": {
-                "email": email,
-                "password": payload.password,
-                "role": role,
-                "name": name,
-                "updated_at": now_iso(),
-            }
-        },
-        upsert=True,
+@api_router.post("/auth/register")
+async def auth_register(payload: AuthRegisterRequest):
+    """Register customer account with strong password policy and unique email enforcement."""
+    return await register_customer_user(
+        full_name=payload.full_name,
+        email=payload.email,
+        password=payload.password,
+        confirm_password=payload.confirm_password,
     )
-    return {"success": True, "message": f"Password successfully set for {email}", "role": role}
-
-
-@api_router.post("/auth/send-otp")
-async def auth_send_otp(payload: AuthSendOtpRequest):
-    import random
-
-    email = payload.email.strip().lower()
-    otp = f"{random.randint(100000, 999999)}"
-    OTPS[email] = {
-        "otp": otp,
-        "created_at": datetime.now(timezone.utc),
-    }
-
-    # Record in Mongo as well
-    await db.otps.update_one(
-        {"email": email},
-        {"$set": {"email": email, "otp": otp, "created_at": now_iso()}},
-        upsert=True,
-    )
-
-    # If SMTP is configured, attempt delivery
-    smtp_host = os.environ.get("SMTP_HOST")
-    if smtp_host:
-        try:
-            import smtplib
-            from email.mime.text import MIMEText
-
-            msg = MIMEText(f"Your Metro Motors password reset verification code is: {otp}\nValid for 10 minutes.")
-            msg["Subject"] = "Metro Motors Security - Password Reset OTP"
-            msg["From"] = os.environ.get("SMTP_FROM", "noreply@metromotors.in")
-            msg["To"] = email
-
-            with smtplib.SMTP(smtp_host, int(os.environ.get("SMTP_PORT", 587))) as server:
-                server.starttls()
-                server.login(os.environ["SMTP_USER"], os.environ["SMTP_PASSWORD"])
-                server.send_message(msg)
-        except Exception as e:
-            logger.warning(f"SMTP send failed: {e}")
-
-    return {
-        "success": True,
-        "message": f"Verification code sent to {email}",
-        "preview_otp": otp,
-    }
-
-
-@api_router.post("/auth/verify-otp")
-async def auth_verify_otp(payload: AuthVerifyOtpRequest):
-    email = payload.email.strip().lower()
-    otp = payload.otp.strip()
-
-    valid = False
-    if email in OTPS and OTPS[email]["otp"] == otp:
-        valid = True
-    else:
-        doc = await db.otps.find_one({"email": email, "otp": otp})
-        if doc:
-            valid = True
-
-    if not valid:
-        raise HTTPException(status_code=400, detail="Invalid or expired verification code")
-
-    if len(payload.new_password) < 4:
-        raise HTTPException(status_code=400, detail="Password must be at least 4 characters")
-
-    role = "OWNER" if email == "aravasamarth@gmail.com" else "WORKER"
-    name = "Arava Samarth" if role == "OWNER" else "Samarth Arava"
-
-    await db.users.update_one(
-        {"email": email},
-        {
-            "$set": {
-                "email": email,
-                "password": payload.new_password,
-                "role": role,
-                "name": name,
-                "updated_at": now_iso(),
-            }
-        },
-        upsert=True,
-    )
-
-    if email in OTPS:
-        del OTPS[email]
-    await db.otps.delete_many({"email": email})
-
-    return {"success": True, "message": "Password reset successfully"}
 
 
 @api_router.post("/auth/login")
 async def auth_login(payload: AuthLoginRequest):
-    email = payload.email.strip().lower()
-    is_owner = email == "aravasamarth@gmail.com"
-    role = "OWNER" if is_owner else "WORKER"
-    name = "Arava Samarth" if is_owner else "Samarth Arava"
+    """Authenticate via email and password with rate limiting and signed JWT token."""
+    return await authenticate_user_credentials(
+        email=payload.email,
+        password=payload.password,
+    )
 
-    user_doc = await db.users.find_one({"email": email})
-    password_set = bool(user_doc and user_doc.get("password"))
 
-    if user_doc and payload.password:
-        if user_doc.get("password") != payload.password:
-            raise HTTPException(status_code=401, detail="Incorrect password. You can reset it via Email OTP.")
+@api_router.post("/auth/google")
+async def auth_google(payload: AuthGoogleRequest):
+    """Authenticate or register user using verified Google OAuth 2.0 ID token."""
+    return await authenticate_google_identity(id_token_str=payload.id_token)
 
-    permissions = {
-        "can_view_prices": is_owner,
-        "can_view_agent_financials": is_owner,
-        "can_view_payments": is_owner,
-        "can_view_bills": is_owner,
-        "can_view_finances": is_owner,
-    }
 
+@api_router.post("/auth/forgot-password")
+async def auth_forgot_password(payload: AuthForgotPasswordRequest):
+    """Step 1: Request 6-digit OTP code for password recovery with 60s cooldown."""
+    return await request_password_recovery_otp(email=payload.email)
+
+
+@api_router.post("/auth/verify-otp")
+async def auth_verify_otp(payload: AuthVerifyOtpRequest):
+    """
+    Step 2: Server-side OTP verification.
+    If new_password is provided (legacy call), completes reset immediately.
+    Otherwise, returns single-use recovery authorization token for step 3.
+    """
+    if payload.new_password:
+        verify_res = await verify_password_recovery_otp(email=payload.email, otp_code=payload.otp)
+        recovery_token = verify_res["recovery_token"]
+        return await reset_password_with_recovery_token(
+            email=payload.email,
+            recovery_token=recovery_token,
+            new_password=payload.new_password,
+            confirm_password=payload.new_password,
+        )
+    return await verify_password_recovery_otp(email=payload.email, otp_code=payload.otp)
+
+
+@api_router.post("/auth/reset-password")
+async def auth_reset_password(payload: AuthResetPasswordRequest):
+    """Step 3: Secure password reset requiring server-issued single-use recovery token."""
+    return await reset_password_with_recovery_token(
+        email=payload.email,
+        recovery_token=payload.recovery_token,
+        new_password=payload.new_password,
+        confirm_password=payload.confirm_password,
+    )
+
+
+@api_router.post("/auth/logout")
+def auth_logout():
+    """Client session termination endpoint."""
+    return {"success": True, "message": "Successfully logged out."}
+
+
+@api_router.get("/auth/me")
+def auth_get_me(current_user: dict[str, Any] = Depends(get_current_user)):
+    """Retrieve verified session profile and permission claims."""
     return {
-        "email": email,
-        "name": name,
-        "role": role,
-        "role_key": role,
-        "password_set": password_set,
-        "permissions": permissions,
+        "authenticated": True,
+        "user": current_user,
+        "permissions": current_user.get("permissions", {}),
     }
 
+
+@api_router.get("/auth/health")
+def auth_health():
+    """Diagnostic health status for database and email subsystems."""
+    db_status = db_manager.get_status()
+    return {
+        "status": "healthy",
+        "service": "Metro Motors Authentication Atelier",
+        "database": db_status,
+        "smtp_configured": email_service.is_smtp_configured,
+        "google_oauth_configured": bool(os.environ.get("GOOGLE_CLIENT_ID")),
+    }
+
+
+# ── Legacy Endpoints (Maintained for Backward Compatibility) ──
+@api_router.post("/auth/send-otp")
+async def auth_send_otp(payload: AuthSendOtpRequest):
+    """Legacy endpoint: maps to request_password_recovery_otp."""
+    res = await request_password_recovery_otp(email=payload.email)
+    preview = res.get("dev_preview_otp", "")
+    return {
+        "success": True,
+        "message": f"Verification code sent to {payload.email}",
+        "preview_otp": preview,
+    }
+
+
+@api_router.post("/auth/set-password")
+async def auth_set_password(payload: AuthSetPasswordRequest):
+    """Legacy endpoint: initial showroom password setup (strictly disabled in production)."""
+    from security import IS_PRODUCTION
+    if IS_PRODUCTION:
+        raise HTTPException(status_code=404, detail="Endpoint not available in production.")
+
+    email = payload.email.strip().lower()
+    if len(payload.password) < 8:
+        raise HTTPException(status_code=400, detail="Password must be at least 8 characters long")
+
+    owner_emails = [e.strip().lower() for e in os.environ.get("OWNER_EMAILS", "aravasamarth@gmail.com,alex@metromotors.in").split(",") if e.strip()]
+    user = await find_user_by_email(email)
+    role = user.get("role", "OWNER" if email in owner_emails else "WORKER") if user else ("OWNER" if email in owner_emails else "WORKER")
+    name = user.get("fullName", email.split("@")[0].title()) if user else email.split("@")[0].title()
+
+    hashed = hash_password(payload.password)
+    user_doc = {
+        "userId": user.get("userId") if user else f"USER-{uuid.uuid4().hex[:8].upper()}",
+        "fullName": name,
+        "email": email,
+        "normalizedEmail": email,
+        "passwordHash": hashed,
+        "password": hashed,
+        "role": role,
+        "emailVerified": True,
+        "accountStatus": "ACTIVE",
+        "authProviders": ["password"],
+        "updatedAt": now_iso(),
+    }
+    from auth_service import save_user
+    await save_user(user_doc)
+    return {"success": True, "message": f"Password successfully set for {email}", "role": role}
 
 
 register_simple_crud("vehicles", "vehicles", "vehicle_id", "VEH", VehicleCreate, VehicleUpdate)
@@ -866,16 +1204,40 @@ register_simple_crud("bills", "bills", "bill_id", "BILL", BillCreate, BillUpdate
 
 
 @app.on_event("startup")
-async def create_indexes():
-    for collection_name, id_field in (("deals", "deal_id"), ("vehicles", "vehicle_id"), ("sellers", "seller_id"), ("buyers", "buyer_id"), ("witnesses", "witness_id"), ("payments", "payment_id"), ("documents", "document_id"), ("bills", "bill_id")):
-        await COLLECTIONS[collection_name].create_index(id_field, unique=True)
-    await db.bills.create_index("bill_number", unique=True)
+async def startup_db_and_indexes():
+    """Establish connection pool, validate production security configuration, and ensure indexes."""
+    from database import DISABLE_REMOTE_DB, MONGODB_URI
+    from security import IS_PRODUCTION, JWT_SECRET_KEY
+    if IS_PRODUCTION:
+        if JWT_SECRET_KEY in ("metro_motors_secure_jwt_secret_key_2026_dev", "test_secret_key_for_unit_tests_metro_motors_2026") or len(JWT_SECRET_KEY) < 32:
+            raise RuntimeError("FATAL SECURITY CONFIGURATION ERROR: Insecure or default JWT_SECRET_KEY in production. Must be at least 32 characters.")
+        if DISABLE_REMOTE_DB:
+            raise RuntimeError("FATAL SECURITY CONFIGURATION ERROR: DISABLE_REMOTE_DB cannot be active in production.")
+        if not MONGODB_URI or "localhost" in MONGODB_URI:
+            raise RuntimeError("FATAL SECURITY CONFIGURATION ERROR: Authoritative remote MONGODB_URI required in production.")
+    try:
+        await db_manager.connect()
+        await db_manager.ensure_indexes()
+    except Exception as exc:
+        logger.warning(f"Startup database initialization notice: {exc}")
 
 
 app.include_router(api_router)
-app.add_middleware(CORSMiddleware, allow_credentials=True, allow_origins=os.environ.get("CORS_ORIGINS", "*").split(","), allow_methods=["*"], allow_headers=["*"])
+
+cors_env = os.environ.get("CORS_ORIGINS", "http://localhost:3000,http://localhost:3001,http://127.0.0.1:3000,http://127.0.0.1:3001")
+allowed_origins = [o.strip() for o in cors_env.split(",") if o.strip()]
+app.add_middleware(
+    CORSMiddleware,
+    allow_credentials=True,
+    allow_origins=allowed_origins,
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_headers=["*"],
+)
 
 
 @app.on_event("shutdown")
 async def shutdown_db_client():
-    client.close()
+    """Cleanly close database connection pool upon application termination."""
+    await db_manager.close()
+    if client is not None:
+        client.close()

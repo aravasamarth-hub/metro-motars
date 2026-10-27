@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { animate, createTimeline } from "animejs";
+import { createTimeline } from "animejs";
 
 /**
  * Custom hook to drive the "How It Works" 4-step automotive roadmap using Anime.js v4.
@@ -23,7 +23,16 @@ export function useAnimeRoadmap() {
     const path = pathRef.current;
     if (!path) return;
 
-    const pathLength = path.getTotalLength ? path.getTotalLength() : 1000;
+    let pathLength = 1000;
+    try {
+      if (typeof path.getTotalLength === "function") {
+        const len = path.getTotalLength();
+        if (len > 10) pathLength = len;
+      }
+    } catch {
+      pathLength = 1000;
+    }
+
     path.style.strokeDasharray = `${pathLength}`;
     path.style.strokeDashoffset = `${pathLength}`;
 
@@ -61,8 +70,9 @@ export function useAnimeRoadmap() {
 
     // Clean up Anime.js timeline on unmount
     return () => {
-      if (timelineRef.current && typeof timelineRef.current.pause === "function") {
-        timelineRef.current.pause();
+      if (timelineRef.current) {
+        if (typeof timelineRef.current.pause === "function") timelineRef.current.pause();
+        if (typeof timelineRef.current.revert === "function") timelineRef.current.revert();
       }
     };
   }, []);

@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { animate, createTimeline } from "animejs";
+import { createTimeline } from "animejs";
 
 /**
  * Hook to run an Anime.js v4 cinematic title sequence on hero mount.
@@ -64,8 +64,9 @@ export function useAnimeHeroTitle() {
     }
 
     return () => {
-      if (timelineRef.current && typeof timelineRef.current.pause === "function") {
-        timelineRef.current.pause();
+      if (timelineRef.current) {
+        if (typeof timelineRef.current.pause === "function") timelineRef.current.pause();
+        if (typeof timelineRef.current.revert === "function") timelineRef.current.revert();
       }
     };
   }, []);

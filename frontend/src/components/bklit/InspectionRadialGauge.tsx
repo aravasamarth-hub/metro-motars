@@ -1,20 +1,27 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ShieldCheck, CheckCircle2 } from "lucide-react";
 
 export function InspectionRadialGauge({ score = 98.6 }: { score?: number }) {
+  const [mounted, setMounted] = useState(false);
   const radius = 68;
   const circumference = 2 * Math.PI * radius;
-  const strokeDashoffset = circumference - (score / 100) * circumference;
+  const targetOffset = circumference - (score / 100) * circumference;
+  const strokeDashoffset = mounted ? targetOffset : circumference;
+
+  useEffect(() => {
+    const timer = setTimeout(() => setMounted(true), 150);
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
     <Card className="border-neutral-200 dark:border-neutral-800 bg-white/70 dark:bg-neutral-900/70 backdrop-blur-xl shadow-xl flex flex-col justify-between">
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg font-bold tracking-tight">Showroom Quality Index</CardTitle>
-          <Badge variant="outline" className="text-emerald-500 border-emerald-500/30 bg-emerald-500/10 text-xs">
-            Bklit Gauge
+          <Badge variant="outline" className="text-emerald-500 border-emerald-500/30 bg-emerald-500/10 text-xs font-semibold">
+            Mechanical Audit
           </Badge>
         </div>
         <CardDescription className="text-xs text-neutral-500 dark:text-neutral-400">

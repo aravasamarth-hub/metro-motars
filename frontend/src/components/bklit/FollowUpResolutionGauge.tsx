@@ -1,7 +1,7 @@
 import React from "react";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle2, Clock, CalendarDays, AlertTriangle } from "lucide-react";
+import { CheckCircle2, AlertTriangle } from "lucide-react";
 
 interface FollowUpResolutionGaugeProps {
   completed?: number;
@@ -24,8 +24,8 @@ export function FollowUpResolutionGauge({
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <CardTitle className="text-base font-bold tracking-tight">Resolution Efficiency</CardTitle>
-          <Badge variant="outline" className="text-emerald-500 border-emerald-500/30 bg-emerald-500/10 text-xs">
-            Bklit Gauge
+          <Badge variant="outline" className="text-emerald-500 border-emerald-500/30 bg-emerald-500/10 text-xs font-semibold">
+            Task Resolution
           </Badge>
         </div>
         <CardDescription className="text-xs text-neutral-500 dark:text-neutral-400">

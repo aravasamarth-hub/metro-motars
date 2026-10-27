@@ -1,11 +1,14 @@
 """Iteration 4: overview endpoints, bill privacy, cascade delete, bill idempotency, amount-in-words."""
 import os
 import uuid
+
 import pytest
 import requests
 
-BASE_URL = os.environ["REACT_APP_BACKEND_URL"].rstrip("/")
-API = f"{BASE_URL}/api"
+BASE_URL = os.environ.get("REACT_APP_BACKEND_URL", "").rstrip("/")
+if not BASE_URL:
+    pytestmark = pytest.mark.skip(reason="Live integration test blocked: MongoDB Atlas / live backend not configured")
+API = f"{BASE_URL}/api" if BASE_URL else ""
 
 
 @pytest.fixture
@@ -126,7 +129,8 @@ def test_bill_generation_idempotent(api, seeded_deal):
     deal_id, _ = seeded_deal
     r1 = api.post(f"{API}/deals/{deal_id}/bills/generate", json={"bill_type": "Seller → Buyer"})
     r2 = api.post(f"{API}/deals/{deal_id}/bills/generate", json={"bill_type": "Seller → Buyer"})
-    assert r1.status_code == 201 and r2.status_code == 201
+    assert r1.status_code == 201
+    assert r2.status_code == 201
     assert r1.json()["bill_id"] == r2.json()["bill_id"]
     assert r1.json()["bill_number"] == r2.json()["bill_number"]
 

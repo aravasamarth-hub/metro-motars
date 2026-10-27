@@ -1,0 +1,15 @@
+[lint]
+select = ["E", "F", "W", "I", "UP", "B"]
+ignore = [
+    "B008",    # FastAPI Depends() / Security() in parameter defaults
+    "B904",    # raise from in exception handlers
+    "BLE001",  # Broad exception catches for application robustness
+    "S105",    # Hardcoded password checks in demo/test scripts
+    "S106",    # Hardcoded password in function call
+    "S112",    # try-except-continue in stream processing
+    "E501",    # Line length
+    "E702",    # Multiple statements on one line (semicolon in test fixtures)
+]
+
+[lint.per-file-ignores]
+"**/tests/*" = ["S101", "S105", "S106", "B008", "E501", "E702"]

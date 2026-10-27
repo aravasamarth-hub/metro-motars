@@ -1,5 +1,5 @@
 import { SHOWROOM_ACCOUNTS } from "../../../context/AuthContext";
-import { commission, calculateMaintenanceTotal, money } from "../../deals/dealModel";
+import { commission } from "../../deals/dealModel";
 
 describe("Metro Motors — Owner and Worker Role Permissions & Security Specifications", () => {
   const owner = SHOWROOM_ACCOUNTS.find((a) => a.email === "aravasamarth@gmail.com");

@@ -1,13 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams, useLocation, useSearchParams } from "react-router-dom";
-import { motion, AnimatePresence } from "motion/react";
+import { motion } from "motion/react";
 import {
   ArrowLeft,
   ArrowRight,
   Bike,
   Briefcase,
   Check,
-  CheckCircle2,
   AlertCircle,
   CreditCard,
   FileCheck,
@@ -16,7 +15,6 @@ import {
   UserCheck,
   Users,
   Wrench,
-  ShieldCheck,
 } from "lucide-react";
 import { STEPS, getStepStatus } from "@/features/deals/dealModel";
 import { useDealWizard } from "@/features/deals/useDealWizard";
@@ -38,15 +36,9 @@ import FloatingPaths from "@/components/kokonut/BackgroundPaths";
 import SpotlightCard from "@/components/kokonut/SpotlightCard";
 import ParticleButton from "@/components/kokonut/ParticleButton";
 
-// 3. Motion (motion.dev)
-import { MotionCounter } from "@/components/motion/MotionCounter";
-
 // 4. Anime.js v4
 import AnimePulseBeacon from "@/components/anime/AnimePulseBeacon";
 import AnimeDealJourney from "@/components/anime/AnimeDealJourney";
-
-// 5. Bklit
-import { InspectionRadialGauge } from "@/components/bklit/InspectionRadialGauge";
 
 const STEP_ICONS = [Bike, UserCheck, Wrench, Users, Briefcase, CreditCard, FileCheck];
 
@@ -199,7 +191,7 @@ export default function FunctionalNewDeal() {
               />
             </div>
 
-            <nav className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-1.5" aria-label="Deal steps" data-testid="wizard-steps">
+            <nav className="flex overflow-x-auto sm:grid sm:grid-cols-4 lg:grid-cols-7 gap-1.5 pb-1 sm:pb-0 scrollbar-none snap-x snap-mandatory" aria-label="Deal steps" data-testid="wizard-steps">
               {STEPS.map((name, i) => {
                 const active = i === step;
                 const status = getStepStatus(deal, i);
@@ -212,7 +204,7 @@ export default function FunctionalNewDeal() {
                   <button
                     type="button"
                     key={name}
-                    className={`flex items-center gap-2 p-2.5 rounded-xl text-left transition-all border ${
+                    className={`flex items-center gap-2 p-2.5 rounded-xl text-left transition-all border min-w-[130px] sm:min-w-0 snap-start shrink-0 sm:shrink ${
                       active
                         ? "bg-amber-500/15 border-amber-500/60 text-amber-400 shadow-md shadow-amber-500/10 font-bold"
                         : isComplete
@@ -321,7 +313,7 @@ export default function FunctionalNewDeal() {
                 </span>
               </div>
 
-              <div className="flex items-center gap-3">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3 w-full sm:w-auto">
                 {!isReview && (
                   <Button
                     type="button"

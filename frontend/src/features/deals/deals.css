@@ -177,8 +177,8 @@
   .wizard-footer .button { padding: 11px 14px; }
   .commission-strip { flex-wrap: wrap; }
   .payment-balances { gap: 25px; }
-  .metric-grid.local-dashboard-metrics { grid-template-columns: 1fr; gap: 12px; }
-  .local-metric { min-height: 116px; padding: 17px 20px; }
+  .metric-grid.local-dashboard-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .local-metric { min-height: 105px; padding: 14px 14px; }
   .local-metric > strong { margin-top: 8px; font-size: 27px; }
   .local-metric .metric-icon { display: grid; }
   .local-bill-row { grid-template-columns: 1fr 1fr; }
@@ -4303,6 +4303,12 @@
   align-items: center;
   flex-wrap: wrap;
   margin-bottom: 20px;
+}
+
+.deals-filter-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .deals-luxury-search {

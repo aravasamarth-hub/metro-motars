@@ -4,22 +4,11 @@ import {
   Plus,
   Trash2,
   Check,
-  AlertCircle,
-  Sparkles,
-  Droplets,
-  Battery,
-  Disc,
-  Gauge,
-  Flame,
-  ShieldCheck,
-  Clock,
-  RotateCcw,
   CheckCircle2,
   Pencil,
 } from "lucide-react";
 import {
   DEFAULT_MAINTENANCE_SERVICES,
-  calculateMaintenanceTotal,
   money,
 } from "./dealModel";
 import { useLanguage } from "@/features/i18n/LanguageContext";

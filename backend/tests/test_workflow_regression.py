@@ -5,8 +5,10 @@ import uuid
 
 import requests
 
-
-BASE_URL = os.environ["REACT_APP_BACKEND_URL"].rstrip("/")
+BASE_URL = os.environ.get("REACT_APP_BACKEND_URL", "").rstrip("/")
+if not BASE_URL:
+    import pytest
+    pytestmark = pytest.mark.skip(reason="Live integration test blocked: MongoDB Atlas / live backend not configured")
 
 
 def test_workflow_reuses_vehicle_and_keeps_bill_fields_scoped():
@@ -44,7 +46,8 @@ def test_workflow_reuses_vehicle_and_keeps_bill_fields_scoped():
         buyer_bill = requests.post(f"{root}/deals/{deal_id}/bills/generate", json={"bill_type": "Seller → Buyer"})
         assert intermediate.status_code == buyer_bill.status_code == 201
         assert buyer_bill.json()["deal_id"] == deal_id
-        assert "purchase_price" not in buyer_bill.json() and "margin" not in buyer_bill.json()
+        assert "purchase_price" not in buyer_bill.json()
+        assert "margin" not in buyer_bill.json()
         created.extend([intermediate.json()["bill_id"], buyer_bill.json()["bill_id"]])
     finally:
         for entity_id in created:

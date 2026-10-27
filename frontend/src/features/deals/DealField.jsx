@@ -111,7 +111,11 @@ export const DealField = ({ config, prefix, value, allValues, onChange, error, r
   const handleMonthChange = (e) => {
     const val = e.target.value;
     if (!val) {
-      try { onChange({ year: "", mfg_month: "" }); } catch (_) {}
+      try {
+        onChange({ year: "", mfg_month: "" });
+      } catch {
+        // Fallback if onChange expects key/value arguments
+      }
       onChange("year", "");
       onChange("mfg_month", "");
       return;
@@ -119,7 +123,11 @@ export const DealField = ({ config, prefix, value, allValues, onChange, error, r
     const [y, mStr] = val.split("-");
     const mIndex = parseInt(mStr, 10) - 1;
     const monthName = MONTH_NAMES[mIndex] || "";
-    try { onChange({ year: y, mfg_month: monthName }); } catch (_) {}
+    try {
+      onChange({ year: y, mfg_month: monthName });
+    } catch {
+      // Fallback if onChange expects key/value arguments
+    }
     onChange("year", y);
     onChange("mfg_month", monthName);
   };
@@ -148,7 +156,9 @@ export const DealField = ({ config, prefix, value, allValues, onChange, error, r
           onClick={(e) => {
             try {
               e.target.showPicker?.();
-            } catch (_) {}
+            } catch {
+              // showPicker not supported in some browser environments
+            }
           }}
           disabled={readOnly}
           data-testid={`${id}-input`}

@@ -28,8 +28,8 @@ export function FleetValuationAreaChart({ data = DEFAULT_FLEET_DATA }: { data?: 
         <div>
           <div className="flex items-center gap-2">
             <CardTitle className="text-lg font-bold tracking-tight">Fleet Valuation & Sales Velocity</CardTitle>
-            <Badge variant="outline" className="text-amber-500 border-amber-500/30 bg-amber-500/10 text-xs">
-              Bklit Charts
+            <Badge variant="outline" className="text-amber-500 border-amber-500/30 bg-amber-500/10 text-xs font-semibold">
+              Live Telemetry
             </Badge>
           </div>
           <CardDescription className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">

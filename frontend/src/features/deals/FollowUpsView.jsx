@@ -4,24 +4,16 @@ import { motion } from "motion/react";
 import {
   Users,
   UserCheck,
-  Briefcase,
   Clock,
-  CalendarDays,
-  WalletCards,
   Plus,
   Search,
   X,
   Phone,
   Bike,
-  CheckCircle2,
   ArrowUpRight,
   Filter,
   Check,
-  AlertCircle,
   FileCheck,
-  ExternalLink,
-  MessageCircle,
-  Sparkles,
 } from "lucide-react";
 import { useDeals } from "./useDeals";
 import { money } from "./dealModel";
@@ -225,7 +217,9 @@ export default function FollowUpsView() {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) return parsed;
       }
-    } catch {}
+    } catch {
+      // Storage access failure or corrupt JSON; fallback to defaults
+    }
     return DEFAULT_FOLLOWUPS;
   });
 
@@ -233,7 +227,9 @@ export default function FollowUpsView() {
   useEffect(() => {
     try {
       localStorage.setItem("mm_custom_followups", JSON.stringify(items));
-    } catch {}
+    } catch {
+      // Storage quota exceeded or disabled in private browsing
+    }
   }, [items]);
 
   // Merge deal updates if applicable

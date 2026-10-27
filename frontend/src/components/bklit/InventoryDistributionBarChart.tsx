@@ -39,8 +39,8 @@ export function InventoryDistributionBarChart() {
             <CardTitle className="text-lg font-bold tracking-tight">
               {viewMode === "segment" ? "Fleet Breakdown by Vehicle Category" : "Active Fleet by Brand"}
             </CardTitle>
-            <Badge variant="outline" className="text-cyan-500 border-cyan-500/30 bg-cyan-500/10 text-xs">
-              Bklit Charts
+            <Badge variant="outline" className="text-cyan-500 border-cyan-500/30 bg-cyan-500/10 text-xs font-semibold">
+              Inventory Telemetry
             </Badge>
           </div>
           <CardDescription className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">

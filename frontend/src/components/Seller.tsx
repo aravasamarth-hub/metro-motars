@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { FileDown, Loader2, CheckCircle2, AlertCircle, Printer } from "lucide-react";
+import { FileDown, CheckCircle2, AlertCircle, Printer, RefreshCw } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { FieldGrid } from "@/features/deals/DealField";
 import { personFields } from "@/features/deals/fieldConfig";
@@ -13,13 +13,13 @@ import { money } from "@/features/deals/dealModel";
 import BillModal from "@/components/BillModal";
 
 export interface SellerProps {
-  deal: any;
-  updateSection: (section: string, key: string, value: any) => void;
-  updateWitness: (index: number, key: string, value: any) => void;
-  setPhoto: (key: string, value: any) => void;
-  errors?: Record<string, string>;
-  group?: string;
-  [key: string]: any;
+  readonly deal: any;
+  readonly updateSection: (section: string, key: string, value: any) => void;
+  readonly updateWitness: (index: number, key: string, value: any) => void;
+  readonly setPhoto: (key: string, value: any) => void;
+  readonly errors?: Record<string, string>;
+  readonly group?: string;
+  readonly [key: string]: any;
 }
 
 export function Seller({
@@ -29,7 +29,7 @@ export function Seller({
   setPhoto,
   errors = {},
   group = "seller",
-}: SellerProps) {
+}: Readonly<SellerProps>) {
   const { t } = useLanguage();
   const { isOwner } = useAuth();
   const person = deal?.seller || {};
@@ -42,6 +42,17 @@ export function Seller({
   const pendingNum = Math.max(0, priceNum - paidNum);
   const hasAmounts = (purchasePrice !== "" && purchasePrice != null) || (paidToSeller !== "" && paidToSeller != null);
 
+  // Extracted payment status values to avoid nested ternary operations
+  let paymentTone = "blue";
+  let paymentStatusLabel = t("payment.unpaid", "Unpaid");
+  if (paidNum >= priceNum && priceNum > 0) {
+    paymentTone = "green";
+    paymentStatusLabel = t("payment.paid_in_full", "Paid in Full");
+  } else if (paidNum > 0) {
+    paymentTone = "gold";
+    paymentStatusLabel = `${t("payment.pending", "Pending")}: ${money(pendingNum)}`;
+  }
+
   const { generateAgreement, generating, error: agreementError } = useSellerAgreement();
   const [successMessage, setSuccessMessage] = useState<string>("");
   const [previewOpen, setPreviewOpen] = useState<boolean>(false);
@@ -49,6 +60,9 @@ export function Seller({
   const handleGenerateAgreement = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    if (generating) {
+      return;
+    }
     setSuccessMessage("");
     try {
       const fileName = await generateAgreement(deal);
@@ -109,14 +123,10 @@ export function Seller({
             <h2>{t("section.seller_payments", "Payment & pricing details")}</h2>
             {hasAmounts && (
               <span
-                className={`status-pill ${paidNum >= priceNum && priceNum > 0 ? "green" : paidNum > 0 ? "gold" : "blue"}`}
+                className={`status-pill ${paymentTone}`}
                 data-testid="seller-payment-status-pill"
               >
-                {paidNum >= priceNum && priceNum > 0
-                  ? t("payment.paid_in_full", "Paid in Full")
-                  : paidNum > 0
-                  ? `${t("payment.pending", "Pending")}: ${money(pendingNum)}`
-                  : t("payment.unpaid", "Unpaid")}
+                {paymentStatusLabel}
               </span>
             )}
           </div>
@@ -219,22 +229,31 @@ export function Seller({
 
             <button
               type="button"
-              onClick={() => setPreviewOpen(true)}
+              onClick={handleGenerateAgreement}
+              disabled={generating}
               className="agreement-toggle-btn"
               data-testid="generate-seller-agreement-button"
-              title="Preview, Edit & Download Seller Bill PDF"
+              title="Generate & Download Seller Bill PDF"
             >
-              <FileDown size={15} />
-              <span>{t("legal.generate_seller_bill_btn", "Generate Seller Bill & Download")}</span>
+              {generating ? <RefreshCw size={15} className="animate-spin" /> : <FileDown size={15} />}
+              <span>
+                {generating
+                  ? t("legal.generating", "Generating PDF...")
+                  : t("legal.generate_seller_bill_btn", "Generate Seller Bill & Download")}
+              </span>
             </button>
           </div>
         </div>
       )}
 
       {successMessage && (
-        <div role="status" className="workflow-message seller-msg seller-msg-ok" data-testid="seller-agreement-success">
+        <output
+          className="workflow-message seller-msg seller-msg-ok block"
+          data-testid="seller-agreement-success"
+          aria-live="polite"
+        >
           <CheckCircle2 size={16} /><span>{successMessage}</span>
-        </div>
+        </output>
       )}
 
       {agreementError && (

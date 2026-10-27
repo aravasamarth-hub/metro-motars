@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { SpotlightCard } from "@/components/kokonut/SpotlightCard";
+import { useNavigate } from "react-router-dom";
+import { SpotlightCard } from "@/components/motion-ui/SpotlightCard";
 import { MotionReveal } from "@/components/motion/MotionReveal";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,7 +11,6 @@ import {
   Fuel,
   ShieldCheck,
   Check,
-  Sparkles,
   ArrowUpRight,
 } from "lucide-react";
 

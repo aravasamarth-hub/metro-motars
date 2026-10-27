@@ -19,10 +19,10 @@ export function ShowcaseAnalytics() {
           LIVE SHOWROOM TELEMETRY & DATA VISUALIZATION
         </Badge>
         <h2 className="text-3xl sm:text-5xl font-black text-neutral-950 dark:text-white tracking-tight mb-4">
-          Bklit Analytics & Deal Economics
+          Showroom Telemetry &amp; Fleet Economics
         </h2>
         <p className="text-neutral-600 dark:text-neutral-400 text-sm sm:text-base">
-          Transparent metrics powered by Bklit composable charts and cloud-indexed inventory data.
+          Transparent metrics powered by dynamic telemetry charts and cloud-indexed inventory data.
           Track fleet valuation, turnover velocity, and mechanical audit benchmarks in real time.
         </p>
       </MotionReveal>

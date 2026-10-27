@@ -7,8 +7,8 @@ export function numberToWords(amount: number | string | null | undefined): strin
     return "";
   }
 
-  const numericValue = typeof amount === "string" ? parseFloat(amount.replace(/,/g, "")) : amount;
-  if (isNaN(numericValue)) {
+  const numericValue = typeof amount === "string" ? Number.parseFloat(amount.replace(/,/g, "")) : amount;
+  if (Number.isNaN(numericValue)) {
     return "";
   }
 

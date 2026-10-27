@@ -1,10 +1,11 @@
 import React, { useState } from "react";
-import { motion, AnimatePresence } from "motion/react";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { motion } from "motion/react";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Check, ShieldCheck, Zap, ArrowRight, Sparkles } from "lucide-react";
+import { Check, ArrowRight, Sparkles } from "lucide-react";
+import { BorderBeam } from "@/components/motion-ui/BorderBeam";
 
 export function ShowcasePlans() {
   const [activeTab, setActiveTab] = useState("outright");
@@ -121,12 +122,13 @@ export function ShowcasePlans() {
               className={`h-full ${isSelected ? "md:-translate-y-2" : "opacity-90 md:opacity-75"}`}
             >
               <Card
-                className={`h-full flex flex-col justify-between border-2 rounded-3xl transition-all duration-300 shadow-xl ${
+                className={`h-full flex flex-col justify-between border-2 rounded-3xl transition-all duration-300 shadow-xl relative overflow-hidden ${
                   isSelected
                     ? "border-amber-500 bg-white dark:bg-neutral-900 shadow-amber-500/10"
                     : "border-neutral-200 dark:border-neutral-800 bg-white/70 dark:bg-neutral-900/60"
                 }`}
               >
+                {isSelected && <BorderBeam size={180} duration={8} colorFrom="#f59e0b" colorTo="#fbbf24" />}
                 <CardHeader>
                   <div className="flex items-center justify-between mb-2">
                     <Badge

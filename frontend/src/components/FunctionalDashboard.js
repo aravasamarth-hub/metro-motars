@@ -7,26 +7,20 @@ import {
   BriefcaseBusiness,
   ClipboardList,
   Plus,
-  TrendingUp,
   Sparkles,
-  Layers,
   Clock,
   CheckCircle2,
-  ShieldCheck,
-  BarChart3,
-  Flame,
   UserCheck,
 } from "lucide-react";
 import { useDeals } from "@/features/deals/useDeals";
 import { DealsTable } from "@/features/deals/DealsTable";
-import { localDay, money, commission, calculateMaintenanceTotal, VEHICLE_CATEGORIES } from "@/features/deals/dealModel";
+import { localDay, commission, calculateMaintenanceTotal, VEHICLE_CATEGORIES } from "@/features/deals/dealModel";
 import { useLanguage } from "@/features/i18n/LanguageContext";
 import { useAuth } from "@/context/AuthContext";
 
 // 1. shadcn/ui components
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
 
 // 2. KokonutUI components
 import FloatingPaths from "@/components/kokonut/BackgroundPaths";
@@ -35,7 +29,6 @@ import ParticleButton from "@/components/kokonut/ParticleButton";
 
 // 3. Motion (motion.dev) components
 import { MotionCounter } from "@/components/motion/MotionCounter";
-import { MotionReveal } from "@/components/motion/MotionReveal";
 
 // 4. Anime.js v4 components
 import AnimePulseBeacon from "@/components/anime/AnimePulseBeacon";
@@ -159,41 +152,37 @@ export default function FunctionalDashboard() {
       <div className="luxury-hero-container relative">
         <FloatingPaths position={1} />
 
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4 sm:gap-6">
           <div>
-            <div className="flex items-center gap-3 mb-2 flex-wrap">
+            <div className="flex items-center gap-2 sm:gap-3 mb-2 flex-wrap">
               {/* 4. Anime.js Live Showroom Pulse Beacon */}
               <AnimePulseBeacon color="gold" size="md" label="LIVE SHOWROOM ACTIVE" />
 
-              {/* 1. shadcn/ui Badges */}
-              <Badge variant="outline" className="border-amber-500/30 bg-amber-500/10 text-amber-400 font-mono text-[10px]">
-                5 LIBRARIES INTEGRATED
+              {/* Status Badges */}
+              <Badge variant="outline" className="border-amber-500/30 bg-amber-500/10 text-amber-400 font-mono text-[9px] sm:text-[10px] tracking-wide">
+                ENTERPRISE ATELIER
               </Badge>
-              <Badge variant="outline" className="border-emerald-500/30 bg-emerald-500/10 text-emerald-400 text-[10px]">
-                IndexedDB Local Vault
+              <Badge variant="outline" className="border-emerald-500/30 bg-emerald-500/10 text-emerald-400 text-[9px] sm:text-[10px]">
+                Vault Active
               </Badge>
             </div>
 
-            <h1 data-testid="page-title" className="text-3xl font-extrabold tracking-tight text-white font-manrope">
+            <h1 data-testid="page-title" className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white font-manrope">
               {t("dashboard.title", "Dashboard")}
             </h1>
-            <p className="text-sm text-neutral-400 mt-1 max-w-xl">
-              Executive Fleet Cockpit · Powered by <span className="text-amber-400 font-semibold">shadcn/ui</span>,{" "}
-              <span className="text-sky-400 font-semibold">KokonutUI</span>,{" "}
-              <span className="text-indigo-400 font-semibold">Motion</span>,{" "}
-              <span className="text-emerald-400 font-semibold">Anime.js v4</span> &amp;{" "}
-              <span className="text-cyan-400 font-semibold">Bklit</span>
+            <p className="text-xs sm:text-sm text-neutral-400 mt-1 max-w-xl">
+              Executive Fleet Cockpit · Real-time operational intelligence, deal verification &amp; treasury monitoring
             </p>
           </div>
 
-          <div className="relative z-10 flex items-center gap-3 flex-wrap">
+          <div className="relative z-10 grid grid-cols-2 gap-2 sm:flex sm:items-center sm:gap-3 w-full sm:w-auto">
             <button
               type="button"
-              className="px-4 py-2.5 rounded-xl font-bold text-xs inline-flex items-center gap-2 border border-amber-500/30 bg-amber-500/10 text-amber-400 hover:bg-amber-500/20 transition-all cursor-pointer shadow-lg shadow-amber-500/5"
+              className="px-3 sm:px-4 py-2.5 rounded-xl font-bold text-xs inline-flex items-center justify-center gap-1.5 sm:gap-2 border border-amber-500/30 bg-amber-500/10 text-amber-400 hover:bg-amber-500/20 transition-all cursor-pointer shadow-lg shadow-amber-500/5 text-center"
               onClick={() => navigate("/showcase")}
               data-testid="dashboard-vip-showcase-button"
             >
-              <Sparkles size={15} />
+              <Sparkles size={14} />
               <span>VIP Showcase</span>
             </button>
 
@@ -201,7 +190,7 @@ export default function FunctionalDashboard() {
             <ParticleButton
               onClick={() => navigate("/new-deal")}
               data-testid="dashboard-new-deal-button"
-              className="luxury-particle-cta px-5 py-2.5 text-xs font-bold"
+              className="luxury-particle-cta px-4 sm:px-5 py-2.5 text-xs font-bold w-full sm:w-auto flex items-center justify-center"
             >
               <Plus size={16} strokeWidth={2.6} />
               <span>{t("nav.new_deal", "New Deal")}</span>
@@ -216,33 +205,33 @@ export default function FunctionalDashboard() {
         </div>
       )}
 
-      {/* ── 4-Card Luxury Automotive Metric Cockpit (KokonutUI SpotlightCard + Motion Counters) ── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      {/* ── 4-Card Luxury Automotive Metric Cockpit (2x2 Mobile Grid, 4-Col Desktop) ── */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4 mb-6">
         {/* Card 1: Today's Deals (Champagne Gold Spotlight) */}
         <SpotlightCard
           spotlightColor="rgba(245, 158, 11, 0.18)"
           onClick={() => navigate("/deals?period=today")}
-          className="p-5 cursor-pointer hover:border-amber-500/50 transition-all border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900/80 shadow-md shadow-neutral-200/50 dark:shadow-xl"
+          className="p-3 sm:p-5 cursor-pointer hover:border-amber-500/50 transition-all border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900/80 shadow-md shadow-neutral-200/50 dark:shadow-xl"
           data-testid="metric-todays-deals"
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
+            <span className="text-[10px] sm:text-xs font-bold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider truncate mr-1">
               {t("dashboard.todays_deals", "Today's Deals")}
             </span>
-            <div className="w-9 h-9 rounded-xl bg-amber-500/15 text-amber-500 flex items-center justify-center font-bold">
-              <BriefcaseBusiness size={18} />
+            <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-amber-500/15 text-amber-500 flex items-center justify-center font-bold flex-none">
+              <BriefcaseBusiness size={15} />
             </div>
           </div>
-          <div className="text-3xl font-extrabold text-neutral-900 dark:text-white font-manrope mt-3 mb-2 flex items-baseline gap-1">
+          <div className="text-2xl sm:text-3xl font-extrabold text-neutral-900 dark:text-white font-manrope mt-2 sm:mt-3 mb-1 sm:mb-2 flex items-baseline gap-1">
             {loading ? "…" : <MotionCounter to={todaysDealsCount} />}
-            <span className="text-xs text-neutral-400 dark:text-neutral-500 font-normal">deals</span>
+            <span className="text-[10px] sm:text-xs text-neutral-400 dark:text-neutral-500 font-normal">deals</span>
           </div>
-          <div className="flex items-center justify-between text-xs pt-2 border-t border-neutral-200 dark:border-neutral-800/80">
-            <span className="text-amber-500 flex items-center gap-1 font-medium text-[11px]">
-              <Sparkles size={12} />
-              {todaysDealsCount > 0 ? `${todaysDealsCount} closed today` : "Showroom ready"}
+          <div className="flex items-center justify-between text-[10px] sm:text-xs pt-1.5 sm:pt-2 border-t border-neutral-200 dark:border-neutral-800/80">
+            <span className="text-amber-500 flex items-center gap-1 font-medium text-[10px] sm:text-[11px] truncate">
+              <Sparkles size={11} className="flex-none" />
+              <span className="truncate">{todaysDealsCount > 0 ? `${todaysDealsCount} closed` : "Showroom ready"}</span>
             </span>
-            <ArrowUpRight size={15} className="text-neutral-400 dark:text-neutral-500" />
+            <ArrowUpRight size={13} className="text-neutral-400 dark:text-neutral-500 flex-none hidden sm:block" />
           </div>
         </SpotlightCard>
 
@@ -250,27 +239,27 @@ export default function FunctionalDashboard() {
         <SpotlightCard
           spotlightColor="rgba(56, 189, 248, 0.18)"
           onClick={() => navigate("/deals?status=In+Stock")}
-          className="p-5 cursor-pointer hover:border-sky-500/50 transition-all border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900/80 shadow-md shadow-neutral-200/50 dark:shadow-xl"
+          className="p-3 sm:p-5 cursor-pointer hover:border-sky-500/50 transition-all border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900/80 shadow-md shadow-neutral-200/50 dark:shadow-xl"
           data-testid="metric-bikes-in-stock"
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
+            <span className="text-[10px] sm:text-xs font-bold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider truncate mr-1">
               {t("dashboard.bikes_in_stock", "Bikes in Stock")}
             </span>
-            <div className="w-9 h-9 rounded-xl bg-sky-500/15 text-sky-500 flex items-center justify-center font-bold">
-              <Bike size={18} />
+            <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-sky-500/15 text-sky-500 flex items-center justify-center font-bold flex-none">
+              <Bike size={15} />
             </div>
           </div>
-          <div className="text-3xl font-extrabold text-neutral-900 dark:text-white font-manrope mt-3 mb-2 flex items-baseline gap-1">
+          <div className="text-2xl sm:text-3xl font-extrabold text-neutral-900 dark:text-white font-manrope mt-2 sm:mt-3 mb-1 sm:mb-2 flex items-baseline gap-1">
             {loading ? "…" : <MotionCounter to={bikesInStockCount} />}
-            <span className="text-xs text-neutral-400 dark:text-neutral-500 font-normal">units</span>
+            <span className="text-[10px] sm:text-xs text-neutral-400 dark:text-neutral-500 font-normal">units</span>
           </div>
-          <div className="flex items-center justify-between text-xs pt-2 border-t border-neutral-200 dark:border-neutral-800/80">
-            <span className="text-sky-500 flex items-center gap-1 font-medium text-[11px]">
-              <CheckCircle2 size={12} />
-              {`${stockRatio}% fleet available`}
+          <div className="flex items-center justify-between text-[10px] sm:text-xs pt-1.5 sm:pt-2 border-t border-neutral-200 dark:border-neutral-800/80">
+            <span className="text-sky-500 flex items-center gap-1 font-medium text-[10px] sm:text-[11px] truncate">
+              <CheckCircle2 size={11} className="flex-none" />
+              <span className="truncate">{`${stockRatio}% fleet available`}</span>
             </span>
-            <ArrowUpRight size={15} className="text-neutral-400 dark:text-neutral-500" />
+            <ArrowUpRight size={13} className="text-neutral-400 dark:text-neutral-500 flex-none hidden sm:block" />
           </div>
         </SpotlightCard>
 
@@ -278,27 +267,27 @@ export default function FunctionalDashboard() {
         <SpotlightCard
           spotlightColor="rgba(249, 115, 22, 0.18)"
           onClick={() => navigate("/deals?rc=Pending")}
-          className="p-5 cursor-pointer hover:border-amber-500/50 transition-all border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900/80 shadow-md shadow-neutral-200/50 dark:shadow-xl"
+          className="p-3 sm:p-5 cursor-pointer hover:border-amber-500/50 transition-all border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900/80 shadow-md shadow-neutral-200/50 dark:shadow-xl"
           data-testid="metric-pending-rc-transfers"
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
-              {t("dashboard.pending_rc", "Pending RC Transfers")}
+            <span className="text-[10px] sm:text-xs font-bold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider truncate mr-1">
+              {t("dashboard.pending_rc", "Pending RC")}
             </span>
-            <div className="w-9 h-9 rounded-xl bg-amber-500/15 text-amber-500 flex items-center justify-center font-bold">
-              <ClipboardList size={18} />
+            <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-amber-500/15 text-amber-500 flex items-center justify-center font-bold flex-none">
+              <ClipboardList size={15} />
             </div>
           </div>
-          <div className="text-3xl font-extrabold text-neutral-900 dark:text-white font-manrope mt-3 mb-2 flex items-baseline gap-1">
+          <div className="text-2xl sm:text-3xl font-extrabold text-neutral-900 dark:text-white font-manrope mt-2 sm:mt-3 mb-1 sm:mb-2 flex items-baseline gap-1">
             {loading ? "…" : <MotionCounter to={pendingRcCount} />}
-            <span className="text-xs text-neutral-400 dark:text-neutral-500 font-normal">in RTO queue</span>
+            <span className="text-[10px] sm:text-xs text-neutral-400 dark:text-neutral-500 font-normal">in RTO</span>
           </div>
-          <div className="flex items-center justify-between text-xs pt-2 border-t border-neutral-200 dark:border-neutral-800/80">
-            <span className="text-amber-500 flex items-center gap-1 font-medium text-[11px]">
-              <Clock size={12} />
-              {pendingRcCount > 0 ? "RTO transfer tracking" : "All transfers clear"}
+          <div className="flex items-center justify-between text-[10px] sm:text-xs pt-1.5 sm:pt-2 border-t border-neutral-200 dark:border-neutral-800/80">
+            <span className="text-amber-500 flex items-center gap-1 font-medium text-[10px] sm:text-[11px] truncate">
+              <Clock size={11} className="flex-none" />
+              <span className="truncate">{pendingRcCount > 0 ? "RTO queue" : "Clear"}</span>
             </span>
-            <ArrowUpRight size={15} className="text-neutral-400 dark:text-neutral-500" />
+            <ArrowUpRight size={13} className="text-neutral-400 dark:text-neutral-500 flex-none hidden sm:block" />
           </div>
         </SpotlightCard>
 
@@ -306,33 +295,35 @@ export default function FunctionalDashboard() {
         <SpotlightCard
           spotlightColor="rgba(168, 85, 247, 0.18)"
           onClick={() => isOwner && navigate("/agents")}
-          className={`p-5 transition-all border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900/80 shadow-md shadow-neutral-200/50 dark:shadow-xl ${
+          className={`p-3 sm:p-5 transition-all border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900/80 shadow-md shadow-neutral-200/50 dark:shadow-xl ${
             isOwner ? "cursor-pointer hover:border-purple-500/50" : "cursor-default opacity-90"
           }`}
           data-testid="metric-pending-agents"
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
-              {t("dashboard.pending_agents", "Pending Agents")}
+            <span className="text-[10px] sm:text-xs font-bold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider truncate mr-1">
+              {t("dashboard.pending_agents", "Agents")}
             </span>
-            <div className="w-9 h-9 rounded-xl bg-purple-500/15 text-purple-400 flex items-center justify-center font-bold">
-              <UserCheck size={18} />
+            <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-purple-500/15 text-purple-400 flex items-center justify-center font-bold flex-none">
+              <UserCheck size={15} />
             </div>
           </div>
-          <div className="text-3xl font-extrabold text-neutral-900 dark:text-white font-manrope mt-3 mb-2 flex items-baseline gap-1">
+          <div className="text-2xl sm:text-3xl font-extrabold text-neutral-900 dark:text-white font-manrope mt-2 sm:mt-3 mb-1 sm:mb-2 flex items-baseline gap-1">
             {loading ? "…" : <MotionCounter to={pendingAgentsData.count} />}
-            <span className="text-xs text-neutral-400 dark:text-neutral-500 font-normal">
+            <span className="text-[10px] sm:text-xs text-neutral-400 dark:text-neutral-500 font-normal">
               {pendingAgentsData.count === 1 ? "liaison" : "liaisons"}
             </span>
           </div>
-          <div className="flex items-center justify-between text-xs pt-2 border-t border-neutral-200 dark:border-neutral-800/80">
-            <span className="text-purple-600 dark:text-purple-400 flex items-center gap-1 font-medium text-[11px]">
-              <Clock size={12} />
-              {pendingAgentsData.tasks > 0
-                ? `${pendingAgentsData.tasks} tasks (${money(pendingAgentsData.balance)} bal)`
-                : "All tasks cleared"}
+          <div className="flex items-center justify-between text-[10px] sm:text-xs pt-1.5 sm:pt-2 border-t border-neutral-200 dark:border-neutral-800/80">
+            <span className="text-purple-600 dark:text-purple-400 flex items-center gap-1 font-medium text-[10px] sm:text-[11px] truncate">
+              <Clock size={11} className="flex-none" />
+              <span className="truncate">
+                {pendingAgentsData.tasks > 0
+                  ? `${pendingAgentsData.tasks} tasks`
+                  : "All clear"}
+              </span>
             </span>
-            {isOwner && <ArrowUpRight size={15} className="text-neutral-400 dark:text-neutral-500" />}
+            {isOwner && <ArrowUpRight size={13} className="text-neutral-400 dark:text-neutral-500 flex-none hidden sm:block" />}
           </div>
         </SpotlightCard>
       </div>
@@ -376,15 +367,15 @@ export default function FunctionalDashboard() {
       {/* ── 1. shadcn/ui Tabs (Cockpit Views: Overview, Live Charts, Fleet Table) ── */}
       <Tabs defaultValue="overview" className="w-full mb-6" onValueChange={setDashboardTab}>
         <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
-          <TabsList className="bg-neutral-100 dark:bg-neutral-900/80 border border-neutral-200 dark:border-neutral-800 p-1 rounded-xl">
-            <TabsTrigger value="overview" className="data-[state=active]:bg-amber-500 data-[state=active]:text-neutral-950 text-neutral-600 dark:text-neutral-300 font-bold text-xs rounded-lg px-4 py-2">
-              Cockpit &amp; Analytics
+          <TabsList className="grid grid-cols-3 w-full sm:w-auto sm:inline-flex bg-neutral-100 dark:bg-neutral-900/80 border border-neutral-200 dark:border-neutral-800 p-1 rounded-xl">
+            <TabsTrigger value="overview" className="data-[state=active]:bg-amber-500 data-[state=active]:text-neutral-950 text-neutral-600 dark:text-neutral-300 font-bold text-[11px] sm:text-xs rounded-lg px-2 sm:px-4 py-2 text-center truncate">
+              Cockpit
             </TabsTrigger>
-            <TabsTrigger value="charts" className="data-[state=active]:bg-amber-500 data-[state=active]:text-neutral-950 text-neutral-600 dark:text-neutral-300 font-bold text-xs rounded-lg px-4 py-2">
-              Bklit Charts Suite
+            <TabsTrigger value="charts" className="data-[state=active]:bg-amber-500 data-[state=active]:text-neutral-950 text-neutral-600 dark:text-neutral-300 font-bold text-[11px] sm:text-xs rounded-lg px-2 sm:px-4 py-2 text-center truncate">
+              Charts
             </TabsTrigger>
-            <TabsTrigger value="deals" className="data-[state=active]:bg-amber-500 data-[state=active]:text-neutral-950 text-neutral-600 dark:text-neutral-300 font-bold text-xs rounded-lg px-4 py-2">
-              Fleet Table ({filteredDeals.length})
+            <TabsTrigger value="deals" className="data-[state=active]:bg-amber-500 data-[state=active]:text-neutral-950 text-neutral-600 dark:text-neutral-300 font-bold text-[11px] sm:text-xs rounded-lg px-2 sm:px-4 py-2 text-center truncate">
+              Fleet ({filteredDeals.length})
             </TabsTrigger>
           </TabsList>
 

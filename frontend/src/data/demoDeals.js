@@ -82,7 +82,18 @@ const SVG_ICONS = {
   </g>`,
 };
 
+const escapeXml = (str) =>
+  String(str || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&apos;");
+
 export const makePhotoSvg = (title, subtitle, iconKey = "bike_gear", accent = "#d97706", badge = "METRO VERIFIED") => {
+  const safeTitle = escapeXml(title);
+  const safeSubtitle = escapeXml(subtitle);
+  const safeBadge = escapeXml(badge);
   const iconGraphic = SVG_ICONS[iconKey] || SVG_ICONS.bike_gear;
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="480" height="340" viewBox="0 0 480 340">
     <defs>
@@ -111,7 +122,7 @@ export const makePhotoSvg = (title, subtitle, iconKey = "bike_gear", accent = "#
       <text x="38" y="16" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="11" font-weight="900" fill="#090d16" text-anchor="middle" letter-spacing="1">METRO</text>
       
       <rect x="86" y="0" width="130" height="24" rx="5" fill="rgba(255, 255, 255, 0.05)" stroke="rgba(255,255,255,0.12)" stroke-width="1"/>
-      <text x="151" y="16" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="10" font-weight="700" fill="#cbd5e1" text-anchor="middle" letter-spacing="0.5">${badge}</text>
+      <text x="151" y="16" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="10" font-weight="700" fill="#cbd5e1" text-anchor="middle" letter-spacing="0.5">${safeBadge}</text>
       
       <text x="432" y="16" font-family="monospace" font-size="10" font-weight="600" fill="#64748b" text-anchor="end">ID #MM-${Math.abs((title + subtitle).split("").reduce((a, b) => ((a << 5) - a) + b.charCodeAt(0), 0) % 90000 + 10000)}</text>
     </g>
@@ -124,8 +135,8 @@ export const makePhotoSvg = (title, subtitle, iconKey = "bike_gear", accent = "#
     </g>
     
     <!-- Title & Detailed Subtitle -->
-    <text x="240" y="235" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="17" font-weight="800" fill="#f8fafc" text-anchor="middle" letter-spacing="0.2">${title}</text>
-    <text x="240" y="258" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500" fill="#94a3b8" text-anchor="middle">${subtitle}</text>
+    <text x="240" y="235" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="17" font-weight="800" fill="#f8fafc" text-anchor="middle" letter-spacing="0.2">${safeTitle}</text>
+    <text x="240" y="258" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500" fill="#94a3b8" text-anchor="middle">${safeSubtitle}</text>
     
     <!-- Bottom Verified Security Seal -->
     <g transform="translate(145, 286)">
@@ -1145,6 +1156,177 @@ export const getDemoDeals = () => {
         "witness-2-thumb": createPhoto("witness-2-thumb", "Witness 2 Thumb Impression", "Praveen Reddy Inked Impression", "thumb", "#3b82f6", "BIOMETRIC"),
       },
       notes: "Feature-packed 125cc family scooter with Bluetooth turn-by-turn navigation. Smooth handover with zero pending tasks.",
+    },
+    // ═════════════════════════════════════════════════════════════════════════
+    // 6. Royal Enfield Himalayan 450 (2 Wheeler with Gear) - In Stock, RC Pending
+    // ═════════════════════════════════════════════════════════════════════════
+    {
+      id: "deal-demo-himalayan-450",
+      kind: "deal",
+      schema_version: 1,
+      bill_number: "Bill-006",
+      status: "In Stock",
+      rc_status: "Pending",
+      commission: 30550,
+      created_at: new Date(Date.now() - 1 * 86400000).toISOString(),
+      updated_at: new Date(Date.now() - 1 * 86400000).toISOString(),
+      vehicle: {
+        vehicle_type: "2 Wheeler with Gear",
+        vehicle_name: "Royal Enfield Himalayan 450 Summit Hanle Black",
+        make: "Royal Enfield",
+        model: "Himalayan 450",
+        variant: "Summit Edition Tubeless Cross-Spoke",
+        year: "2024",
+        color: "Hanle Black & Gold",
+        vehicle_number: "KA-04-MZ-4450",
+        registration_number: "KA04MZ4450",
+        registration_date: "2024-03-22",
+        engine_number: "RE450SH09218",
+        chassis_number: "ME3K4H04PRA049214",
+        engine_cc: "452",
+        fuel_type: "Petrol",
+        transmission: "Manual",
+        odometer: "4200",
+        ownership: "First Owner",
+        condition: "Showroom Pristine",
+        bought_date: "2026-10-18",
+        sold_date: "",
+        keys: "2",
+        service_history: "Full authorized service history at Acclaim Motors Yelahanka. First 5,000km check completed with Motul 7100 fully synthetic.",
+        tax: "Lifetime",
+        tax_valid_until: "2039-03-21",
+        fitness: "Valid",
+        fitness_valid_until: "2039-03-21",
+        insurance: "Active",
+        insurance_policy: "HDFC-ERGO-TW-2024-44501",
+        insurance_valid_until: "2027-03-20",
+        puc_valid_until: "2027-03-20",
+        hypothecation: "No",
+        financier: "",
+        noc: "Clear NOC Available",
+      },
+      seller: {
+        name: "Aditya Vardhan Rao",
+        father_name: "K. S. Narayana Rao",
+        phone: "9845019283",
+        alternate_phone: "9845019284",
+        email: "aditya.rao@motorcycles-blr.com",
+        address: "Villa 42, Palm Meadows, Whitefield",
+        city: "Bengaluru",
+        state: "Karnataka",
+        pincode: "560066",
+        id_type: "Aadhaar",
+        id_number: "XXXX-XXXX-4521",
+        pan_number: "APVPR9042K",
+        is_dealer: false,
+        dealer_name: "",
+        gst_number: "",
+        dealer_address: "",
+      },
+      witnesses: [
+        {
+          name: "Vikas Menon",
+          phone: "9845119285",
+          address: "Palm Meadows Phase 2, Whitefield, Bengaluru",
+          id_type: "Aadhaar",
+          id_number: "XXXX-XXXX-7712",
+        },
+        {
+          name: "Siddharth Hegde",
+          phone: "9980128472",
+          address: "Indiranagar 100ft Road, Bengaluru",
+          id_type: "Driving Licence",
+          id_number: "KA03 20200007821",
+        },
+      ],
+      maintenance: {
+        services: [
+          { id: "lof", name: "Lube, Oil, and Filter (LOF)", price: "850", enabled: true },
+          { id: "detailing_wash", name: "Showroom Detailing, Teflon Coating & Wash", price: "600", enabled: true },
+        ],
+        total_expense: "1450",
+        notes: "Liquid-cooled Sherpa 450 synthetic lube service, chain tensioning & premium ceramic seal wash completed.",
+      },
+      buyer: {
+        name: "Rohit Chandrashekar",
+        father_name: "Chandrashekar Murthy",
+        phone: "9900887711",
+        alternate_phone: "9900887712",
+        email: "rohit.c@cloudtech.io",
+        address: "Apartment 1202, Sobha Windfall, Thanisandra Main Road",
+        city: "Bengaluru",
+        state: "Karnataka",
+        pincode: "560077",
+        id_type: "Aadhaar",
+        id_number: "XXXX-XXXX-9934",
+        pan_number: "BRCPM1092F",
+        is_dealer: false,
+        dealer_name: "",
+        gst_number: "",
+        dealer_address: "",
+      },
+      agent: {
+        name: "Ramesh Babu (RTO Specialist)",
+        phone: "9886012345",
+        email: "ramesh.rto.services@gmail.com",
+        task: "KA-04 Yeshwanthpur to KA-50 Yelahanka RTO transfer & Hypothecation clearance",
+        total_amount: "2800",
+        amount_paid: "2800",
+        amount_balance: "0",
+      },
+      payments: {
+        purchase_price: "285000",
+        selling_price: "317000",
+        paid_to_seller: "285000",
+        received_from_buyer: "50000",
+        payment_method: "Bank Transfer",
+        payment_date: "2026-10-20",
+        transaction_reference: "HDFCN26102008451",
+        notes: "Token advance of ₹50,000 received via HDFC NetBanking. Balance ₹2,67,000 due upon final delivery.",
+      },
+      photos: {
+        // Vehicle photo suite
+        "vehicle-1": createPhoto("vehicle-1", "Front 3/4 & TFT Tripper Display", "Himalayan 450 Summit · KA-04-MZ-4450", "bike_gear", "#f59e0b", "2W GEARED"),
+        "vehicle-2": createPhoto("vehicle-2", "Rear Luggage Rack & Dual Exhaust", "Cross-spoke tubeless wheel & integrated LED indicators", "bike_gear", "#f59e0b", "2W GEARED"),
+        "vehicle-3": createPhoto("vehicle-3", "Sherpa 452cc DOHC Engine", "Liquid-cooled DOHC 40PS engine case verified", "engine", "#f59e0b", "ENGINE NO"),
+        "vehicle-4": createPhoto("vehicle-4", "USD Showa Fork & Dual ABS", "ByBre calipers & 320mm front disc brake", "bike_gear", "#f59e0b", "2W GEARED"),
+        "vehicle-5": createPhoto("vehicle-5", "Odometer: 4,200 km", "Full-color round TFT Google Maps console verified", "odometer", "#10b981", "ODOMETER"),
+        "vehicle-6": createPhoto("vehicle-6", "Engine Stamping", "RE450SH09218 Match Verified", "engine", "#6366f1", "ENGINE NO"),
+        "vehicle-7": createPhoto("vehicle-7", "Chassis VIN Number", "ME3K4H04PRA049214 Stamped Chassis", "chassis", "#ec4899", "CHASSIS NO"),
+        "vehicle-8": createPhoto("vehicle-8", "RC Smartcard & Insurance", "HDFC ERGO Comprehensive Valid 2027", "id_card", "#3b82f6", "DOCUMENTS"),
+        // Seller identity suite
+        "seller-1": createPhoto("seller-1", "Seller Portrait", "Aditya Vardhan Rao (Verified)", "person", "#8b5cf6", "SELLER"),
+        "seller-signature": createPhoto("seller-signature", "Seller Digital Signature", "Aditya V. Rao · Form 29/30 Cleared", "signature", "#f59e0b", "SIGNATURE"),
+        "seller-thumb": createPhoto("seller-thumb", "Seller Biometric Thumb", "Inked Left Thumb Impression", "thumb", "#3b82f6", "BIOMETRIC"),
+        "seller-2": createPhoto("seller-2", "Seller Aadhaar Card (Front)", "UIDAI Government of India", "id_card", "#10b981", "AADHAAR"),
+        "seller-3": createPhoto("seller-3", "Seller Aadhaar Card (Back)", "Address: Palm Meadows, Whitefield, Bengaluru", "id_card", "#10b981", "AADHAAR"),
+        "seller-4": createPhoto("seller-4", "Seller PAN Card", "Income Tax Dept · APVPR9042K", "id_card", "#6366f1", "PAN CARD"),
+        "seller-5": createPhoto("seller-5", "Seller Driving Licence", "KA RTO KR Puram · MCWG/LMV", "id_card", "#06b6d4", "DRIVING LICENCE"),
+        "seller-8": createPhoto("seller-8", "Original RC Smartcard (Front)", "KA-04-MZ-4450 · Royal Enfield", "id_card", "#f97316", "RC CARD"),
+        "seller-9": createPhoto("seller-9", "Original RC Smartcard (Back)", "First Owner · Lifetime Tax Paid", "id_card", "#f97316", "RC CARD"),
+        "seller-11": createPhoto("seller-11", "Seller Purchase Agreement", "Metro Motors Showroom Acquisition Deed", "id_card", "#84cc16", "AGREEMENT"),
+        // Buyer identity suite
+        "buyer-1": createPhoto("buyer-1", "Buyer Portrait", "Rohit Chandrashekar (Verified)", "person", "#10b981", "BUYER"),
+        "buyer-signature": createPhoto("buyer-signature", "Buyer Digital Signature", "Rohit Chandrashekar · Token Deed", "signature", "#f59e0b", "SIGNATURE"),
+        "buyer-thumb": createPhoto("buyer-thumb", "Buyer Biometric Thumb", "UIDAI Biometric Stamp Valid", "thumb", "#3b82f6", "BIOMETRIC"),
+        "buyer-2": createPhoto("buyer-2", "Buyer Aadhaar Card (Front)", "UIDAI Government of India", "id_card", "#10b981", "AADHAAR"),
+        "buyer-3": createPhoto("buyer-3", "Buyer Aadhaar Card (Back)", "Address: Thanisandra Main Road, Bengaluru", "id_card", "#10b981", "AADHAAR"),
+        "buyer-4": createPhoto("buyer-4", "Buyer PAN Card", "Income Tax Dept · BRCPM1092F", "id_card", "#6366f1", "PAN CARD"),
+        "buyer-5": createPhoto("buyer-5", "Buyer Driving Licence", "KA RTO Yelahanka · MCWG", "id_card", "#06b6d4", "DRIVING LICENCE"),
+        "buyer-11": createPhoto("buyer-11", "Buyer Vehicle Booking Receipt", "Metro Motors Official Booking Voucher", "id_card", "#84cc16", "SALE BILL"),
+        // Witnesses
+        "witness-1-1": createPhoto("witness-1-1", "Seller Witness Photo", "Vikas Menon", "person", "#f59e0b", "WITNESS 1"),
+        "witness-1-2": createPhoto("witness-1-2", "Witness 1 Signature", "Vikas Menon Attestation", "signature", "#f59e0b", "SIGNATURE"),
+        "witness-1-signature": createPhoto("witness-1-signature", "Witness 1 Signature", "Vikas Menon Attestation", "signature", "#f59e0b", "SIGNATURE"),
+        "witness-1-3": createPhoto("witness-1-3", "Witness 1 Thumb Impression", "Vikas Menon Inked Impression", "thumb", "#3b82f6", "BIOMETRIC"),
+        "witness-1-thumb": createPhoto("witness-1-thumb", "Witness 1 Thumb Impression", "Vikas Menon Inked Impression", "thumb", "#3b82f6", "BIOMETRIC"),
+        "witness-2-1": createPhoto("witness-2-1", "Buyer Witness Photo", "Siddharth Hegde", "person", "#ec4899", "WITNESS 2"),
+        "witness-2-2": createPhoto("witness-2-2", "Witness 2 Signature", "Siddharth Hegde Attestation", "signature", "#ec4899", "SIGNATURE"),
+        "witness-2-signature": createPhoto("witness-2-signature", "Witness 2 Signature", "Siddharth Hegde Attestation", "signature", "#ec4899", "SIGNATURE"),
+        "witness-2-3": createPhoto("witness-2-3", "Witness 2 Thumb Impression", "Siddharth Hegde Inked Impression", "thumb", "#3b82f6", "BIOMETRIC"),
+        "witness-2-thumb": createPhoto("witness-2-thumb", "Witness 2 Thumb Impression", "Siddharth Hegde Inked Impression", "thumb", "#3b82f6", "BIOMETRIC"),
+      },
+      notes: "Showroom flagship adventure tourer with liquid-cooled Sherpa 452cc engine. Immaculate condition with all original keys and tools.",
     },
   ];
 };
