@@ -37,16 +37,20 @@ const slotKeyMap = {
 export const PhotoPreview = ({ photo, alt, ...props }) => {
   const [url, setUrl] = useState(photo?.url || "");
   useEffect(() => {
-    if (!photo?.blob) { setUrl(photo?.url || ""); return; }
-    const objectUrl = URL.createObjectURL(photo.blob); setUrl(objectUrl);
+    if (!photo?.blob) {
+      setUrl(photo?.url || "");
+      return;
+    }
+    const objectUrl = URL.createObjectURL(photo.blob);
+    setUrl(objectUrl);
     return () => URL.revokeObjectURL(objectUrl);
   }, [photo]);
-  return url ? <img src={url} alt={alt} {...props}/> : null;
+  return url ? <img src={url} alt={alt} {...props} /> : null;
 };
 
 const PhotoSlot = ({ id, label, photo, onChange, readOnly, onDeleteExtra = null }) => {
   const { t } = useLanguage();
-  const fileInput   = useRef(null);
+  const fileInput = useRef(null);
   const cameraInput = useRef(null);
   const [error, setError] = useState("");
   const [preview, setPreview] = useState(false);
@@ -54,16 +58,29 @@ const PhotoSlot = ({ id, label, photo, onChange, readOnly, onDeleteExtra = null 
 
   const displayLabel = slotKeyMap[label] ? t(slotKeyMap[label], label) : label;
 
-  const choose = async event => {
-    const file = event.target.files?.[0]; event.target.value = "";
+  const choose = async (event) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
     if (!file) return;
     setError("");
-    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) return setError("Choose a JPG, PNG or WebP photo.");
-    if (file.size > 10 * 1024 * 1024) return setError("Photo must be 10 MB or smaller.");
+    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+      setError("Choose a JPG, PNG or WebP photo.");
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      setError("Photo must be 10 MB or smaller.");
+      return;
+    }
     setBusy(true);
-    try { const bitmap = await createImageBitmap(file); bitmap.close(); onChange(id, { name: file.name, type: file.type, size: file.size, blob: file }); }
-    catch { setError("This image cannot be opened. Choose another photo."); }
-    finally { setBusy(false); }
+    try {
+      const bitmap = await createImageBitmap(file);
+      bitmap.close();
+      onChange(id, { name: file.name, type: file.type, size: file.size, blob: file });
+    } catch {
+      setError("This image cannot be opened. Choose another photo.");
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (
@@ -76,8 +93,10 @@ const PhotoSlot = ({ id, label, photo, onChange, readOnly, onDeleteExtra = null 
           data-testid={`photo-open-${id}`}
           aria-label={`View ${displayLabel}`}
         >
-          <PhotoPreview photo={photo} alt={displayLabel} data-testid={`photo-preview-${id}`}/>
-          <span className="photo-zoom"><Eye size={15}/></span>
+          <PhotoPreview photo={photo} alt={displayLabel} data-testid={`photo-preview-${id}`} />
+          <span className="photo-zoom">
+            <Eye size={15} />
+          </span>
         </button>
       ) : (
         <div className="photo-slot-empty" data-testid={`photo-empty-${id}`}>
@@ -89,7 +108,7 @@ const PhotoSlot = ({ id, label, photo, onChange, readOnly, onDeleteExtra = null 
             data-testid={`photo-take-${id}`}
             aria-label={`Take photo for ${displayLabel}`}
           >
-            <Camera size={14}/>
+            <Camera size={14} />
             <span>{busy ? t("photo.opening", "Opening…") : t("photo.take_photo", "Take Photo")}</span>
           </button>
           <button
@@ -100,7 +119,7 @@ const PhotoSlot = ({ id, label, photo, onChange, readOnly, onDeleteExtra = null 
             data-testid={`photo-upload-${id}`}
             aria-label={`Upload photo for ${displayLabel}`}
           >
-            <Upload size={14}/>
+            <Upload size={14} />
             <span>{busy ? t("photo.opening", "Opening…") : t("photo.upload_photo", "Upload Photo")}</span>
           </button>
         </div>
@@ -121,7 +140,7 @@ const PhotoSlot = ({ id, label, photo, onChange, readOnly, onDeleteExtra = null 
               aria-label={t("photo.download_photo", "Download photo")}
               data-testid={`photo-download-${id}`}
             >
-              <Download size={14}/>
+              <Download size={14} />
             </button>
             {!readOnly && (
               <>
@@ -133,7 +152,7 @@ const PhotoSlot = ({ id, label, photo, onChange, readOnly, onDeleteExtra = null 
                   aria-label={`Retake ${label} with camera`}
                   data-testid={`photo-retake-${id}`}
                 >
-                  <Camera size={14}/>
+                  <Camera size={14} />
                 </button>
                 <button
                   type="button"
@@ -143,7 +162,7 @@ const PhotoSlot = ({ id, label, photo, onChange, readOnly, onDeleteExtra = null 
                   aria-label={`Upload new ${label}`}
                   data-testid={`photo-replace-${id}`}
                 >
-                  <Replace size={14}/>
+                  <Replace size={14} />
                 </button>
                 <button
                   type="button"
@@ -156,7 +175,7 @@ const PhotoSlot = ({ id, label, photo, onChange, readOnly, onDeleteExtra = null 
                   aria-label={`Remove ${label}`}
                   data-testid={`photo-remove-${id}`}
                 >
-                  <Trash2 size={14}/>
+                  <Trash2 size={14} />
                 </button>
               </>
             )}
@@ -168,11 +187,11 @@ const PhotoSlot = ({ id, label, photo, onChange, readOnly, onDeleteExtra = null 
               type="button"
               className="icon-button"
               onClick={onDeleteExtra}
-              title={`Remove this slot`}
-              aria-label={`Remove this slot`}
+              title="Remove this slot"
+              aria-label="Remove this slot"
               data-testid={`photo-delete-slot-${id}`}
             >
-              <Trash2 size={14}/>
+              <Trash2 size={14} />
             </button>
           </div>
         )}
@@ -200,14 +219,20 @@ const PhotoSlot = ({ id, label, photo, onChange, readOnly, onDeleteExtra = null 
         </>
       )}
 
-      {error && <small className="field-error" role="alert" data-testid={`photo-error-${id}`}>{error}</small>}
+      {error && (
+        <small className="field-error" role="alert" data-testid={`photo-error-${id}`}>
+          {error}
+        </small>
+      )}
 
       <Dialog open={preview} onOpenChange={setPreview}>
         <DialogContent className="photo-dialog" data-testid={`photo-dialog-${id}`}>
           <div className="photo-dialog-header">
             <div>
               <DialogTitle data-testid={`photo-title-${id}`}>{displayLabel || label}</DialogTitle>
-              <DialogDescription data-testid={`photo-filename-${id}`}>{photo?.name || "Photo preview"}</DialogDescription>
+              <DialogDescription data-testid={`photo-filename-${id}`}>
+                {photo?.name || "Photo preview"}
+              </DialogDescription>
             </div>
             {photo && (
               <button
@@ -221,7 +246,7 @@ const PhotoSlot = ({ id, label, photo, onChange, readOnly, onDeleteExtra = null 
               </button>
             )}
           </div>
-          <PhotoPreview photo={photo} alt={label} data-testid={`photo-full-${id}`}/>
+          <PhotoPreview photo={photo} alt={label} data-testid={`photo-full-${id}`} />
         </DialogContent>
       </Dialog>
     </div>
@@ -229,27 +254,54 @@ const PhotoSlot = ({ id, label, photo, onChange, readOnly, onDeleteExtra = null 
 };
 
 // ── Avatar-style portrait slot ────────────────────────────────────────────────
-const AvatarPortraitSlot = ({ id, label, photo, onChange, readOnly, icon = "person", stockStatus = null, onStockStatusChange = null, rcStatus = null, onRcStatusChange = null }) => {
+const AvatarPortraitSlot = ({
+  id,
+  label,
+  photo,
+  onChange,
+  readOnly,
+  icon = "person",
+  stockStatus = null,
+  onStockStatusChange = null,
+  rcStatus = null,
+  onRcStatusChange = null,
+}) => {
   const { t } = useLanguage();
-  const fileInput   = useRef(null);
+  const fileInput = useRef(null);
   const cameraInput = useRef(null);
-  const [error,   setError]   = useState("");
+  const [error, setError] = useState("");
   const [preview, setPreview] = useState(false);
-  const [busy,    setBusy]    = useState(false);
+  const [busy, setBusy] = useState(false);
 
   const displayLabel = slotKeyMap[label] ? t(slotKeyMap[label], label) : label;
 
-  const choose = async event => {
-    const file = event.target.files?.[0]; event.target.value = "";
+  const choose = async (event) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
     if (!file) return;
     setError("");
-    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) return setError("Choose a JPG, PNG or WebP photo.");
-    if (file.size > 10 * 1024 * 1024) return setError("Photo must be 10 MB or smaller.");
+    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+      setError("Choose a JPG, PNG or WebP photo.");
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      setError("Photo must be 10 MB or smaller.");
+      return;
+    }
     setBusy(true);
-    try { const bitmap = await createImageBitmap(file); bitmap.close(); onChange(id, { name: file.name, type: file.type, size: file.size, blob: file }); }
-    catch { setError("This image cannot be opened. Choose another photo."); }
-    finally { setBusy(false); }
+    try {
+      const bitmap = await createImageBitmap(file);
+      bitmap.close();
+      onChange(id, { name: file.name, type: file.type, size: file.size, blob: file });
+    } catch {
+      setError("This image cannot be opened. Choose another photo.");
+    } finally {
+      setBusy(false);
+    }
   };
+
+  const isStockOut = stockStatus === "Out of Stock" || stockStatus === "Sold";
+  const isRcDone = rcStatus === "Completed" || rcStatus === "Transferred";
 
   return (
     <div className="avatar-portrait-row" data-testid={`photo-slot-${id}`}>
@@ -257,27 +309,33 @@ const AvatarPortraitSlot = ({ id, label, photo, onChange, readOnly, icon = "pers
       <button
         type="button"
         className={`avatar-circle ${icon === "bike" ? "avatar-vehicle-card" : ""}`}
-        onClick={() => photo ? setPreview(true) : fileInput.current?.click()}
+        onClick={() => (photo ? setPreview(true) : fileInput.current?.click())}
         disabled={busy || (readOnly && !photo)}
         data-testid={`photo-open-${id}`}
         aria-label={photo ? `View ${displayLabel}` : `Add ${displayLabel}`}
       >
-        {photo
-          ? <PhotoPreview
-              photo={photo}
-              alt={displayLabel}
-              data-testid={`photo-preview-${id}`}
-              style={{ width:"100%", height:"100%", objectFit:"cover", borderRadius: icon === "bike" ? "12px" : "50%", position:"absolute", inset:0 }}
-            />
-          : icon === "bike" ? (
-              <Bike size={38} color="#4d6070" strokeWidth={1.8} />
-            ) : (
-              <svg width="42" height="42" viewBox="0 0 42 42" fill="none" aria-hidden="true">
-                <circle cx="21" cy="15" r="8" fill="#4d6070"/>
-                <ellipse cx="21" cy="36" rx="13" ry="8" fill="#4d6070"/>
-              </svg>
-            )
-        }
+        {photo ? (
+          <PhotoPreview
+            photo={photo}
+            alt={displayLabel}
+            data-testid={`photo-preview-${id}`}
+            style={{
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+              borderRadius: icon === "bike" ? "12px" : "50%",
+              position: "absolute",
+              inset: 0,
+            }}
+          />
+        ) : icon === "bike" ? (
+          <Bike size={38} color="#4d6070" strokeWidth={1.8} />
+        ) : (
+          <svg width="42" height="42" viewBox="0 0 42 42" fill="none" aria-hidden="true">
+            <circle cx="21" cy="15" r="8" fill="#4d6070" />
+            <ellipse cx="21" cy="36" rx="13" ry="8" fill="#4d6070" />
+          </svg>
+        )}
       </button>
 
       {/* Action buttons */}
@@ -289,7 +347,7 @@ const AvatarPortraitSlot = ({ id, label, photo, onChange, readOnly, icon = "pers
           disabled={busy || readOnly}
           data-testid={`photo-take-${id}`}
         >
-          <Camera size={15}/> <span>{t("photo.take_photo", "Take Photo")}</span>
+          <Camera size={15} /> <span>{t("photo.take_photo", "Take Photo")}</span>
         </button>
         <button
           type="button"
@@ -298,33 +356,53 @@ const AvatarPortraitSlot = ({ id, label, photo, onChange, readOnly, icon = "pers
           disabled={busy || readOnly}
           data-testid={`photo-upload-${id}`}
         >
-          <Upload size={15}/> <span>{busy ? t("photo.opening", "Opening…") : t("photo.upload_photo", "Upload Photo")}</span>
+          <Upload size={15} />{" "}
+          <span>{busy ? t("photo.opening", "Opening…") : t("photo.upload_photo", "Upload Photo")}</span>
         </button>
         <p className="avatar-hint">
-          {photo
-            ? <>
-                <button
-                  type="button"
-                  className="avatar-replace-link"
-                  onClick={() => downloadPhoto(photo, displayLabel || label || id)}
-                  data-testid={`photo-download-${id}`}
-                >
-                  <Download size={12} style={{ display: "inline", verticalAlign: "middle", marginRight: 3 }} />
-                  {t("photo.download", "Download")}
-                </button>
-                {!readOnly && (
-                  <>
-                    {" · "}
-                    <button type="button" className="avatar-replace-link" onClick={() => fileInput.current?.click()} data-testid={`photo-replace-${id}`}>{t("photo.replace", "Replace")}</button>
-                    {" · "}
-                    <button type="button" className="avatar-replace-link" onClick={() => onChange(id, null)} data-testid={`photo-remove-${id}`}>{t("photo.remove", "Remove")}</button>
-                  </>
-                )}
-              </>
-            : t("photo.optional_hint", "Optional now — uploads automatically on save.")
-          }
+          {photo ? (
+            <>
+              <button
+                type="button"
+                className="avatar-replace-link"
+                onClick={() => downloadPhoto(photo, displayLabel || label || id)}
+                data-testid={`photo-download-${id}`}
+              >
+                <Download size={12} style={{ display: "inline", verticalAlign: "middle", marginRight: 3 }} />
+                {t("photo.download", "Download")}
+              </button>
+              {!readOnly && (
+                <>
+                  {" · "}
+                  <button
+                    type="button"
+                    className="avatar-replace-link"
+                    onClick={() => fileInput.current?.click()}
+                    data-testid={`photo-replace-${id}`}
+                  >
+                    {t("photo.replace", "Replace")}
+                  </button>
+                  {" · "}
+                  <button
+                    type="button"
+                    className="avatar-replace-link"
+                    onClick={() => onChange(id, null)}
+                    data-testid={`photo-remove-${id}`}
+                  >
+                    {t("photo.remove", "Remove")}
+                  </button>
+                </>
+              )}
+            </>
+          ) : (
+            t("photo.optional_hint", "Optional now — uploads automatically on save.")
+          )}
         </p>
-        {error && <small className="field-error" role="alert" data-testid={`photo-error-${id}`}>{error}</small>}
+        {error && (
+          <small className="field-error" role="alert" data-testid={`photo-error-${id}`}>
+            {error}
+          </small>
+        )}
       </div>
 
       {/* Status toggle buttons beside vehicle photo: Stock & RC Transfer */}
@@ -334,27 +412,27 @@ const AvatarPortraitSlot = ({ id, label, photo, onChange, readOnly, icon = "pers
             <div className="avatar-stock-toggle-box" data-testid="avatar-stock-toggle-box">
               <div className="avatar-stock-header">
                 <span className="avatar-stock-title">{t("deals.stock_label", "Stock status")}</span>
-                <span className={`status-pill ${stockStatus === "Out of Stock" || stockStatus === "Sold" ? "red" : "blue"}`} data-testid="avatar-stock-pill">
-                  {stockStatus === "Out of Stock" || stockStatus === "Sold" ? t("status.out_of_stock", "Out of Stock") : t("status.in_stock", "In Stock")}
+                <span className={`status-pill ${isStockOut ? "red" : "blue"}`} data-testid="avatar-stock-pill">
+                  {isStockOut ? t("status.out_of_stock", "Out of Stock") : t("status.in_stock", "In Stock")}
                 </span>
               </div>
               <div className="avatar-stock-btn-group">
                 <button
                   type="button"
-                  className={`stock-switch-btn in-stock ${stockStatus !== "Out of Stock" && stockStatus !== "Sold" ? "active" : ""}`}
+                  className={`stock-switch-btn in-stock ${!isStockOut ? "active" : ""}`}
                   onClick={() => onStockStatusChange("In Stock")}
                   data-testid="stock-btn-in-stock"
                 >
-                  <Check size={14} strokeWidth={2.4}/>
+                  <Check size={14} strokeWidth={2.4} />
                   <span>{t("status.in_stock", "In Stock")}</span>
                 </button>
                 <button
                   type="button"
-                  className={`stock-switch-btn out-of-stock ${stockStatus === "Out of Stock" || stockStatus === "Sold" ? "active" : ""}`}
+                  className={`stock-switch-btn out-of-stock ${isStockOut ? "active" : ""}`}
                   onClick={() => onStockStatusChange("Out of Stock")}
                   data-testid="stock-btn-out-of-stock"
                 >
-                  <X size={14} strokeWidth={2.4}/>
+                  <X size={14} strokeWidth={2.4} />
                   <span>{t("status.out_of_stock", "Out of Stock")}</span>
                 </button>
               </div>
@@ -365,27 +443,27 @@ const AvatarPortraitSlot = ({ id, label, photo, onChange, readOnly, icon = "pers
             <div className="avatar-stock-toggle-box rc-toggle-box" data-testid="avatar-rc-toggle-box">
               <div className="avatar-stock-header">
                 <span className="avatar-stock-title">{t("deals.rc_label", "RC Transfer")}</span>
-                <span className={`status-pill ${rcStatus === "Completed" || rcStatus === "Transferred" ? "green" : "gold"}`} data-testid="avatar-rc-pill">
-                  {rcStatus === "Completed" || rcStatus === "Transferred" ? t("status.rc_transferred", "RC Transferred") : t("status.rc_pending", "RC Pending")}
+                <span className={`status-pill ${isRcDone ? "green" : "gold"}`} data-testid="avatar-rc-pill">
+                  {isRcDone ? t("status.rc_transferred", "RC Transferred") : t("status.rc_pending", "RC Pending")}
                 </span>
               </div>
               <div className="avatar-stock-btn-group">
                 <button
                   type="button"
-                  className={`stock-switch-btn rc-pending ${rcStatus !== "Completed" && rcStatus !== "Transferred" ? "active" : ""}`}
+                  className={`stock-switch-btn rc-pending ${!isRcDone ? "active" : ""}`}
                   onClick={() => onRcStatusChange("Pending")}
                   data-testid="rc-btn-pending"
                 >
-                  <Clock size={14} strokeWidth={2.4}/>
+                  <Clock size={14} strokeWidth={2.4} />
                   <span>{t("status.pending", "Pending")}</span>
                 </button>
                 <button
                   type="button"
-                  className={`stock-switch-btn rc-transferred ${rcStatus === "Completed" || rcStatus === "Transferred" ? "active" : ""}`}
+                  className={`stock-switch-btn rc-transferred ${isRcDone ? "active" : ""}`}
                   onClick={() => onRcStatusChange("Transferred")}
                   data-testid="rc-btn-transferred"
                 >
-                  <Check size={14} strokeWidth={2.4}/>
+                  <Check size={14} strokeWidth={2.4} />
                   <span>{t("status.transferred", "Transferred")}</span>
                 </button>
               </div>
@@ -394,18 +472,36 @@ const AvatarPortraitSlot = ({ id, label, photo, onChange, readOnly, icon = "pers
         </div>
       )}
 
-      {/* Hidden inputs */}
-      {!readOnly && <>
-        <input ref={fileInput}   type="file" hidden accept="image/jpeg,image/png,image/webp" onChange={choose} data-testid={`photo-input-${id}`}/>
-        <input ref={cameraInput} type="file" hidden accept="image/jpeg,image/png,image/webp" capture="user" onChange={choose} data-testid={`photo-camera-${id}`}/>
-      </>}
+      {!readOnly && (
+        <>
+          <input
+            ref={fileInput}
+            type="file"
+            hidden
+            accept="image/jpeg,image/png,image/webp"
+            onChange={choose}
+            data-testid={`photo-input-${id}`}
+          />
+          <input
+            ref={cameraInput}
+            type="file"
+            hidden
+            accept="image/jpeg,image/png,image/webp"
+            capture="user"
+            onChange={choose}
+            data-testid={`photo-camera-${id}`}
+          />
+        </>
+      )}
 
       <Dialog open={preview} onOpenChange={setPreview}>
         <DialogContent className="photo-dialog" data-testid={`photo-dialog-${id}`}>
           <div className="photo-dialog-header">
             <div>
               <DialogTitle data-testid={`photo-title-${id}`}>{displayLabel}</DialogTitle>
-              <DialogDescription data-testid={`photo-filename-${id}`}>{photo?.name || "Photo preview"}</DialogDescription>
+              <DialogDescription data-testid={`photo-filename-${id}`}>
+                {photo?.name || "Photo preview"}
+              </DialogDescription>
             </div>
             {photo && (
               <button
@@ -419,7 +515,7 @@ const AvatarPortraitSlot = ({ id, label, photo, onChange, readOnly, icon = "pers
               </button>
             )}
           </div>
-          <PhotoPreview photo={photo} alt={displayLabel} data-testid={`photo-full-${id}`}/>
+          <PhotoPreview photo={photo} alt={displayLabel} data-testid={`photo-full-${id}`} />
         </DialogContent>
       </Dialog>
     </div>
@@ -429,10 +525,10 @@ const AvatarPortraitSlot = ({ id, label, photo, onChange, readOnly, icon = "pers
 // ── Plus card for adding more photos ─────────────────────────────────────────
 const AddPhotoBox = ({ group, onAddPhotos, disabled = false }) => {
   const { t } = useLanguage();
-  const fileInput   = useRef(null);
+  const fileInput = useRef(null);
   const cameraInput = useRef(null);
 
-  const handleFiles = event => {
+  const handleFiles = (event) => {
     const files = Array.from(event.target.files || []);
     event.target.value = "";
     if (files.length) {
@@ -449,15 +545,6 @@ const AddPhotoBox = ({ group, onAddPhotos, disabled = false }) => {
           fileInput.current?.click();
         }
       }}
-      role="button"
-      tabIndex={0}
-      onKeyDown={(e) => {
-        if ((e.key === "Enter" || e.key === " ") && !disabled) {
-          e.preventDefault();
-          fileInput.current?.click();
-        }
-      }}
-      aria-label="Add more photos"
     >
       <div className="add-photo-box-main">
         <div className="add-photo-icon-circle">
@@ -502,7 +589,6 @@ const AddPhotoBox = ({ group, onAddPhotos, disabled = false }) => {
         <span>{t("photo.more_photos", "+ More photos")}</span>
       </div>
 
-      {/* Hidden file & camera inputs with multiple file selection */}
       <input
         ref={fileInput}
         type="file"
@@ -526,20 +612,30 @@ const AddPhotoBox = ({ group, onAddPhotos, disabled = false }) => {
 };
 
 // ── Main export ───────────────────────────────────────────────────────────────
-export const PhotoSlots = ({ group, photos, onChange, readOnly = false, dealerToggle = null, variant = "all", stockStatus = null, onStockStatusChange = null, rcStatus = null, onRcStatusChange = null }) => {
+export const PhotoSlots = ({
+  group,
+  photos,
+  onChange,
+  readOnly = false,
+  dealerToggle = null,
+  variant = "all",
+  stockStatus = null,
+  onStockStatusChange = null,
+  rcStatus = null,
+  onRcStatusChange = null,
+}) => {
   const { t } = useLanguage();
-  const slots         = photoSlots[group] || [];
-  const count         = slots.filter((_, i) => photos[`${group}-${i + 1}`]).length;
+  const slots = photoSlots[group] || [];
+  const count = slots.filter((_, i) => photos[`${group}-${i + 1}`]).length;
   const isPersonGroup = group === "seller" || group === "buyer";
-  const isVehicle     = group === "vehicle";
+  const isVehicle = group === "vehicle";
 
-  // Dynamic extra slots tracking
   const [extraSlotIds, setExtraSlotIds] = useState(() => {
     const prefix = `${group}-extra-`;
-    return Object.keys(photos || {}).filter(k => k.startsWith(prefix));
+    return Object.keys(photos || {}).filter((k) => k.startsWith(prefix));
   });
 
-  const existingExtraKeys = Object.keys(photos || {}).filter(k => k.startsWith(`${group}-extra-`));
+  const existingExtraKeys = Object.keys(photos || {}).filter((k) => k.startsWith(`${group}-extra-`));
   const allExtraIds = Array.from(new Set([...extraSlotIds, ...existingExtraKeys])).sort((a, b) => {
     const numA = parseInt(a.replace(`${group}-extra-`, ""), 10) || 0;
     const numB = parseInt(b.replace(`${group}-extra-`, ""), 10) || 0;
@@ -551,9 +647,9 @@ export const PhotoSlots = ({ group, photos, onChange, readOnly = false, dealerTo
     for (const file of files) {
       if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) continue;
       let maxNum = 0;
-      currentIds.forEach(id => {
+      currentIds.forEach((id) => {
         const num = parseInt(id.replace(`${group}-extra-`, ""), 10);
-        if (!isNaN(num) && num > maxNum) maxNum = num;
+        if (!Number.isNaN(num) && num > maxNum) maxNum = num;
       });
       const nextNum = maxNum + 1;
       const newId = `${group}-extra-${nextNum}`;
@@ -564,25 +660,36 @@ export const PhotoSlots = ({ group, photos, onChange, readOnly = false, dealerTo
   };
 
   if (isPersonGroup || isVehicle) {
-    const portraitId    = `${group}-1`;
+    const portraitId = `${group}-1`;
     const portraitLabel = slots[0];
-    const restSlots     = slots.slice(1);
+    const restSlots = slots.slice(1);
     const filteredSlots = isPersonGroup ? restSlots.filter((s) => s !== "Signature") : restSlots;
-    const hasPortrait   = !!photos[portraitId];
-    const sectionTitle  = group === "seller" ? t("photo.seller_photo", "Seller photo") : group === "buyer" ? t("photo.buyer_photo", "Buyer photo") : t("photo.vehicle_photo", "Vehicle photo");
-    const docsTitle     = isVehicle ? t("photo.additional_docs", "Additional photos & documents") : t("photo.docs_additional", "Documents & additional photos");
+    const hasPortrait = Boolean(photos[portraitId]);
+
+    let sectionTitle = t("photo.vehicle_photo", "Vehicle photo");
+    if (group === "seller") {
+      sectionTitle = t("photo.seller_photo", "Seller photo");
+    } else if (group === "buyer") {
+      sectionTitle = t("photo.buyer_photo", "Buyer photo");
+    }
+
+    const docsTitle = isVehicle
+      ? t("photo.additional_docs", "Additional photos & documents")
+      : t("photo.docs_additional", "Documents & additional photos");
 
     const isSlotSignatureContaminated = (label, slotId) => {
       const candidate = photos[slotId];
       if (!candidate) return false;
       const sig = photos[`${group}-signature`] || photos[`${group}_signature`];
-      if (sig && (candidate === sig || (candidate.dataUrl && candidate.dataUrl === sig.dataUrl) || (candidate.url && candidate.url === sig.url))) {
+      if (
+        sig &&
+        (candidate === sig ||
+          (candidate.dataUrl && candidate.dataUrl === sig.dataUrl) ||
+          (candidate.url && candidate.url === sig.url))
+      ) {
         return true;
       }
-      if (candidate.name && String(candidate.name).toLowerCase().includes("signature")) {
-        return true;
-      }
-      return false;
+      return Boolean(candidate.name && String(candidate.name).toLowerCase().includes("signature"));
     };
 
     if (variant === "portrait") {
@@ -674,30 +781,25 @@ export const PhotoSlots = ({ group, photos, onChange, readOnly = false, dealerTo
                   onChange={(id, val) => {
                     onChange(id, val);
                     if (!val) {
-                      setExtraSlotIds(prev => prev.filter(x => x !== extraId));
+                      setExtraSlotIds((prev) => prev.filter((x) => x !== extraId));
                     }
                   }}
                   readOnly={readOnly}
                   onDeleteExtra={() => {
                     onChange(extraId, null);
-                    setExtraSlotIds(prev => prev.filter(x => x !== extraId));
+                    setExtraSlotIds((prev) => prev.filter((x) => x !== extraId));
                   }}
                 />
               );
             })}
-            {!readOnly && (
-              <AddPhotoBox
-                group={group}
-                onAddPhotos={handleAddPhotos}
-              />
-            )}
+            {!readOnly && <AddPhotoBox group={group} onAddPhotos={handleAddPhotos} />}
           </div>
         </section>
       );
     }
 
     if (isVehicle) {
-      const extraUploaded = allExtraIds.filter(id => photos[id]).length;
+      const extraUploaded = allExtraIds.filter((id) => photos[id]).length;
       return (
         <section className="wizard-group photo-group">
           <div className="section-title">
@@ -729,23 +831,18 @@ export const PhotoSlots = ({ group, photos, onChange, readOnly = false, dealerTo
                   onChange={(id, val) => {
                     onChange(id, val);
                     if (!val) {
-                      setExtraSlotIds(prev => prev.filter(x => x !== extraId));
+                      setExtraSlotIds((prev) => prev.filter((x) => x !== extraId));
                     }
                   }}
                   readOnly={readOnly}
                   onDeleteExtra={() => {
                     onChange(extraId, null);
-                    setExtraSlotIds(prev => prev.filter(x => x !== extraId));
+                    setExtraSlotIds((prev) => prev.filter((x) => x !== extraId));
                   }}
                 />
               );
             })}
-            {!readOnly && (
-              <AddPhotoBox
-                group={group}
-                onAddPhotos={handleAddPhotos}
-              />
-            )}
+            {!readOnly && <AddPhotoBox group={group} onAddPhotos={handleAddPhotos} />}
           </div>
         </section>
       );
@@ -795,23 +892,18 @@ export const PhotoSlots = ({ group, photos, onChange, readOnly = false, dealerTo
                   onChange={(id, val) => {
                     onChange(id, val);
                     if (!val) {
-                      setExtraSlotIds(prev => prev.filter(x => x !== extraId));
+                      setExtraSlotIds((prev) => prev.filter((x) => x !== extraId));
                     }
                   }}
                   readOnly={readOnly}
                   onDeleteExtra={() => {
                     onChange(extraId, null);
-                    setExtraSlotIds(prev => prev.filter(x => x !== extraId));
+                    setExtraSlotIds((prev) => prev.filter((x) => x !== extraId));
                   }}
                 />
               );
             })}
-            {!readOnly && (
-              <AddPhotoBox
-                group={group}
-                onAddPhotos={handleAddPhotos}
-              />
-            )}
+            {!readOnly && <AddPhotoBox group={group} onAddPhotos={handleAddPhotos} />}
           </div>
         </section>
       );
@@ -819,11 +911,12 @@ export const PhotoSlots = ({ group, photos, onChange, readOnly = false, dealerTo
 
     return (
       <section className="wizard-group photo-group">
-        {/* Heading row: "Vehicle photo" + photo count */}
         <div className="section-title">
           <h2>{t("photo.vehicle_photo", "Vehicle photo")}</h2>
           <div className="photo-section-actions">
-            <span className="slot-count" data-testid={`${group}-photo-count`}>{count} / {slots.length} {t("photo.photos_count", "photos")}</span>
+            <span className="slot-count" data-testid={`${group}-photo-count`}>
+              {count} / {slots.length} {t("photo.photos_count", "photos")}
+            </span>
           </div>
         </div>
 
@@ -840,9 +933,7 @@ export const PhotoSlots = ({ group, photos, onChange, readOnly = false, dealerTo
           onRcStatusChange={onRcStatusChange}
         />
 
-        {restSlots.length > 0 && (
-          <div className="avatar-docs-label">{docsTitle}</div>
-        )}
+        {restSlots.length > 0 && <div className="avatar-docs-label">{docsTitle}</div>}
         <div className="photo-slot-grid">
           {restSlots.map((label, i) => {
             const slotId = `${group}-${i + 2}`;
@@ -869,23 +960,18 @@ export const PhotoSlots = ({ group, photos, onChange, readOnly = false, dealerTo
                 onChange={(id, val) => {
                   onChange(id, val);
                   if (!val) {
-                    setExtraSlotIds(prev => prev.filter(x => x !== extraId));
+                    setExtraSlotIds((prev) => prev.filter((x) => x !== extraId));
                   }
                 }}
                 readOnly={readOnly}
                 onDeleteExtra={() => {
                   onChange(extraId, null);
-                  setExtraSlotIds(prev => prev.filter(x => x !== extraId));
+                  setExtraSlotIds((prev) => prev.filter((x) => x !== extraId));
                 }}
               />
             );
           })}
-          {!readOnly && (
-            <AddPhotoBox
-              group={group}
-              onAddPhotos={handleAddPhotos}
-            />
-          )}
+          {!readOnly && <AddPhotoBox group={group} onAddPhotos={handleAddPhotos} />}
         </div>
       </section>
     );
@@ -910,7 +996,9 @@ export const PhotoSlots = ({ group, photos, onChange, readOnly = false, dealerTo
     <section className="wizard-group photo-group">
       <div className="section-title">
         <h2>{t("photo.additional_docs", "Photos & documents")}</h2>
-        <span className="slot-count" data-testid={`${group}-photo-count`}>{count} / {slots.length} {t("photo.photos_count", "photos")}</span>
+        <span className="slot-count" data-testid={`${group}-photo-count`}>
+          {count} / {slots.length} {t("photo.photos_count", "photos")}
+        </span>
       </div>
       <div className={`photo-slot-grid ${slots.length === 1 ? "single-photo" : ""}`}>
         {slots.map((label, i) => (

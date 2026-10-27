@@ -23,122 +23,122 @@ import {
 } from "./agreementCoordinates";
 
 export interface SellerAgreementDeal {
-  billNumber?: string;
-  bill_number?: string;
-  place?: string;
-  deliveryDate?: string;
-  deliveryTime?: string;
-  insurance?: boolean;
-  fc?: boolean;
-  tax?: boolean;
-  cc?: boolean;
-  toAndInsurance?: string;
-  vehicle?: {
-    brand?: string;
-    make?: string;
-    model?: string;
-    variant?: string;
-    engineNumber?: string;
-    engine_number?: string;
-    vehicleNumber?: string;
-    vehicle_number?: string;
-    registration_number?: string;
-    chassisNumber?: string;
-    chassis_number?: string;
-    tax?: string;
-    fitness?: string;
-    insurance?: string;
-    hypothecation?: string;
-    noc?: string;
-    sold_date?: string;
-    bought_date?: string;
-    [key: string]: any;
+  readonly billNumber?: string;
+  readonly bill_number?: string;
+  readonly place?: string;
+  readonly deliveryDate?: string;
+  readonly deliveryTime?: string;
+  readonly insurance?: boolean;
+  readonly fc?: boolean;
+  readonly tax?: boolean;
+  readonly cc?: boolean;
+  readonly toAndInsurance?: string;
+  readonly vehicle?: {
+    readonly brand?: string;
+    readonly make?: string;
+    readonly model?: string;
+    readonly variant?: string;
+    readonly engineNumber?: string;
+    readonly engine_number?: string;
+    readonly vehicleNumber?: string;
+    readonly vehicle_number?: string;
+    readonly registration_number?: string;
+    readonly chassisNumber?: string;
+    readonly chassis_number?: string;
+    readonly tax?: string;
+    readonly fitness?: string;
+    readonly insurance?: string;
+    readonly hypothecation?: string;
+    readonly noc?: string;
+    readonly sold_date?: string;
+    readonly bought_date?: string;
+    readonly [key: string]: unknown;
   };
-  seller?: {
-    name?: string;
-    fullAddress?: string;
-    address?: string;
-    city?: string;
-    state?: string;
-    pincode?: string;
-    mobile?: string;
-    phone?: string;
-    aadhaar?: string;
-    id_number?: string;
-    photo?: any;
-    signature?: any;
-    thumb?: any;
-    [key: string]: any;
+  readonly seller?: {
+    readonly name?: string;
+    readonly fullAddress?: string;
+    readonly address?: string;
+    readonly city?: string;
+    readonly state?: string;
+    readonly pincode?: string;
+    readonly mobile?: string;
+    readonly phone?: string;
+    readonly aadhaar?: string;
+    readonly id_number?: string;
+    readonly photo?: unknown;
+    readonly signature?: unknown;
+    readonly thumb?: unknown;
+    readonly [key: string]: unknown;
   };
-  buyer?: {
-    name?: string;
-    fullAddress?: string;
-    address?: string;
-    city?: string;
-    state?: string;
-    pincode?: string;
-    mobile?: string;
-    phone?: string;
-    aadhaar?: string;
-    id_number?: string;
-    photo?: any;
-    signature?: any;
-    thumb?: any;
-    [key: string]: any;
+  readonly buyer?: {
+    readonly name?: string;
+    readonly fullAddress?: string;
+    readonly address?: string;
+    readonly city?: string;
+    readonly state?: string;
+    readonly pincode?: string;
+    readonly mobile?: string;
+    readonly phone?: string;
+    readonly aadhaar?: string;
+    readonly id_number?: string;
+    readonly photo?: unknown;
+    readonly signature?: unknown;
+    readonly thumb?: unknown;
+    readonly [key: string]: unknown;
   };
-  witness1?: {
-    name?: string;
-    address?: string;
-    mobile?: string;
-    phone?: string;
-    aadhaar?: string;
-    id_number?: string;
-    photo?: any;
-    signature?: any;
-    thumb?: any;
-    [key: string]: any;
+  readonly witness1?: {
+    readonly name?: string;
+    readonly address?: string;
+    readonly mobile?: string;
+    readonly phone?: string;
+    readonly aadhaar?: string;
+    readonly id_number?: string;
+    readonly photo?: unknown;
+    readonly signature?: unknown;
+    readonly thumb?: unknown;
+    readonly [key: string]: unknown;
   };
-  witnesses?: Array<{
-    name?: string;
-    address?: string;
-    phone?: string;
-    id_number?: string;
-    photo?: any;
-    signature?: any;
-    thumb?: any;
-    [key: string]: any;
+  readonly witnesses?: ReadonlyArray<{
+    readonly name?: string;
+    readonly address?: string;
+    readonly phone?: string;
+    readonly id_number?: string;
+    readonly photo?: unknown;
+    readonly signature?: unknown;
+    readonly thumb?: unknown;
+    readonly [key: string]: unknown;
   }>;
-  payment?: {
-    purchasePrice?: string | number;
-    advancePaid?: string | number;
-    balanceAmount?: string | number;
-    toAndInsurance?: string;
-    [key: string]: any;
+  readonly payment?: {
+    readonly purchasePrice?: string | number;
+    readonly advancePaid?: string | number;
+    readonly balanceAmount?: string | number;
+    readonly toAndInsurance?: string;
+    readonly [key: string]: unknown;
   };
-  payments?: {
-    purchase_price?: string | number;
-    selling_price?: string | number;
-    paid_to_seller?: string | number;
-    received_from_buyer?: string | number;
-    payment_date?: string;
-    [key: string]: any;
+  readonly payments?: {
+    readonly purchase_price?: string | number;
+    readonly selling_price?: string | number;
+    readonly paid_to_seller?: string | number;
+    readonly received_from_buyer?: string | number;
+    readonly payment_date?: string;
+    readonly [key: string]: unknown;
   };
-  photos?: Record<string, any>;
-  [key: string]: any;
+  readonly photos?: Record<string, unknown>;
+  readonly [key: string]: unknown;
 }
 
-interface SellerAgreementProps {
-  deal: SellerAgreementDeal;
-  resolvedImages?: {
-    sellerPhoto?: string | null;
-    sellerSignature?: string | null;
-    sellerThumb?: string | null;
-    buyerPhoto?: string | null;
-    buyerSignature?: string | null;
-    buyerThumb?: string | null;
-    witnessPhoto?: string | null;
-    witnessSignature?: string | null;
-    witnessThumb?: string | null;
+export interface SellerAgreementProps {
+  readonly deal: SellerAgreementDeal;
+  readonly resolvedImages?: {
+    readonly sellerPhoto?: string | null;
+    readonly sellerSignature?: string | null;
+    readonly sellerThumb?: string | null;
+    readonly buyerPhoto?: string | null;
+    readonly buyerSignature?: string | null;
+    readonly buyerThumb?: string | null;
+    readonly witnessPhoto?: string | null;
+    readonly witnessSignature?: string | null;
+    readonly witnessThumb?: string | null;
   };
 }
 
@@ -249,7 +249,7 @@ function formatDisplayDate(dateStr?: string): string {
   return dateStr;
 }
 
-function formatCurrency(val: any): string {
+function formatCurrency(val: unknown): string {
   if (val === "" || val === null || val === undefined) return "";
   const num = typeof val === "string" ? parseFloat(val.replace(/,/g, "")) : Number(val);
   if (isNaN(num)) return String(val);
@@ -274,17 +274,18 @@ function splitAddressLines(text: string, maxLen = 65, maxLines = 2): string[] {
   return lines;
 }
 
-export function SellerAgreementPDF({ deal, resolvedImages }: SellerAgreementProps) {
+export function SellerAgreementPDF({ deal, resolvedImages }: Readonly<SellerAgreementProps>) {
   // 1. Header mapping
   const slNo = deal.billNumber || deal.bill_number || "Bill-001";
-  const place = deal.place || (deal.seller?.city ? `${deal.seller.city}` : "Davangere");
+  const sellerCity = deal.seller?.city ? String(deal.seller.city) : "";
+  const place = deal.place || sellerCity || "Davangere";
   const dateValue = formatDisplayDate(
     deal.deliveryDate ||
     deal.payments?.payment_date ||
     deal.vehicle?.sold_date ||
     deal.vehicle?.bought_date
   );
-  const timeValue = deal.deliveryTime || deal.delivery_time || "11:30 AM";
+  const timeValue = String(deal.deliveryTime || deal.delivery_time || "11:30 AM");
 
   // 2. Owner section
   const sellerName = deal.seller?.name || "";
@@ -312,7 +313,7 @@ export function SellerAgreementPDF({ deal, resolvedImages }: SellerAgreementProp
   const buyerName = "METRO MOTORS";
 
   // 5. Witness section
-  const witness1: any = deal.witness1 || (deal.witnesses && deal.witnesses[0]) || {};
+  const witness1 = deal.witness1 || (Array.isArray(deal.witnesses) ? deal.witnesses[0] : undefined) || {};
   const witnessName = witness1.name || "";
   const witnessAddress = witness1.address || "";
   const witnessAddressLines = splitAddressLines(witnessAddress, 25, 2);
@@ -344,10 +345,12 @@ export function SellerAgreementPDF({ deal, resolvedImages }: SellerAgreementProp
     }
   }
   const balanceAmountDisplay = balanceAmountRaw !== "" ? formatCurrency(balanceAmountRaw) : "";
-  const toAndInsuranceDisplay =
-    deal.payment?.toAndInsurance ? (
-      !isNaN(Number(deal.payment?.toAndInsurance)) ? formatCurrency(deal.payment?.toAndInsurance) : deal.payment?.toAndInsurance
-    ) : "5,000 /-";
+  
+  let toAndInsuranceDisplay = "5,000 /-";
+  if (deal.payment?.toAndInsurance) {
+    const toNum = Number(deal.payment.toAndInsurance);
+    toAndInsuranceDisplay = !isNaN(toNum) ? formatCurrency(deal.payment.toAndInsurance) : String(deal.payment.toAndInsurance);
+  }
 
   // 7. Checkboxes
   const isInsuranceChecked =
@@ -385,7 +388,7 @@ export function SellerAgreementPDF({ deal, resolvedImages }: SellerAgreementProp
   const witnessThumb = resolvedImages?.witnessThumb || deal.witness1?.thumb;
 
   const renderImageBox = (
-    src: string | null | undefined,
+    src: unknown,
     coords: FieldBox,
     isSignature = false
   ) => {
@@ -396,7 +399,7 @@ export function SellerAgreementPDF({ deal, resolvedImages }: SellerAgreementProp
       height: coords.height,
     };
 
-    if (!src) {
+    if (!src || typeof src !== "string") {
       return (
         <View style={[styles.missingImageBox, boxStyle]}>
           <Text style={styles.missingImageText}>NOT UPLOADED</Text>

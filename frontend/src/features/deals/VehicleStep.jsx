@@ -1,4 +1,4 @@
-import { Car, Gauge, Fuel, ShieldCheck, Cog, Award, ChevronDown, Edit3 } from "lucide-react";
+import { Gauge, Fuel, ShieldCheck, Cog, Award, ChevronDown, Edit3 } from "lucide-react";
 import { FieldGrid } from "./DealField";
 import { vehicleGroups } from "./fieldConfig";
 import { PhotoSlots } from "./PhotoSlots";
@@ -13,14 +13,16 @@ const groupTitleMap = {
 
 const getCategoryIcon = (type) => {
   switch (type) {
-    case "2 Wheeler with Gear": return "🏍️";
-    case "2 Wheeler without Gear": return "🛵";
-    case "4 Wheeler Car": return "🚗";
-    default: return "🚗";
+    case "2 Wheeler with Gear":
+      return "🏍️";
+    case "2 Wheeler without Gear":
+      return "🛵";
+    case "4 Wheeler Car":
+      return "🚗";
+    default:
+      return "🚗";
   }
 };
-
-
 
 export const VehicleStep = ({ deal, update, updateSection, setPhoto, errors }) => {
   const { t } = useLanguage();
@@ -44,7 +46,9 @@ export const VehicleStep = ({ deal, update, updateSection, setPhoto, errors }) =
             <div className="vehicle-hud-title-wrap">
               <div className="vehicle-hud-eyebrow">
                 <span className="text-base">{getCategoryIcon(currentCategory)}</span>
-                <span>{currentCategory} · {t("vehicle.hud_spec", "Specification HUD")}</span>
+                <span>
+                  {currentCategory} · {t("vehicle.hud_spec", "Specification HUD")}
+                </span>
                 <span className="hud-interactive-badge" title="All values in this HUD are directly editable">
                   <Edit3 size={10} /> Live Edit
                 </span>
@@ -54,7 +58,7 @@ export const VehicleStep = ({ deal, update, updateSection, setPhoto, errors }) =
                   type="text"
                   className="vehicle-hud-model-input"
                   data-testid="vehicle-hud-display-name"
-                  value={v.vehicle_name !== undefined ? v.vehicle_name : ([v.make, v.model].filter(Boolean).join(" "))}
+                  value={v.vehicle_name !== undefined ? v.vehicle_name : [v.make, v.model].filter(Boolean).join(" ")}
                   onChange={(e) => updateSection("vehicle", "vehicle_name", e.target.value)}
                   placeholder={vehicleDisplayName || "Enter Vehicle Make & Model..."}
                   title="Click to edit vehicle name / model directly"
@@ -124,7 +128,9 @@ export const VehicleStep = ({ deal, update, updateSection, setPhoto, errors }) =
                     onChange={(e) => updateSection("vehicle", "fuel_type", e.target.value)}
                   >
                     {["Petrol", "Diesel", "Electric", "CNG", "Hybrid"].map((opt) => (
-                      <option key={opt} value={opt}>{opt}</option>
+                      <option key={opt} value={opt}>
+                        {opt}
+                      </option>
                     ))}
                   </select>
                   <ChevronDown size={11} className="hud-select-chevron" />
@@ -146,7 +152,9 @@ export const VehicleStep = ({ deal, update, updateSection, setPhoto, errors }) =
                     onChange={(e) => updateSection("vehicle", "transmission", e.target.value)}
                   >
                     {["Manual", "Automatic"].map((opt) => (
-                      <option key={opt} value={opt}>{opt}</option>
+                      <option key={opt} value={opt}>
+                        {opt}
+                      </option>
                     ))}
                   </select>
                   <ChevronDown size={11} className="hud-select-chevron" />
@@ -188,7 +196,9 @@ export const VehicleStep = ({ deal, update, updateSection, setPhoto, errors }) =
                     onChange={(e) => updateSection("vehicle", "ownership", e.target.value)}
                   >
                     {["First Owner", "Second Owner", "Third Owner", "Fourth Owner or More"].map((opt) => (
-                      <option key={opt} value={opt}>{opt}</option>
+                      <option key={opt} value={opt}>
+                        {opt}
+                      </option>
                     ))}
                   </select>
                   <ChevronDown size={11} className="hud-select-chevron" />
@@ -196,7 +206,7 @@ export const VehicleStep = ({ deal, update, updateSection, setPhoto, errors }) =
               </div>
             </div>
 
-            {/* 5. Condition (New!) */}
+            {/* 5. Condition */}
             <div className="hud-metric-pill editable" title="Click to change Vehicle Condition">
               <div className="hud-metric-icon hud-condition-icon">
                 <ShieldCheck size={18} />
@@ -210,7 +220,9 @@ export const VehicleStep = ({ deal, update, updateSection, setPhoto, errors }) =
                     onChange={(e) => updateSection("vehicle", "condition", e.target.value)}
                   >
                     {["Excellent", "Good", "Fair", "Needs Repair"].map((opt) => (
-                      <option key={opt} value={opt}>{opt}</option>
+                      <option key={opt} value={opt}>
+                        {opt}
+                      </option>
                     ))}
                   </select>
                   <ChevronDown size={11} className="hud-select-chevron" />
@@ -221,17 +233,15 @@ export const VehicleStep = ({ deal, update, updateSection, setPhoto, errors }) =
         </div>
       </div>
 
-
-
       {/* Vehicle main photo on top with stock and RC transfer buttons beside it */}
       <PhotoSlots
         group="vehicle"
         photos={deal?.photos || {}}
         onChange={setPhoto}
         variant="portrait"
-        stockStatus={deal.status}
+        stockStatus={deal?.status}
         onStockStatusChange={(val) => update("status", val)}
-        rcStatus={deal.rc_status}
+        rcStatus={deal?.rc_status}
         onRcStatusChange={(val) => update("rc_status", val)}
       />
 
@@ -244,7 +254,7 @@ export const VehicleStep = ({ deal, update, updateSection, setPhoto, errors }) =
           <FieldGrid
             fields={group.fields}
             prefix="vehicle"
-            value={deal.vehicle}
+            value={deal?.vehicle || {}}
             errors={errors}
             onChange={(key, value) => updateSection("vehicle", key, value)}
           />

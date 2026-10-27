@@ -28,7 +28,7 @@ const ReadGroup = ({ title, fields, value, prefix, action }) => {
         {action}
       </div>
       <dl className="local-read-grid">
-        {fields.map(f => {
+        {fields.map((f) => {
           let fieldLabel = f.label;
           if (prefix === "agent" && t(`agent.${f.key}`)) {
             fieldLabel = t(`agent.${f.key}`, f.label);
@@ -65,34 +65,57 @@ export default function DealView() {
   const [docType, setDocType] = useState("buyer-bill");
   const [agentModalOpen, setAgentModalOpen] = useState(false);
   const [error, setError] = useState("");
+
   useEffect(() => {
     let active = true;
+    let timer1 = null;
+    let timer2 = null;
+
     setDeal(null);
     setError("");
-    dealRepository.get(dealId).then(value => {
-      if (!active) return;
-      if (!value) setError(t("dealview.not_saved", "This deal is not saved in this browser."));
-      else {
-        setDeal(value);
-        if (window.location.hash === "#agent" || window.location.search.includes("agent")) {
-          setTimeout(() => {
-            const el = document.getElementById("deal-agent-section");
-            if (el) {
-              el.scrollIntoView({ behavior: "smooth", block: "center" });
-              el.classList.add("agent-section-highlighted");
-              setTimeout(() => el.classList.remove("agent-section-highlighted"), 2500);
-            }
-          }, 350);
+
+    dealRepository
+      .get(dealId)
+      .then((value) => {
+        if (!active) return;
+        if (!value) {
+          setError(t("dealview.not_saved", "This deal is not saved in this browser."));
+        } else {
+          setDeal(value);
+          if (window.location.hash === "#agent" || window.location.search.includes("agent")) {
+            timer1 = setTimeout(() => {
+              const el = document.getElementById("deal-agent-section");
+              if (el) {
+                el.scrollIntoView({ behavior: "smooth", block: "center" });
+                el.classList.add("agent-section-highlighted");
+                timer2 = setTimeout(() => {
+                  el.classList.remove("agent-section-highlighted");
+                }, 2500);
+              }
+            }, 350);
+          }
         }
-      }
-    }).catch(e => active && setError(e.message));
-    return () => { active = false; };
+      })
+      .catch((e) => {
+        if (active) setError(e.message);
+      });
+
+    return () => {
+      active = false;
+      if (timer1) clearTimeout(timer1);
+      if (timer2) clearTimeout(timer2);
+    };
   }, [dealId, t]);
 
   return (
     <div className="local-page">
-      <button className="back-link wizard-back" onClick={() => navigate("/deals")} data-testid="deal-view-back">
-        <ArrowLeft size={16}/> {t("nav.deals", "Deals")}
+      <button
+        type="button"
+        className="back-link wizard-back"
+        onClick={() => navigate("/deals")}
+        data-testid="deal-view-back"
+      >
+        <ArrowLeft size={16} /> {t("nav.deals", "Deals")}
       </button>
       <div className="page-header">
         <div>
@@ -104,61 +127,86 @@ export default function DealView() {
             {isOwner && (
               <>
                 <button
+                  type="button"
                   className="button button-primary"
-                  onClick={() => { setDocType("buyer-bill"); setBillOpen(true); }}
+                  onClick={() => {
+                    setDocType("buyer-bill");
+                    setBillOpen(true);
+                  }}
                   data-testid="deal-view-buyer-bill"
                   title="Open Buyer Bill / Vehicle Sale Receipt"
                 >
-                  <FileText size={16}/> <span>Buyer Bill</span>
+                  <FileText size={16} /> <span>Buyer Bill</span>
                 </button>
                 <button
+                  type="button"
                   className="button button-secondary"
-                  onClick={() => { setDocType("seller-bill"); setBillOpen(true); }}
+                  onClick={() => {
+                    setDocType("seller-bill");
+                    setBillOpen(true);
+                  }}
                   data-testid="deal-view-generate-bill"
                   title="Open Seller Agreement"
                 >
-                  <FileText size={16}/> <span>{t("bills.generate_bill", "Seller Agreement")}</span>
+                  <FileText size={16} /> <span>{t("bills.generate_bill", "Seller Agreement")}</span>
                 </button>
                 <button
+                  type="button"
                   className="button button-secondary"
-                  onClick={() => { setDocType("bond-agreement"); setBillOpen(true); }}
+                  onClick={() => {
+                    setDocType("bond-agreement");
+                    setBillOpen(true);
+                  }}
                   data-testid="deal-view-bond-agreement"
                   title="Open E-Stamp Bond Agreement (7 Pages)"
                 >
-                  <ShieldCheck size={16}/> <span>Bond Agreement</span>
+                  <ShieldCheck size={16} /> <span>Bond Agreement</span>
                 </button>
               </>
             )}
-            <button className="button button-secondary" onClick={() => navigate(`/new-deal/${deal.id}`)} data-testid="deal-view-edit">
-              <Pencil size={16}/> {t("deal.edit_deal", "Edit Deal")}
+            <button
+              type="button"
+              className="button button-secondary"
+              onClick={() => navigate(`/new-deal/${deal.id}`)}
+              data-testid="deal-view-edit"
+            >
+              <Pencil size={16} /> {t("deal.edit_deal", "Edit Deal")}
             </button>
           </div>
         )}
       </div>
       {error ? (
-        <div className="workflow-message" role="alert" data-testid="deal-view-error">{error}</div>
+        <div className="workflow-message" role="alert" data-testid="deal-view-error">
+          {error}
+        </div>
       ) : !deal ? (
-        <p role="status" data-testid="deal-view-loading">{t("dealview.loading", "Loading deal…")}</p>
+        <p role="status" data-testid="deal-view-loading">
+          {t("dealview.loading", "Loading deal…")}
+        </p>
       ) : (
         <>
           {state?.saved && (
             <div className="local-success" role="status" data-testid="deal-saved-message">
-              <CheckCircle2 size={18}/>{state.saved} {t("dealview.saved_notice", "saved on this browser. No data was sent to a server.")}
+              <CheckCircle2 size={18} />
+              {state.saved} {t("dealview.saved_notice", "saved on this browser. No data was sent to a server.")}
             </div>
           )}
           <div className="local-record-meta">
-            <StatusBadges deal={deal} prefix="detail"/>
-            <span data-testid="deal-created-date">{t("dealview.created_on", "Created")} {displayDate(deal.created_at, language)}</span>
+            <StatusBadges deal={deal} prefix="detail" />
+            <span data-testid="deal-created-date">
+              {t("dealview.created_on", "Created")} {displayDate(deal.created_at, language)}
+            </span>
           </div>
-          <DealSummary deal={deal}/>
-          {vehicleGroups.map(group => {
-            const fields = group.title === "Ownership & condition"
-              ? [
-                  { key: "ownership", label: "Ownership" },
-                  { key: "condition", label: "Condition" },
-                  ...group.fields,
-                ]
-              : group.fields;
+          <DealSummary deal={deal} />
+          {vehicleGroups.map((group) => {
+            const fields =
+              group.title === "Ownership & condition"
+                ? [
+                    { key: "ownership", label: "Ownership" },
+                    { key: "condition", label: "Condition" },
+                    ...group.fields,
+                  ]
+                : group.fields;
             return (
               <ReadGroup
                 key={group.title}
@@ -169,7 +217,7 @@ export default function DealView() {
               />
             );
           })}
-          <PhotoSlots group="vehicle" photos={deal.photos} readOnly/>
+          <PhotoSlots group="vehicle" photos={deal.photos} readOnly />
           {/* Seller details & witness */}
           <div>
             <ReadGroup
@@ -178,14 +226,14 @@ export default function DealView() {
               value={deal.seller}
               prefix="seller"
             />
-            <PhotoSlots group="seller" photos={deal.photos} readOnly/>
+            <PhotoSlots group="seller" photos={deal.photos} readOnly />
             <ReadGroup
               title={t("section.seller_witness", "Seller witness")}
               fields={witnessFields}
               value={deal.witnesses[0]}
               prefix="witness-1"
             />
-            <PhotoSlots group="witness-1" photos={deal.photos} readOnly/>
+            <PhotoSlots group="witness-1" photos={deal.photos} readOnly />
           </div>
 
           {/* Mechanical Maintenance Cost - Beside Seller */}
@@ -203,10 +251,20 @@ export default function DealView() {
                   <button
                     type="button"
                     className="button button-primary"
-                    onClick={() => { setDocType("buyer-bill"); setBillOpen(true); }}
+                    onClick={() => {
+                      setDocType("buyer-bill");
+                      setBillOpen(true);
+                    }}
                     data-testid="deal-view-buyer-bill-btn"
                     title="Open Buyer Bill / Vehicle Sale Receipt"
-                    style={{ padding: "6px 12px", fontSize: "12px", height: "34px", display: "inline-flex", gap: "6px", alignItems: "center" }}
+                    style={{
+                      padding: "6px 12px",
+                      fontSize: "12px",
+                      height: "34px",
+                      display: "inline-flex",
+                      gap: "6px",
+                      alignItems: "center",
+                    }}
                   >
                     <FileText size={13} />
                     <span>Buyer Bill</span>
@@ -214,18 +272,23 @@ export default function DealView() {
                 ) : null
               }
             />
-            <PhotoSlots group="buyer" photos={deal.photos} readOnly/>
+            <PhotoSlots group="buyer" photos={deal.photos} readOnly />
             <ReadGroup
               title={t("section.buyer_witness", "Buyer witness")}
               fields={witnessFields}
               value={deal.witnesses[1]}
               prefix="witness-2"
             />
-            <PhotoSlots group="witness-2" photos={deal.photos} readOnly/>
+            <PhotoSlots group="witness-2" photos={deal.photos} readOnly />
           </div>
 
           {isOwner && (
-            <ReadGroup title={t("step.payments", "Payments")} fields={paymentFields} value={deal.payments} prefix="payments"/>
+            <ReadGroup
+              title={t("step.payments", "Payments")}
+              fields={paymentFields}
+              value={deal.payments}
+              prefix="payments"
+            />
           )}
 
           {deal.agent?.name && isOwner && (
@@ -264,8 +327,12 @@ export default function DealView() {
             </div>
           )}
           <section className="wizard-group">
-            <div className="section-title"><h2>{t("section.notes_remarks", "Notes & remarks")}</h2></div>
-            <p className="local-notes" data-testid="deal-view-notes">{deal.notes || t("dealview.no_notes", "No notes recorded.")}</p>
+            <div className="section-title">
+              <h2>{t("section.notes_remarks", "Notes & remarks")}</h2>
+            </div>
+            <p className="local-notes" data-testid="deal-view-notes">
+              {deal.notes || t("dealview.no_notes", "No notes recorded.")}
+            </p>
           </section>
         </>
       )}

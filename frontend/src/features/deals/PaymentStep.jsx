@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { FieldGrid } from "./DealField";
 import { paymentFields } from "./fieldConfig";
-import { commission, grossCommission, calculateMaintenanceTotal, money } from "./dealModel";
+import { commission, calculateMaintenanceTotal, money } from "./dealModel";
 import { useLanguage } from "@/features/i18n/LanguageContext";
 import { useAuth } from "@/context/AuthContext";
 
@@ -46,7 +46,6 @@ export const PaymentStep = ({ deal, updateSection, errors }) => {
 
   const p = deal?.payments || {};
   const maintenanceExpense = calculateMaintenanceTotal(deal?.maintenance);
-  const _grossAmount = grossCommission(p);
   const netAmount = commission(p, maintenanceExpense);
 
   const purchaseNum = Number(p.purchase_price) || 0;
@@ -54,15 +53,18 @@ export const PaymentStep = ({ deal, updateSection, errors }) => {
   const receivedNum = Number(p.received_from_buyer) || 0;
   const paidNum = Number(p.paid_to_seller) || 0;
 
-  const marginPercent =
-    sellingNum > 0 && netAmount !== null
-      ? ((netAmount / sellingNum) * 100).toFixed(1)
-      : null;
+  let marginPercent = null;
+  if (sellingNum > 0 && netAmount !== null) {
+    marginPercent = ((netAmount / sellingNum) * 100).toFixed(1);
+  }
 
-  const sellerBalance =
-    p.purchase_price === "" ? "—" : money(purchaseNum - paidNum);
-  const buyerBalance =
-    p.selling_price === "" ? "—" : money(sellingNum - receivedNum);
+  const sellerBalance = p.purchase_price === "" ? "—" : money(purchaseNum - paidNum);
+  const buyerBalance = p.selling_price === "" ? "—" : money(sellingNum - receivedNum);
+
+  let marginText = "";
+  if (marginPercent !== null) {
+    marginText = netAmount >= 0 ? `+${marginPercent}% Margin` : `${marginPercent}% Deficit`;
+  }
 
   return (
     <div className="payment-step-container" data-testid="payment-step-container">
@@ -140,10 +142,8 @@ export const PaymentStep = ({ deal, updateSection, errors }) => {
               {money(netAmount)}
             </div>
             <div className="cockpit-sub">
-              {marginPercent !== null && (
-                <span className="cockpit-margin-badge">
-                  {netAmount >= 0 ? `+${marginPercent}% Margin` : `${marginPercent}% Deficit`}
-                </span>
+              {marginText && (
+                <span className="cockpit-margin-badge">{marginText}</span>
               )}
               {p.purchase_price && p.selling_price && (
                 <span>{netAmount >= 0 ? "Profitable" : "Below Cost"}</span>
@@ -176,7 +176,7 @@ export const PaymentStep = ({ deal, updateSection, errors }) => {
       </div>
 
       {netAmount < 0 && (
-        <p className="field-error" role="status" data-testid="negative-commission-warning">
+        <p className="field-error" role="alert" data-testid="negative-commission-warning">
           {t("payment.negative_commission", "Selling below purchase + refurbishment price: this deal has a negative net commission.")}
         </p>
       )}
@@ -195,18 +195,11 @@ export const PaymentStep = ({ deal, updateSection, errors }) => {
             const isSelected = p.payment_method === m.id;
             const Icon = m.icon;
             return (
-              <div
+              <button
+                type="button"
                 key={m.id}
-                role="button"
-                tabIndex={0}
                 className={`payment-method-card ${isSelected ? "selected" : ""}`}
                 onClick={() => updateSection("payments", "payment_method", m.id)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    e.preventDefault();
-                    updateSection("payments", "payment_method", m.id);
-                  }
-                }}
                 data-testid={`payment-method-option-${m.id.toLowerCase().replace(/\s+/g, "-")}`}
               >
                 <div className="payment-method-icon-wrap">
@@ -214,7 +207,7 @@ export const PaymentStep = ({ deal, updateSection, errors }) => {
                 </div>
                 <div className="payment-method-title">{m.label}</div>
                 <div className="payment-method-hint">{m.desc}</div>
-              </div>
+              </button>
             );
           })}
         </div>
@@ -232,7 +225,7 @@ export const PaymentStep = ({ deal, updateSection, errors }) => {
         <FieldGrid
           fields={paymentFields}
           prefix="payments"
-          value={deal.payments}
+          value={deal?.payments || {}}
           errors={errors}
           onChange={(key, value) => updateSection("payments", key, value)}
         />

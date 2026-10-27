@@ -38,7 +38,6 @@ import ParticleButton from "@/components/kokonut/ParticleButton";
 
 // 4. Anime.js v4
 import AnimePulseBeacon from "@/components/anime/AnimePulseBeacon";
-import AnimeDealJourney from "@/components/anime/AnimeDealJourney";
 
 const STEP_ICONS = [Bike, UserCheck, Wrench, Users, Briefcase, CreditCard, FileCheck];
 
@@ -51,6 +50,36 @@ const STEP_TRANSLATION_KEYS = [
   "step.payments",
   "step.notes_save",
 ];
+
+const getStepButtonClass = (active, isComplete) => {
+  if (active) {
+    return "bg-amber-500/15 border-amber-500/60 text-amber-400 shadow-md shadow-amber-500/10 font-bold";
+  }
+  if (isComplete) {
+    return "bg-emerald-500/5 border-emerald-500/30 text-emerald-400 hover:border-emerald-500/50";
+  }
+  return "bg-transparent border-transparent text-neutral-400 hover:bg-neutral-800/50";
+};
+
+const getStepIconContainerClass = (active, isComplete) => {
+  if (active) {
+    return "bg-amber-500 text-neutral-950 font-bold shadow-sm";
+  }
+  if (isComplete) {
+    return "bg-emerald-500/20 text-emerald-400";
+  }
+  return "bg-neutral-800 text-neutral-400";
+};
+
+const renderStepStatusIcon = (active, isComplete, isPartial, StepIcon) => {
+  if (isComplete && !active) {
+    return <Check size={14} strokeWidth={2.8} />;
+  }
+  if (isPartial && !active) {
+    return <AlertCircle size={14} strokeWidth={2.4} />;
+  }
+  return <StepIcon size={14} strokeWidth={active ? 2.4 : 1.8} />;
+};
 
 export default function FunctionalNewDeal() {
   const navigate = useNavigate();
@@ -88,10 +117,23 @@ export default function FunctionalNewDeal() {
     dirty,
   } = wizard;
   const isReview = step === STEPS.length - 1;
-  const back = () => (dirty ? setDiscardTarget("/deals") : navigate("/deals"));
+  const back = () => {
+    if (dirty) {
+      setDiscardTarget("/deals");
+    } else {
+      navigate("/deals");
+    }
+  };
 
   const completedCount = STEPS.filter((_, i) => getStepStatus(deal, i) === "complete").length;
   const progressPercent = Math.round(((step + 1) / STEPS.length) * 100);
+
+  let saveNoteText = "Step saved to local store";
+  if (dirty) {
+    saveNoteText = t("wizard.unsaved_deal", "Unsaved changes in workspace");
+  } else if (isReview) {
+    saveNoteText = t("wizard.saved_browser_only", "Ready to finalize · Saved locally");
+  }
 
   useEffect(() => {
     if (!dirty) return;
@@ -116,7 +158,12 @@ export default function FunctionalNewDeal() {
       transition={{ duration: 0.35, ease: "easeOut" }}
       className="local-page wizard-page luxury-wizard"
     >
-      <button className="back-link wizard-back mb-3" onClick={back} data-testid="new-deal-back">
+      <button
+        type="button"
+        className="back-link wizard-back mb-3"
+        onClick={back}
+        data-testid="new-deal-back"
+      >
         <ArrowLeft size={16} /> {t("nav.deals", "Back to Deals")}
       </button>
 
@@ -204,34 +251,22 @@ export default function FunctionalNewDeal() {
                   <button
                     type="button"
                     key={name}
-                    className={`flex items-center gap-2 p-2.5 rounded-xl text-left transition-all border min-w-[130px] sm:min-w-0 snap-start shrink-0 sm:shrink ${
-                      active
-                        ? "bg-amber-500/15 border-amber-500/60 text-amber-400 shadow-md shadow-amber-500/10 font-bold"
-                        : isComplete
-                        ? "bg-emerald-500/5 border-emerald-500/30 text-emerald-400 hover:border-emerald-500/50"
-                        : "bg-transparent border-transparent text-neutral-400 hover:bg-neutral-800/50"
-                    }`}
+                    className={`flex items-center gap-2 p-2.5 rounded-xl text-left transition-all border min-w-[130px] sm:min-w-0 snap-start shrink-0 sm:shrink ${getStepButtonClass(
+                      active,
+                      isComplete
+                    )}`}
                     onClick={() => go(i, false)}
                     disabled={busy}
                     aria-current={active ? "step" : undefined}
                     data-testid={`wizard-step-${i + 1}`}
                   >
                     <div
-                      className={`w-7 h-7 rounded-lg flex items-center justify-center font-bold text-xs flex-shrink-0 ${
-                        active
-                          ? "bg-amber-500 text-neutral-950 font-bold shadow-sm"
-                          : isComplete
-                          ? "bg-emerald-500/20 text-emerald-400"
-                          : "bg-neutral-800 text-neutral-400"
-                      }`}
+                      className={`w-7 h-7 rounded-lg flex items-center justify-center font-bold text-xs flex-shrink-0 ${getStepIconContainerClass(
+                        active,
+                        isComplete
+                      )}`}
                     >
-                      {isComplete && !active ? (
-                        <Check size={14} strokeWidth={2.8} />
-                      ) : isPartial && !active ? (
-                        <AlertCircle size={14} strokeWidth={2.4} />
-                      ) : (
-                        <StepIcon size={14} strokeWidth={active ? 2.4 : 1.8} />
-                      )}
+                      {renderStepStatusIcon(active, isComplete, isPartial, StepIcon)}
                     </div>
                     <div className="truncate">
                       <div className="text-[9px] font-mono opacity-60">0{i + 1}</div>
@@ -305,11 +340,7 @@ export default function FunctionalNewDeal() {
               <div className="flex items-center gap-2 text-xs">
                 <span className={`w-2 h-2 rounded-full ${dirty ? "bg-amber-400 animate-pulse" : "bg-emerald-400"}`} />
                 <span className="text-neutral-400 text-[11px]" data-testid="wizard-save-note">
-                  {dirty
-                    ? t("wizard.unsaved_deal", "Unsaved changes in workspace")
-                    : isReview
-                    ? t("wizard.saved_browser_only", "Ready to finalize · Saved locally")
-                    : "Step saved to local store"}
+                  {saveNoteText}
                 </span>
               </div>
 

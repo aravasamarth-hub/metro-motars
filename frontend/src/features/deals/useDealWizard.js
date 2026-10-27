@@ -17,15 +17,30 @@ export const useDealWizard = (dealId, onSaved, initialStep = 0) => {
 
   useEffect(() => {
     let active = true;
-    setLoading(true); setLoadError(""); setDirty(false); setStep(initialStepRef.current || 0); setErrors({}); setMessage("");
+    setLoading(true);
+    setLoadError("");
+    setDirty(false);
+    setStep(initialStepRef.current || 0);
+    setErrors({});
+    setMessage("");
+
     (async () => {
       try {
-        const value = dealId ? await dealRepository.get(dealId) : { ...emptyDeal(), bill_number: await dealRepository.nextBillNumber() };
+        const value = dealId
+          ? await dealRepository.get(dealId)
+          : { ...emptyDeal(), bill_number: await dealRepository.nextBillNumber() };
         if (!value) throw new Error("This deal is not saved in this browser.");
         if (active) setDeal(value);
-      } catch (e) { if (active) setLoadError(e.message); } finally { if (active) setLoading(false); }
+      } catch (e) {
+        if (active) setLoadError(e.message);
+      } finally {
+        if (active) setLoading(false);
+      }
     })();
-    return () => { active = false; };
+
+    return () => {
+      active = false;
+    };
   }, [dealId]);
 
   useEffect(() => {
@@ -34,22 +49,60 @@ export const useDealWizard = (dealId, onSaved, initialStep = 0) => {
     }
   }, [initialStep]);
 
-  useEffect(() => { const warn = e => { if (dirty) { e.preventDefault(); e.returnValue = ""; } }; window.addEventListener("beforeunload", warn); return () => window.removeEventListener("beforeunload", warn); }, [dirty]);
+  useEffect(() => {
+    const warn = (e) => {
+      if (dirty) {
+        e.preventDefault();
+      }
+    };
+    window.addEventListener("beforeunload", warn);
+    return () => window.removeEventListener("beforeunload", warn);
+  }, [dirty]);
 
-  const change = fn => { setDeal(fn); setDirty(true); setErrors({}); setMessage(""); };
-  const update = (key, value) => change(current => ({ ...current, [key]: value }));
-  const updateSection = (section, key, value) => change(current => ({
-    ...current,
-    [section]: typeof key === "object" && key !== null
-      ? { ...current[section], ...key }
-      : { ...current[section], [key]: value }
-  }));
-  const updateWitness = (index, key, value) => change(current => ({ ...current, witnesses: current.witnesses.map((p, i) => i === index ? { ...p, [key]: value } : p) }));
-  const setPhoto = (key, value) => change(current => { const photos = { ...current.photos }; if (value) photos[key] = value; else delete photos[key]; return { ...current, photos }; });
-  const showErrors = (newErrors, targetStep) => { setErrors(newErrors); setMessage("Please check the highlighted fields."); setStep(targetStep); window.scrollTo({ top: 0, behavior: "smooth" }); };
+  const change = (fn) => {
+    setDeal(fn);
+    setDirty(true);
+    setErrors({});
+    setMessage("");
+  };
+
+  const update = (key, value) => change((current) => ({ ...current, [key]: value }));
+
+  const updateSection = (section, key, value) =>
+    change((current) => ({
+      ...current,
+      [section]:
+        typeof key === "object" && key !== null
+          ? { ...current[section], ...key }
+          : { ...current[section], [key]: value },
+    }));
+
+  const updateWitness = (index, key, value) =>
+    change((current) => ({
+      ...current,
+      witnesses: current.witnesses.map((p, i) => (i === index ? { ...p, [key]: value } : p)),
+    }));
+
+  const setPhoto = (key, value) =>
+    change((current) => {
+      const photos = { ...current.photos };
+      if (value) {
+        photos[key] = value;
+      } else {
+        Reflect.deleteProperty(photos, key);
+      }
+      return { ...current, photos };
+    });
+
+  const showErrors = (newErrors, targetStep) => {
+    setErrors(newErrors);
+    setMessage("Please check the highlighted fields.");
+    setStep(targetStep);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   const fillDemoText = () => {
-    change(current => ({
+    change((current) => ({
       ...current,
       status: "In Stock",
       rc_status: "Pending",
@@ -76,7 +129,8 @@ export const useDealWizard = (dealId, onSaved, initialStep = 0) => {
         bought_date: localDay(),
         sold_date: "",
         keys: "2",
-        service_history: "Showroom serviced at Acclaim Motors Jayanagar. Fresh synthetic engine oil & new brake pads. Zero accidental history.",
+        service_history:
+          "Showroom serviced at Acclaim Motors Jayanagar. Fresh synthetic engine oil & new brake pads. Zero accidental history.",
         tax: "Lifetime",
         tax_valid_until: "2038-05-17",
         fitness: "Valid",
@@ -160,26 +214,68 @@ export const useDealWizard = (dealId, onSaved, initialStep = 0) => {
         transaction_reference: "UPI-GPAY-981245012",
         notes: "Token advance ₹30,000 received via UPI. Remaining balance ₹1,24,000 due upon physical vehicle handover.",
       },
-      photos: {}, // STRICTLY NO PHOTOS
-      notes: "Demo deal created with all text details completely filled (vehicle specs, seller, buyer, agent, payments). Zero photos attached as requested.",
+      photos: {},
+      notes:
+        "Demo deal created with all text details completely filled (vehicle specs, seller, buyer, agent, payments). Zero photos attached as requested.",
     }));
   };
 
   const go = (target, validate = true) => {
     if (validate && target > step) {
-      for (let i = 0; i < target; i++) { const invalid = validateStep(deal, i); if (Object.keys(invalid).length) { showErrors(invalid, i); return; } }
+      for (let i = 0; i < target; i++) {
+        const invalid = validateStep(deal, i);
+        if (Object.keys(invalid).length) {
+          showErrors(invalid, i);
+          return;
+        }
+      }
     }
-    setStep(target); setErrors({}); setMessage(""); window.scrollTo({ top: 0, behavior: "smooth" });
+    setStep(target);
+    setErrors({});
+    setMessage("");
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const save = async () => {
     if (saving.current) return;
     const invalid = validateDeal(deal);
-    if (invalid.length) { showErrors(Object.fromEntries(invalid.map(e => [e.field, e.message])), invalid[0].step); return; }
-    saving.current = true; setBusy(true); setMessage("");
-    try { const saved = await dealRepository.save(deal); setDirty(false); onSaved(saved); }
-    catch (e) { setMessage(e.message); } finally { saving.current = false; setBusy(false); }
+    if (invalid.length) {
+      showErrors(
+        Object.fromEntries(invalid.map((e) => [e.field, e.message])),
+        invalid[0].step
+      );
+      return;
+    }
+    saving.current = true;
+    setBusy(true);
+    setMessage("");
+    try {
+      const saved = await dealRepository.save(deal);
+      setDirty(false);
+      onSaved(saved);
+    } catch (e) {
+      setMessage(e.message);
+    } finally {
+      saving.current = false;
+      setBusy(false);
+    }
   };
 
-  return { deal, step, errors, message, loading, busy, dirty, loadError, update, updateSection, updateWitness, setPhoto, fillDemoText, go, save };
+  return {
+    deal,
+    step,
+    errors,
+    message,
+    loading,
+    busy,
+    dirty,
+    loadError,
+    update,
+    updateSection,
+    updateWitness,
+    setPhoto,
+    fillDemoText,
+    go,
+    save,
+  };
 };

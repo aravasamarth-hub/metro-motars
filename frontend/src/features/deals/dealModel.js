@@ -1,11 +1,34 @@
 export const STEPS = ["Vehicle", "Seller", "Maintenance", "Buyer", "Agent", "Payments", "Notes & Save"];
-export const localDay = (date = new Date()) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
-export const money = value => value === "" || value == null ? "—" : new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 2 }).format(Number(value));
+
+const INDIAN_PHONE_REGEX = /^(?:\+91[\s-]?)?[6-9]\d{9}$/;
+const PINCODE_REGEX = /^[1-9]\d{5}$/;
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const YEAR_REGEX = /^\d{4}$/;
+
+export const localDay = (date = new Date()) =>
+  `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+
+export const money = (value) => {
+  if (value === "" || value == null) {
+    return "—";
+  }
+  return new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    maximumFractionDigits: 2,
+  }).format(Number(value));
+};
+
 export const displayDate = (value, lang = "en") => {
   if (!value) return "—";
   const locale = lang === "kn" ? "kn-IN" : lang === "hi" ? "hi-IN" : "en-IN";
-  return new Date(value.includes("T") ? value : `${value}T12:00:00`).toLocaleDateString(locale, { day: "2-digit", month: "short", year: "numeric" });
+  return new Date(value.includes("T") ? value : `${value}T12:00:00`).toLocaleDateString(locale, {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
 };
+
 export const DEFAULT_MAINTENANCE_SERVICES = [
   { id: "lof", name: "Lube, Oil, and Filter (LOF)", price: "850", enabled: false },
   { id: "fluids", name: "Fluid Top-ups & Flushes", price: "400", enabled: false },
@@ -29,22 +52,21 @@ export const calculateMaintenanceTotal = (maintenance) => {
     .reduce((sum, s) => sum + (Number(s.price) || 0), 0);
 };
 
-export const commission = (payments, maintenanceCost = 0) =>
-  payments.purchase_price === "" || payments.selling_price === ""
-    ? null
-    : Math.round(
-        (Number(payments.selling_price) -
-          Number(payments.purchase_price) -
-          Number(maintenanceCost || 0)) *
-          100
-      ) / 100;
+export const commission = (payments, maintenanceCost = 0) => {
+  if (payments.purchase_price === "" || payments.selling_price === "") {
+    return null;
+  }
+  const net = Number(payments.selling_price) - Number(payments.purchase_price) - Number(maintenanceCost || 0);
+  return Math.round(net * 100) / 100;
+};
 
-export const grossCommission = (payments) =>
-  payments.purchase_price === "" || payments.selling_price === ""
-    ? null
-    : Math.round(
-        (Number(payments.selling_price) - Number(payments.purchase_price)) * 100
-      ) / 100;
+export const grossCommission = (payments) => {
+  if (payments.purchase_price === "" || payments.selling_price === "") {
+    return null;
+  }
+  const gross = Number(payments.selling_price) - Number(payments.purchase_price);
+  return Math.round(gross * 100) / 100;
+};
 
 export const VEHICLE_CATEGORIES = [
   { id: "2-wheeler-with-gear", label: "2 Wheeler with Gear", shortLabel: "2W Geared", icon: "🏍️", badge: "2W Geared" },
@@ -52,30 +74,137 @@ export const VEHICLE_CATEGORIES = [
   { id: "4-wheeler-car", label: "4 Wheeler Car", shortLabel: "Car", icon: "🚗", badge: "Car" },
 ];
 
-const person = () => ({ name: "", phone: "", alternate_phone: "", father_name: "", email: "", address: "", city: "", state: "Karnataka", pincode: "", id_type: "Aadhaar", id_number: "", pan_number: "", is_dealer: false, dealer_name: "", gst_number: "", dealer_address: "" });
+const person = () => ({
+  name: "",
+  phone: "",
+  alternate_phone: "",
+  father_name: "",
+  email: "",
+  address: "",
+  city: "",
+  state: "Karnataka",
+  pincode: "",
+  id_type: "Aadhaar",
+  id_number: "",
+  pan_number: "",
+  is_dealer: false,
+  dealer_name: "",
+  gst_number: "",
+  dealer_address: "",
+});
+
 export function emptyDeal() {
-  return { schema_version: 1, id: null, bill_number: "", status: "In Stock", rc_status: "Pending",
-    vehicle: { vehicle_type: "4 Wheeler Car", vehicle_name: "", make: "", model: "", mfg_month: "", year: "", color: "", vehicle_number: "", registration_number: "", registration_date: "", engine_number: "", chassis_number: "", engine_cc: "", fuel_type: "Petrol", transmission: "Manual", odometer: "", ownership: "First Owner", condition: "Good", bought_date: localDay(), sold_date: "", tax: "Paid", tax_valid_until: "", fitness: "Valid", fitness_valid_until: "", insurance: "Active", insurance_policy: "", insurance_valid_until: "", puc_valid_until: "", hypothecation: "No", financier: "", noc: "Not Required", keys: "2", service_history: "" },
-    seller: person(), buyer: person(), witnesses: [person(), person()],
-    payments: { purchase_price: "", selling_price: "", paid_to_seller: "", received_from_buyer: "", payment_method: "Cash", payment_date: localDay(), transaction_reference: "", notes: "" },
-    agent: { name: "", phone: "", email: "", task: "", total_amount: "", amount_paid: "", amount_balance: "" },
-    maintenance: { services: DEFAULT_MAINTENANCE_SERVICES, total_expense: "0", notes: "" },
-    photos: {}, notes: "", created_at: null, updated_at: null };
+  return {
+    schema_version: 1,
+    id: null,
+    bill_number: "",
+    status: "In Stock",
+    rc_status: "Pending",
+    vehicle: {
+      vehicle_type: "4 Wheeler Car",
+      vehicle_name: "",
+      make: "",
+      model: "",
+      mfg_month: "",
+      year: "",
+      color: "",
+      vehicle_number: "",
+      registration_number: "",
+      registration_date: "",
+      engine_number: "",
+      chassis_number: "",
+      engine_cc: "",
+      fuel_type: "Petrol",
+      transmission: "Manual",
+      odometer: "",
+      ownership: "First Owner",
+      condition: "Good",
+      bought_date: localDay(),
+      sold_date: "",
+      tax: "Paid",
+      tax_valid_until: "",
+      fitness: "Valid",
+      fitness_valid_until: "",
+      insurance: "Active",
+      insurance_policy: "",
+      insurance_valid_until: "",
+      puc_valid_until: "",
+      hypothecation: "No",
+      financier: "",
+      noc: "Not Required",
+      keys: "2",
+      service_history: "",
+    },
+    seller: person(),
+    buyer: person(),
+    witnesses: [person(), person()],
+    payments: {
+      purchase_price: "",
+      selling_price: "",
+      paid_to_seller: "",
+      received_from_buyer: "",
+      payment_method: "Cash",
+      payment_date: localDay(),
+      transaction_reference: "",
+      notes: "",
+    },
+    agent: {
+      name: "",
+      phone: "",
+      email: "",
+      task: "",
+      total_amount: "",
+      amount_paid: "",
+      amount_balance: "",
+    },
+    maintenance: {
+      services: DEFAULT_MAINTENANCE_SERVICES,
+      total_expense: "0",
+      notes: "",
+    },
+    photos: {},
+    notes: "",
+    created_at: null,
+    updated_at: null,
+  };
 }
+
 export function validateStep(deal, step) {
   const errors = {};
   if (!deal) return errors;
-  const required = (key, value, label) => { if (!String(value ?? "").trim()) errors[key] = `${label} is required.`; };
+
+  const required = (key, value, label) => {
+    if (!String(value ?? "").trim()) {
+      errors[key] = `${label} is required.`;
+    }
+  };
+
   const vehicle = deal.vehicle || {};
   const witnesses = deal.witnesses || [];
   const payments = deal.payments || {};
 
   if (step === 0) {
     required("vehicle.vehicle_name", vehicle.vehicle_name, "Vehicle name");
-    if (vehicle.year && (!/^\d{4}$/.test(String(vehicle.year).trim()) || +vehicle.year < 1900 || +vehicle.year > new Date().getFullYear() + 1)) errors["vehicle.year"] = "Enter a valid four-digit year.";
-    ["engine_cc", "odometer"].forEach(key => { if (vehicle[key] !== "" && vehicle[key] != null && (!Number.isFinite(+vehicle[key]) || +vehicle[key] < 0)) errors[`vehicle.${key}`] = "Enter a non-negative number."; });
-    if (vehicle.sold_date && vehicle.bought_date && vehicle.sold_date < vehicle.bought_date) errors["vehicle.sold_date"] = "Sold date cannot be before bought date.";
+    if (vehicle.year) {
+      const yearStr = String(vehicle.year).trim();
+      const parsedYear = Number(vehicle.year);
+      if (!YEAR_REGEX.test(yearStr) || parsedYear < 1900 || parsedYear > new Date().getFullYear() + 1) {
+        errors["vehicle.year"] = "Enter a valid four-digit year.";
+      }
+    }
+    ["engine_cc", "odometer"].forEach((key) => {
+      if (vehicle[key] !== "" && vehicle[key] != null) {
+        const val = Number(vehicle[key]);
+        if (!Number.isFinite(val) || val < 0) {
+          errors[`vehicle.${key}`] = "Enter a non-negative number.";
+        }
+      }
+    });
+    if (vehicle.sold_date && vehicle.bought_date && vehicle.sold_date < vehicle.bought_date) {
+      errors["vehicle.sold_date"] = "Sold date cannot be before bought date.";
+    }
   }
+
   if (step === 1) {
     const people = [
       ["seller", deal.seller],
@@ -83,21 +212,34 @@ export function validateStep(deal, step) {
     ];
     people.forEach(([prefix, p]) => {
       if (!p) return;
-      ["phone", "alternate_phone"].forEach(key => { if (p[key] && !/^(?:\+91[\s-]?)?[6-9]\d{9}$/.test(p[key].replace(/[\s-]/g, ""))) errors[`${prefix}.${key}`] = "Enter a valid 10-digit Indian mobile number."; });
-      if (p.pincode && !/^[1-9]\d{5}$/.test(p.pincode)) errors[`${prefix}.pincode`] = "Enter a six-digit PIN code.";
-      if (p.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(p.email)) errors[`${prefix}.email`] = "Enter a valid email address.";
+      ["phone", "alternate_phone"].forEach((key) => {
+        if (p[key] && !INDIAN_PHONE_REGEX.test(p[key].replace(/[\s-]/g, ""))) {
+          errors[`${prefix}.${key}`] = "Enter a valid 10-digit Indian mobile number.";
+        }
+      });
+      if (p.pincode && !PINCODE_REGEX.test(p.pincode)) {
+        errors[`${prefix}.pincode`] = "Enter a six-digit PIN code.";
+      }
+      if (p.email && !EMAIL_REGEX.test(p.email)) {
+        errors[`${prefix}.email`] = "Enter a valid email address.";
+      }
     });
   }
+
   if (step === 2) {
     const m = deal.maintenance || {};
     if (Array.isArray(m.services)) {
-      m.services.forEach(s => {
-        if (s.price !== "" && s.price != null && (!Number.isFinite(+s.price) || +s.price < 0 || +s.price > 999999999)) {
-          errors[`maintenance.${s.id}`] = "Enter a valid amount.";
+      m.services.forEach((s) => {
+        if (s.price !== "" && s.price != null) {
+          const priceNum = Number(s.price);
+          if (!Number.isFinite(priceNum) || priceNum < 0 || priceNum > 999999999) {
+            errors[`maintenance.${s.id}`] = "Enter a valid amount.";
+          }
         }
       });
     }
   }
+
   if (step === 3) {
     const people = [
       ["buyer", deal.buyer],
@@ -105,37 +247,75 @@ export function validateStep(deal, step) {
     ];
     people.forEach(([prefix, p]) => {
       if (!p) return;
-      ["phone", "alternate_phone"].forEach(key => { if (p[key] && !/^(?:\+91[\s-]?)?[6-9]\d{9}$/.test(p[key].replace(/[\s-]/g, ""))) errors[`${prefix}.${key}`] = "Enter a valid 10-digit Indian mobile number."; });
-      if (p.pincode && !/^[1-9]\d{5}$/.test(p.pincode)) errors[`${prefix}.pincode`] = "Enter a six-digit PIN code.";
-      if (p.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(p.email)) errors[`${prefix}.email`] = "Enter a valid email address.";
+      ["phone", "alternate_phone"].forEach((key) => {
+        if (p[key] && !INDIAN_PHONE_REGEX.test(p[key].replace(/[\s-]/g, ""))) {
+          errors[`${prefix}.${key}`] = "Enter a valid 10-digit Indian mobile number.";
+        }
+      });
+      if (p.pincode && !PINCODE_REGEX.test(p.pincode)) {
+        errors[`${prefix}.pincode`] = "Enter a six-digit PIN code.";
+      }
+      if (p.email && !EMAIL_REGEX.test(p.email)) {
+        errors[`${prefix}.email`] = "Enter a valid email address.";
+      }
     });
   }
+
   if (step === 4) {
     const a = deal.agent || {};
-    if (a.phone && !/^(?:\+91[\s-]?)?[6-9]\d{9}$/.test(a.phone.replace(/[\s-]/g, ""))) errors["agent.phone"] = "Enter a valid 10-digit Indian mobile number.";
-    if (a.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(a.email)) errors["agent.email"] = "Enter a valid email address.";
-    ["total_amount", "amount_paid", "amount_balance"].forEach(key => {
+    if (a.phone && !INDIAN_PHONE_REGEX.test(a.phone.replace(/[\s-]/g, ""))) {
+      errors["agent.phone"] = "Enter a valid 10-digit Indian mobile number.";
+    }
+    if (a.email && !EMAIL_REGEX.test(a.email)) {
+      errors["agent.email"] = "Enter a valid email address.";
+    }
+    ["total_amount", "amount_paid", "amount_balance"].forEach((key) => {
       const val = a[key];
-      if (val !== "" && val != null && (!Number.isFinite(+val) || +val < 0 || +val > 999999999)) errors[`agent.${key}`] = "Enter a valid amount.";
+      if (val !== "" && val != null) {
+        const valNum = Number(val);
+        if (!Number.isFinite(valNum) || valNum < 0 || valNum > 999999999) {
+          errors[`agent.${key}`] = "Enter a valid amount.";
+        }
+      }
     });
   }
+
   if (step === 5) {
-    ["purchase_price", "selling_price", "paid_to_seller", "received_from_buyer"].forEach(key => {
+    ["purchase_price", "selling_price", "paid_to_seller", "received_from_buyer"].forEach((key) => {
       const value = payments[key];
-      if (value !== "" && value != null && (!Number.isFinite(+value) || +value < 0 || +value > 999999999)) errors[`payments.${key}`] = "Enter an amount between 0 and 999,999,999.";
+      if (value !== "" && value != null) {
+        const numVal = Number(value);
+        if (!Number.isFinite(numVal) || numVal < 0 || numVal > 999999999) {
+          errors[`payments.${key}`] = "Enter an amount between 0 and 999,999,999.";
+        }
+      }
     });
-    if (payments.purchase_price !== "" && payments.purchase_price != null && +payments.paid_to_seller > +payments.purchase_price) errors["payments.paid_to_seller"] = "Cannot exceed the purchase price.";
-    if (payments.selling_price !== "" && payments.selling_price != null && +payments.received_from_buyer > +payments.selling_price) errors["payments.received_from_buyer"] = "Cannot exceed the selling price.";
+    if (
+      payments.purchase_price !== "" &&
+      payments.purchase_price != null &&
+      Number(payments.paid_to_seller) > Number(payments.purchase_price)
+    ) {
+      errors["payments.paid_to_seller"] = "Cannot exceed the purchase price.";
+    }
+    if (
+      payments.selling_price !== "" &&
+      payments.selling_price != null &&
+      Number(payments.received_from_buyer) > Number(payments.selling_price)
+    ) {
+      errors["payments.received_from_buyer"] = "Cannot exceed the selling price.";
+    }
   }
+
   return errors;
 }
+
 export function getStepStatus(deal, step) {
   if (!deal) return "empty";
   const photos = deal.photos || {};
 
   if (step === 0) {
     const v = deal.vehicle || {};
-    const hasPhotos = Object.keys(photos).some(k => k.startsWith("vehicle") && photos[k]);
+    const hasPhotos = Object.keys(photos).some((k) => k.startsWith("vehicle") && photos[k]);
     const hasData = Boolean(
       v.vehicle_name?.trim() ||
       v.vehicle_number?.trim() ||
@@ -161,7 +341,7 @@ export function getStepStatus(deal, step) {
 
   if (step === 1) {
     const s = deal.seller || {};
-    const hasPhotos = Object.keys(photos).some(k => k.startsWith("seller") && photos[k]);
+    const hasPhotos = Object.keys(photos).some((k) => k.startsWith("seller") && photos[k]);
     const hasData = Boolean(
       s.name?.trim() ||
       s.phone?.trim() ||
@@ -192,7 +372,7 @@ export function getStepStatus(deal, step) {
   if (step === 2) {
     const m = deal.maintenance || {};
     const hasData = Boolean(
-      (m.services && m.services.some(s => s.enabled || Number(s.price) > 0)) ||
+      (m.services && m.services.some((s) => s.enabled || Number(s.price) > 0)) ||
       m.notes?.trim()
     );
     if (!hasData) return "empty";
@@ -201,7 +381,7 @@ export function getStepStatus(deal, step) {
 
   if (step === 3) {
     const b = deal.buyer || {};
-    const hasPhotos = Object.keys(photos).some(k => k.startsWith("buyer") && photos[k]);
+    const hasPhotos = Object.keys(photos).some((k) => k.startsWith("buyer") && photos[k]);
     const hasData = Boolean(
       b.name?.trim() ||
       b.phone?.trim() ||
@@ -258,8 +438,8 @@ export function getStepStatus(deal, step) {
       p.notes?.trim()
     );
     if (!hasData) return "empty";
-    const hasPurchase = p.purchase_price !== "" && p.purchase_price != null && !isNaN(Number(p.purchase_price));
-    const hasSelling = p.selling_price !== "" && p.selling_price != null && !isNaN(Number(p.selling_price));
+    const hasPurchase = p.purchase_price !== "" && p.purchase_price != null && !Number.isNaN(Number(p.purchase_price));
+    const hasSelling = p.selling_price !== "" && p.selling_price != null && !Number.isNaN(Number(p.selling_price));
     const isComplete = hasPurchase && hasSelling && Object.keys(validateStep(deal, 5)).length === 0;
     return isComplete ? "complete" : "partial";
   }
@@ -290,17 +470,24 @@ export function areVehicleAndSellerComplete(deal) {
   const v = deal.vehicle || {};
   const s = deal.seller || {};
 
-  // Vehicle must have vehicle_name and vehicle_number or registration_number
   const hasVehicleName = Boolean(v.vehicle_name && v.vehicle_name.trim());
-  const hasVehicleNumber = Boolean((v.vehicle_number && v.vehicle_number.trim()) || (v.registration_number && v.registration_number.trim()));
+  const hasVehicleNumber = Boolean(
+    (v.vehicle_number && v.vehicle_number.trim()) ||
+    (v.registration_number && v.registration_number.trim())
+  );
   const isVehicleComplete = hasVehicleName && hasVehicleNumber;
 
-  // Seller must have name (or dealer_name) and phone
-  const hasSellerName = Boolean((s.name && s.name.trim()) || (s.is_dealer && s.dealer_name && s.dealer_name.trim()));
+  const hasSellerName = Boolean(
+    (s.name && s.name.trim()) ||
+    (s.is_dealer && s.dealer_name && s.dealer_name.trim())
+  );
   const hasSellerPhone = Boolean(s.phone && s.phone.trim());
   const isSellerComplete = hasSellerName && hasSellerPhone;
 
   return isVehicleComplete && isSellerComplete;
 }
 
-export const validateDeal = deal => STEPS.flatMap((_, step) => Object.entries(validateStep(deal, step)).map(([field, message]) => ({ field, message, step })));
+export const validateDeal = (deal) =>
+  STEPS.flatMap((_, step) =>
+    Object.entries(validateStep(deal, step)).map(([field, message]) => ({ field, message, step }))
+  );

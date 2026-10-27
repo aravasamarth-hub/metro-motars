@@ -17,7 +17,6 @@ import {
 } from "lucide-react";
 import { useDeals } from "./useDeals";
 import { commission, calculateMaintenanceTotal, money, localDay } from "./dealModel";
-import BillDocument from "@/components/BillDocument";
 import BillModal from "@/components/BillModal";
 import { useLanguage } from "@/features/i18n/LanguageContext";
 import { useAuth } from "@/context/AuthContext";
@@ -43,19 +42,39 @@ const BILL_TYPES = ["Seller → Buyer", "Seller → Intermediate"];
 // ── number-to-words (INR) ────────────────────────────────────────────────────
 function toWords(n) {
   if (!n) return "Zero Rupees Only";
-  const ones = ["","One","Two","Three","Four","Five","Six","Seven","Eight","Nine",
-    "Ten","Eleven","Twelve","Thirteen","Fourteen","Fifteen","Sixteen","Seventeen","Eighteen","Nineteen"];
-  const tens = ["","","Twenty","Thirty","Forty","Fifty","Sixty","Seventy","Eighty","Ninety"];
+  const ones = [
+    "",
+    "One",
+    "Two",
+    "Three",
+    "Four",
+    "Five",
+    "Six",
+    "Seven",
+    "Eight",
+    "Nine",
+    "Ten",
+    "Eleven",
+    "Twelve",
+    "Thirteen",
+    "Fourteen",
+    "Fifteen",
+    "Sixteen",
+    "Seventeen",
+    "Eighteen",
+    "Nineteen",
+  ];
+  const tens = ["", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"];
   function convert(num) {
-    if (num < 20)   return ones[num];
-    if (num < 100)  return tens[Math.floor(num/10)] + (num%10 ? " "+ones[num%10] : "");
-    if (num < 1000) return ones[Math.floor(num/100)] + " Hundred" + (num%100 ? " "+convert(num%100) : "");
-    if (num < 1e5)  return convert(Math.floor(num/1000)) + " Thousand" + (num%1000 ? " "+convert(num%1000) : "");
-    if (num < 1e7)  return convert(Math.floor(num/1e5))  + " Lakh"     + (num%1e5  ? " "+convert(num%1e5)  : "");
-    return           convert(Math.floor(num/1e7))  + " Crore"    + (num%1e7  ? " "+convert(num%1e7)  : "");
+    if (num < 20) return ones[num];
+    if (num < 100) return tens[Math.floor(num / 10)] + (num % 10 ? " " + ones[num % 10] : "");
+    if (num < 1000) return ones[Math.floor(num / 100)] + " Hundred" + (num % 100 ? " " + convert(num % 100) : "");
+    if (num < 1e5) return convert(Math.floor(num / 1000)) + " Thousand" + (num % 1000 ? " " + convert(num % 1000) : "");
+    if (num < 1e7) return convert(Math.floor(num / 1e5)) + " Lakh" + (num % 1e5 ? " " + convert(num % 1e5) : "");
+    return convert(Math.floor(num / 1e7)) + " Crore" + (num % 1e7 ? " " + convert(num % 1e7) : "");
   }
   const rupees = Math.floor(n);
-  const paise  = Math.round((n - rupees) * 100);
+  const paise = Math.round((n - rupees) * 100);
   let result = convert(rupees) + " Rupees";
   if (paise) result += " and " + convert(paise) + " Paise";
   return result + " Only";
@@ -64,51 +83,86 @@ function toWords(n) {
 // ── build the doc object BillDocument expects ────────────────────────────────
 function buildBillDoc(deal, billType) {
   const isBuyer = billType === "Seller → Buyer";
-  const v = deal.vehicle  || {};
-  const s = deal.seller   || {};
-  const b = deal.buyer    || {};
+  const v = deal.vehicle || {};
+  const s = deal.seller || {};
+  const b = deal.buyer || {};
   const p = deal.payments || {};
 
-  const fromPerson = { role:"Seller",       name: s.name||"—", phone: s.phone||"", address: s.address||"", id_details: s.id_number||"" };
-  const toPerson   = isBuyer
-    ? { role:"Buyer",       name: b.name||"—", phone: b.phone||"", address: b.address||"", id_details: b.id_number||"" }
-    : { role:"Metro Motors",name: "Metro Motors", phone:"", address:"", id_details:"" };
+  const fromPerson = {
+    role: "Seller",
+    name: s.name || "—",
+    phone: s.phone || "",
+    address: s.address || "",
+    id_details: s.id_number || "",
+  };
+  const toPerson = isBuyer
+    ? {
+        role: "Buyer",
+        name: b.name || "—",
+        phone: b.phone || "",
+        address: b.address || "",
+        id_details: b.id_number || "",
+      }
+    : { role: "Metro Motors", name: "Metro Motors", phone: "", address: "", id_details: "" };
 
   const paymentLines = [];
   if (isBuyer && p.received_from_buyer) {
-    paymentLines.push({ payment_date: p.payment_date||localDay(), person: b.name||"Buyer",
-      payment_type: p.payment_method||"Cash", notes: p.notes||"", payment_status:"Received",
-      amount: Number(p.received_from_buyer) });
+    paymentLines.push({
+      payment_date: p.payment_date || localDay(),
+      person: b.name || "Buyer",
+      payment_type: p.payment_method || "Cash",
+      notes: p.notes || "",
+      payment_status: "Received",
+      amount: Number(p.received_from_buyer),
+    });
   } else if (!isBuyer && p.paid_to_seller) {
-    paymentLines.push({ payment_date: p.payment_date||localDay(), person: s.name||"Seller",
-      payment_type: p.payment_method||"Cash", notes: p.notes||"", payment_status:"Paid",
-      amount: Number(p.paid_to_seller) });
+    paymentLines.push({
+      payment_date: p.payment_date || localDay(),
+      person: s.name || "Seller",
+      payment_type: p.payment_method || "Cash",
+      notes: p.notes || "",
+      payment_status: "Paid",
+      amount: Number(p.paid_to_seller),
+    });
   }
 
-  const totalAmount = isBuyer ? Number(p.received_from_buyer||0) : Number(p.paid_to_seller||0);
+  const totalAmount = isBuyer ? Number(p.received_from_buyer || 0) : Number(p.paid_to_seller || 0);
 
   return {
     bill: {
-      bill_id:      "LOCAL-" + (deal.id||"").slice(0,8),
-      bill_number:  deal.bill_number || "Bill-001",
-      bill_type:    billType,
+      bill_id: "LOCAL-" + (deal.id || "").slice(0, 8),
+      bill_number: deal.bill_number || "Bill-001",
+      bill_type: billType,
       created_date: new Date().toISOString(),
     },
-    deal:    { deal_id: deal.bill_number || (deal.id||"").slice(0,8).toUpperCase(), status: deal.status||"In Stock" },
-    vehicle: { vehicle_name: v.vehicle_name, make: v.make, model: v.model,
-      year_of_manufacture: v.year, color: v.color, engine_number: v.engine_number,
-      chassis_number: v.chassis_number, vehicle_number: v.vehicle_number,
-      registration_number: v.registration_number, insurance: v.insurance },
-    parties:      { from: fromPerson, to: toPerson },
-    payment_lines: paymentLines,
-    witnesses:    (deal.witnesses||[]).filter(w => w.name),
-    confidential: isBuyer ? null : {
-      purchase_total: Number(p.purchase_price||0),
-      sale_total:     Number(p.selling_price||0),
-      commission:     commission(p, calculateMaintenanceTotal(deal.maintenance))||0,
-      margin:         Number(p.selling_price||0) - Number(p.purchase_price||0),
+    deal: {
+      deal_id: deal.bill_number || (deal.id || "").slice(0, 8).toUpperCase(),
+      status: deal.status || "In Stock",
     },
-    total_amount:   totalAmount,
+    vehicle: {
+      vehicle_name: v.vehicle_name,
+      make: v.make,
+      model: v.model,
+      year_of_manufacture: v.year,
+      color: v.color,
+      engine_number: v.engine_number,
+      chassis_number: v.chassis_number,
+      vehicle_number: v.vehicle_number,
+      registration_number: v.registration_number,
+      insurance: v.insurance,
+    },
+    parties: { from: fromPerson, to: toPerson },
+    payment_lines: paymentLines,
+    witnesses: (deal.witnesses || []).filter((w) => w.name),
+    confidential: isBuyer
+      ? null
+      : {
+          purchase_total: Number(p.purchase_price || 0),
+          sale_total: Number(p.selling_price || 0),
+          commission: commission(p, calculateMaintenanceTotal(deal.maintenance)) || 0,
+          margin: Number(p.selling_price || 0) - Number(p.purchase_price || 0),
+        },
+    total_amount: totalAmount,
     total_in_words: toWords(totalAmount),
   };
 }
@@ -119,23 +173,33 @@ export const LocalBills = () => {
   const navigate = useNavigate();
   const { t } = useLanguage();
 
-  const [query,    setQuery]   = useState("");
-  const [picker,   setPicker]  = useState(false);
+  const [query, setQuery] = useState("");
+  const [picker, setPicker] = useState(false);
   const [billType, setBillType] = useState(BILL_TYPES[0]);
-  const [preview,  setPreview] = useState(null);
-  const [dealQ,    setDealQ]   = useState("");
+  const [preview, setPreview] = useState(null);
+  const [dealQ, setDealQ] = useState("");
 
-  const filtered = useMemo(() =>
-    deals.filter(d =>
-      [d.bill_number, d.vehicle?.vehicle_name, d.seller?.name, d.buyer?.name]
-        .join(" ").toLowerCase().includes(query.toLowerCase())
-    ), [deals, query]);
+  const filtered = useMemo(
+    () =>
+      deals.filter((d) =>
+        [d.bill_number, d.vehicle?.vehicle_name, d.seller?.name, d.buyer?.name]
+          .join(" ")
+          .toLowerCase()
+          .includes(query.toLowerCase())
+      ),
+    [deals, query]
+  );
 
-  const pickerDeals = useMemo(() =>
-    deals.filter(d =>
-      [d.bill_number, d.vehicle?.vehicle_name, d.vehicle?.vehicle_number, d.seller?.name, d.buyer?.name]
-        .join(" ").toLowerCase().includes(dealQ.toLowerCase())
-    ), [deals, dealQ]);
+  const pickerDeals = useMemo(
+    () =>
+      deals.filter((d) =>
+        [d.bill_number, d.vehicle?.vehicle_name, d.vehicle?.vehicle_number, d.seller?.name, d.buyer?.name]
+          .join(" ")
+          .toLowerCase()
+          .includes(dealQ.toLowerCase())
+      ),
+    [deals, dealQ]
+  );
 
   const generate = (deal) => {
     setPreview({ deal, doc: buildBillDoc(deal, billType) });
@@ -162,64 +226,117 @@ export const LocalBills = () => {
           <h1 data-testid="page-title">{t("bills.title", "Customer Bills")}</h1>
           <p>{t("bills.subtitle", "Generate and print bills from saved deals — 100% offline, no server needed.")}</p>
         </div>
-        <button className="button button-primary" onClick={() => { setDealQ(""); setPicker(true); }} data-testid="generate-bill-button">
-          <FilePlus2 size={17}/> {t("bills.generate_bill", "Generate Bill")}
+        <button
+          type="button"
+          className="button button-primary"
+          onClick={() => {
+            setDealQ("");
+            setPicker(true);
+          }}
+          data-testid="generate-bill-button"
+        >
+          <FilePlus2 size={17} /> {t("bills.generate_bill", "Generate Bill")}
         </button>
       </div>
 
-      {error && <div className="workflow-message no-print" data-testid="bills-error">{error}</div>}
+      {error && (
+        <div className="workflow-message no-print" data-testid="bills-error">
+          {error}
+        </div>
+      )}
 
       {/* search */}
       <div className="toolbar no-print">
         <div className="search-field">
-          <Search size={17}/>
-          <input value={query} onChange={e => setQuery(e.target.value)}
-            placeholder={t("bills.search_placeholder", "Search vehicle, seller, buyer…")} data-testid="bills-search-input"/>
-          {query && <button onClick={() => setQuery("")} aria-label="Clear search"><X size={14}/></button>}
+          <Search size={17} />
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder={t("bills.search_placeholder", "Search vehicle, seller, buyer…")}
+            data-testid="bills-search-input"
+          />
+          {query && (
+            <button type="button" onClick={() => setQuery("")} aria-label="Clear search">
+              <X size={14} />
+            </button>
+          )}
         </div>
       </div>
 
       {/* table */}
       <div className="table-shell no-print">
         <div className="table-heading">
-          <b>{t("bills.saved_deals", "Saved deals")} <span data-testid="bills-count">{filtered.length}</span></b>
+          <b>
+            {t("bills.saved_deals", "Saved deals")} <span data-testid="bills-count">{filtered.length}</span>
+          </b>
           <span>{t("bills.click_to_generate", "Click to generate a bill")}</span>
         </div>
         <div className="table-scroll">
           <table>
             <thead>
-              <tr>{billCols.map(h => <th key={h}>{h}</th>)}</tr>
+              <tr>
+                {billCols.map((h) => (
+                  <th key={h}>{h}</th>
+                ))}
+              </tr>
             </thead>
             <tbody>
-              {filtered.map(deal => (
+              {filtered.map((deal) => (
                 <tr key={deal.id} data-testid={`bill-row-${deal.id}`}>
-                  <td><b className="bill-number-link">{deal.bill_number}</b></td>
-                  <td>{deal.vehicle?.vehicle_name||"—"}</td>
-                  <td>{deal.seller?.name||"—"}</td>
-                  <td>{deal.buyer?.name||"—"}</td>
-                  <td><b>{money(deal.payments?.purchase_price)}</b></td>
-                  <td><b>{money(deal.payments?.selling_price)}</b></td>
+                  <td>
+                    <b className="bill-number-link">{deal.bill_number}</b>
+                  </td>
+                  <td>{deal.vehicle?.vehicle_name || "—"}</td>
+                  <td>{deal.seller?.name || "—"}</td>
+                  <td>{deal.buyer?.name || "—"}</td>
+                  <td>
+                    <b>{money(deal.payments?.purchase_price)}</b>
+                  </td>
+                  <td>
+                    <b>{money(deal.payments?.selling_price)}</b>
+                  </td>
                   <td>{deal.status === "Sold" ? t("status.sold", "Sold") : t("status.in_stock", "In Stock")}</td>
                   <td>
                     <div className="row-actions">
-                      <button title={t("table.view_deal", "View deal")} onClick={() => navigate(`/deals/${deal.id}`)} aria-label="View deal">
-                        <ArrowUpRight size={15}/>
+                      <button
+                        type="button"
+                        title={t("table.view_deal", "View deal")}
+                        onClick={() => navigate(`/deals/${deal.id}`)}
+                        aria-label="View deal"
+                      >
+                        <ArrowUpRight size={15} />
                       </button>
-                      <button title={t("bills.generate_bill", "Generate bill")} data-testid={`gen-bill-${deal.id}`}
-                        onClick={() => { setBillType("Seller → Buyer"); setPreview({ deal, doc: buildBillDoc(deal, "Seller → Buyer") }); }}
-                        aria-label="Generate bill">
-                        <FilePlus2 size={15}/>
+                      <button
+                        type="button"
+                        title={t("bills.generate_bill", "Generate bill")}
+                        data-testid={`gen-bill-${deal.id}`}
+                        onClick={() => {
+                          setBillType("Seller → Buyer");
+                          setPreview({ deal, doc: buildBillDoc(deal, "Seller → Buyer") });
+                        }}
+                        aria-label="Generate bill"
+                      >
+                        <FilePlus2 size={15} />
                       </button>
                     </div>
                   </td>
                 </tr>
               ))}
               {!deals.length && (
-                <tr><td colSpan={8}>
-                  <div className="local-empty" data-testid="bills-empty">
-                    {loading ? t("table.loading", "Loading…") : <><h2>{t("bills.no_deals_yet", "No deals yet")}</h2><p>{t("bills.create_deal_first", "Create a deal from New Deal first.")}</p></>}
-                  </div>
-                </td></tr>
+                <tr>
+                  <td colSpan={8}>
+                    <div className="local-empty" data-testid="bills-empty">
+                      {loading ? (
+                        t("table.loading", "Loading…")
+                      ) : (
+                        <>
+                          <h2>{t("bills.no_deals_yet", "No deals yet")}</h2>
+                          <p>{t("bills.create_deal_first", "Create a deal from New Deal first.")}</p>
+                        </>
+                      )}
+                    </div>
+                  </td>
+                </tr>
               )}
             </tbody>
           </table>
@@ -231,43 +348,85 @@ export const LocalBills = () => {
         <div className="bill-preview-backdrop no-print" role="dialog" data-testid="deal-picker-modal">
           <section className="bill-preview">
             <div className="section-title">
-              <div><div className="eyebrow">{t("bills.generate_modal_title", "Generate bill")}</div><h2>{t("bills.select_saved_deal", "Select a saved deal")}</h2></div>
-              <button className="icon-button" onClick={() => setPicker(false)} aria-label="Close deal picker" data-testid="close-deal-picker">
-                <X size={18}/>
+              <div>
+                <div className="eyebrow">{t("bills.generate_modal_title", "Generate bill")}</div>
+                <h2>{t("bills.select_saved_deal", "Select a saved deal")}</h2>
+              </div>
+              <button
+                type="button"
+                className="icon-button"
+                onClick={() => setPicker(false)}
+                aria-label="Close deal picker"
+                data-testid="close-deal-picker"
+              >
+                <X size={18} />
               </button>
             </div>
             <label className="form-field">
               <span>{t("bills.bill_type", "Bill type")}</span>
-              <select value={billType} onChange={e => setBillType(e.target.value)} data-testid="deal-picker-bill-type">
-                <option value="Seller Bill (Purchase Receipt)">{t("bills.seller_bill", "Seller Bill (Purchase Receipt)")}</option>
+              <select
+                value={billType}
+                onChange={(e) => setBillType(e.target.value)}
+                data-testid="deal-picker-bill-type"
+              >
+                <option value="Seller Bill (Purchase Receipt)">
+                  {t("bills.seller_bill", "Seller Bill (Purchase Receipt)")}
+                </option>
                 <option value="Seller → Buyer">{t("bills.seller_to_buyer", "Seller → Buyer")}</option>
-                <option value="Seller → Intermediate">{t("bills.seller_to_intermediate", "Seller → Intermediate")}</option>
+                <option value="Seller → Intermediate">
+                  {t("bills.seller_to_intermediate", "Seller → Intermediate")}
+                </option>
               </select>
             </label>
-            <div className="toolbar" style={{margin:"12px 0"}}>
+            <div className="toolbar" style={{ margin: "12px 0" }}>
               <div className="search-field">
-                <Search size={16}/>
-                <input value={dealQ} onChange={e => setDealQ(e.target.value)} autoFocus
-                  placeholder={t("bills.search_deal_placeholder", "Search deal, vehicle, seller or buyer…")} data-testid="deal-picker-search"/>
+                <Search size={16} />
+                <input
+                  value={dealQ}
+                  onChange={(e) => setDealQ(e.target.value)}
+                  autoFocus
+                  placeholder={t("bills.search_deal_placeholder", "Search deal, vehicle, seller or buyer…")}
+                  data-testid="deal-picker-search"
+                />
               </div>
             </div>
             <div className="deal-picker-list" data-testid="deal-picker-list">
-              {pickerDeals.map(deal => (
-                <button key={deal.id} className="deal-picker-row"
-                  onClick={() => generate(deal)} data-testid={`deal-picker-${deal.id}`}>
+              {pickerDeals.map((deal) => (
+                <button
+                  type="button"
+                  key={deal.id}
+                  className="deal-picker-row"
+                  onClick={() => generate(deal)}
+                  data-testid={`deal-picker-${deal.id}`}
+                >
                   <b>{deal.bill_number}</b>
-                  <span>{deal.vehicle?.vehicle_name} · {deal.vehicle?.vehicle_number||t("bills.no_plate", "No plate")}</span>
-                  <span>{t("bills.seller_label", "Seller")}: {deal.seller?.name||"—"} · {t("bills.buyer_label", "Buyer")}: {deal.buyer?.name||"—"}</span>
+                  <span>
+                    {deal.vehicle?.vehicle_name} · {deal.vehicle?.vehicle_number || t("bills.no_plate", "No plate")}
+                  </span>
+                  <span>
+                    {t("bills.seller_label", "Seller")}: {deal.seller?.name || "—"} · {t("bills.buyer_label", "Buyer")}:{" "}
+                    {deal.buyer?.name || "—"}
+                  </span>
                 </button>
               ))}
               {!pickerDeals.length && (
                 <p className="empty-note" data-testid="deal-picker-empty">
-                  {deals.length ? t("bills.no_deals_match", "No deals match your search.") : t("bills.create_deal_first", "No saved deals. Create one from New Deal first.")}
+                  {deals.length
+                    ? t("bills.no_deals_match", "No deals match your search.")
+                    : t("bills.create_deal_first", "No saved deals. Create one from New Deal first.")}
                 </p>
               )}
             </div>
-            <button className="button button-secondary" style={{marginTop:14}}
-              onClick={() => { setPicker(false); navigate("/new-deal"); }} data-testid="deal-picker-new-deal">
+            <button
+              type="button"
+              className="button button-secondary"
+              style={{ marginTop: 14 }}
+              onClick={() => {
+                setPicker(false);
+                navigate("/new-deal");
+              }}
+              data-testid="deal-picker-new-deal"
+            >
               + {t("nav.new_deal", "New Deal")}
             </button>
           </section>
@@ -301,21 +460,15 @@ export const LocalFinances = () => {
           </div>
           <h2 className="text-2xl font-bold text-white mb-3">Owner Access Required</h2>
           <p className="text-neutral-400 text-sm mb-6 leading-relaxed">
-            Financial treasury, vehicle procurement costs, buyer receipts, and dealer profit margins are strictly confidential. This page is restricted to Showroom Owner account (<strong>aravasamarth@gmail.com</strong>).
+            Financial treasury, vehicle procurement costs, buyer receipts, and dealer profit margins are strictly
+            confidential. This page is restricted to Showroom Owner account (
+            <strong>aravasamarth@gmail.com</strong>).
           </p>
           <div className="flex gap-3 justify-center">
-            <button
-              type="button"
-              className="button button-primary"
-              onClick={() => navigate("/deals")}
-            >
+            <button type="button" className="button button-primary" onClick={() => navigate("/deals")}>
               Back to Deals
             </button>
-            <button
-              type="button"
-              className="button button-secondary"
-              onClick={() => navigate("/login")}
-            >
+            <button type="button" className="button button-secondary" onClick={() => navigate("/login")}>
               Switch Account
             </button>
           </div>
@@ -324,41 +477,32 @@ export const LocalFinances = () => {
     );
   }
 
-  const sum = (key) =>
-    deals.reduce((total, d) => total + Number(d.payments[key] || 0), 0);
+  const sum = (key) => deals.reduce((total, d) => total + Number(d.payments[key] || 0), 0);
 
   const purchaseTotal = sum("purchase_price");
   const sellingTotal = sum("selling_price");
   const paidToSellers = sum("paid_to_seller");
   const receivedFromBuyers = sum("received_from_buyer");
-  const maintenanceTotal = deals.reduce(
-    (total, d) => total + calculateMaintenanceTotal(d.maintenance),
-    0
-  );
-  const totalCommission = deals.reduce(
-    (acc, d) =>
-      acc +
-      (d.commission != null
-        ? d.commission
-        : commission(d.payments, calculateMaintenanceTotal(d.maintenance)) || 0),
-    0
-  );
+  const maintenanceTotal = deals.reduce((total, d) => total + calculateMaintenanceTotal(d.maintenance), 0);
+
+  const totalCommission = deals.reduce((acc, d) => {
+    if (d.commission != null) {
+      return acc + d.commission;
+    }
+    const calc = commission(d.payments, calculateMaintenanceTotal(d.maintenance)) || 0;
+    return acc + calc;
+  }, 0);
 
   const outstandingBuyers = Math.max(0, sellingTotal - receivedFromBuyers);
   const outstandingSellers = Math.max(0, purchaseTotal - paidToSellers);
-  const marginPercent =
-    sellingTotal > 0 ? ((totalCommission / sellingTotal) * 100).toFixed(1) : "0.0";
-  const collectionRatio =
-    sellingTotal > 0 ? Math.round((receivedFromBuyers / sellingTotal) * 100) : 0;
-  const sellerPaymentRatio =
-    purchaseTotal > 0 ? Math.round((paidToSellers / purchaseTotal) * 100) : 0;
+  const marginPercent = sellingTotal > 0 ? ((totalCommission / sellingTotal) * 100).toFixed(1) : "0.0";
+  const collectionRatio = sellingTotal > 0 ? Math.round((receivedFromBuyers / sellingTotal) * 100) : 0;
+  const sellerPaymentRatio = purchaseTotal > 0 ? Math.round((paidToSellers / purchaseTotal) * 100) : 0;
 
   const rows = [
     [t("finances.purchase_total", "Purchase total"), purchaseTotal],
     [t("finances.selling_total", "Selling total"), sellingTotal],
-    ...(maintenanceTotal > 0
-      ? [[t("maintenance.title", "Maintenance Cost"), maintenanceTotal]]
-      : []),
+    ...(maintenanceTotal > 0 ? [[t("maintenance.title", "Maintenance Cost"), maintenanceTotal]] : []),
     [t("finances.paid_to_sellers", "Paid to sellers"), paidToSellers],
     [t("finances.received_from_buyers", "Received from buyers"), receivedFromBuyers],
     [t("finances.commission", "Commission"), totalCommission],
@@ -379,7 +523,10 @@ export const LocalFinances = () => {
           <div>
             <div className="flex items-center gap-2.5 mb-2 flex-wrap">
               <AnimePulseBeacon color="emerald" size="sm" label="TREASURY ACTIVE" />
-              <Badge variant="outline" className="border-emerald-500/30 bg-emerald-500/10 text-emerald-400 font-mono text-[10px]">
+              <Badge
+                variant="outline"
+                className="border-emerald-500/30 bg-emerald-500/10 text-emerald-400 font-mono text-[10px]"
+              >
                 IndexedDB Local Vault
               </Badge>
               <Badge variant="outline" className="border-amber-500/30 bg-amber-500/10 text-amber-400 text-[10px]">
@@ -407,10 +554,7 @@ export const LocalFinances = () => {
         </div>
       </div>
 
-      <div
-        className="workflow-message luxury-finances-notice mb-6"
-        data-testid="local-finances-notice"
-      >
+      <div className="workflow-message luxury-finances-notice mb-6" data-testid="local-finances-notice">
         <Sparkles size={15} className="text-amber-400" />
         <span>{t("finances.notice", "Preview totals from this browser's saved deals only.")}</span>
       </div>
@@ -534,12 +678,8 @@ export const LocalFinances = () => {
             <span className="stat-pill stat-cyan">
               ● Received: {money(receivedFromBuyers)} ({collectionRatio}%)
             </span>
-            <span className="stat-pill stat-amber">
-              ● Buyer Outstanding: {money(outstandingBuyers)}
-            </span>
-            <span className="stat-pill stat-purple">
-              ● Seller Payable: {money(outstandingSellers)}
-            </span>
+            <span className="stat-pill stat-amber">● Buyer Outstanding: {money(outstandingBuyers)}</span>
+            <span className="stat-pill stat-purple">● Seller Payable: {money(outstandingSellers)}</span>
           </div>
         </div>
 

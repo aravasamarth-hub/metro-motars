@@ -10,15 +10,34 @@ export const DealSummary = ({ deal, edit }) => {
   const { isOwner } = useAuth();
   const maintenanceExpense = calculateMaintenanceTotal(deal.maintenance);
 
+  let sellerDisplayName = "—";
+  if (deal.seller.is_dealer) {
+    sellerDisplayName = `${deal.seller.name} · ${deal.seller.dealer_name}`;
+  } else if (deal.seller.name) {
+    sellerDisplayName = deal.seller.name;
+  }
+
   const rows = [
-    [t("step.vehicle", "Vehicle"), `${deal.vehicle.vehicle_name || "—"} · ${deal.vehicle.registration_number || deal.vehicle.vehicle_number || "—"}`, 0],
-    [t("step.seller", "Seller"), deal.seller.is_dealer ? `${deal.seller.name} · ${deal.seller.dealer_name}` : deal.seller.name || "—", 1],
+    [
+      t("step.vehicle", "Vehicle"),
+      `${deal.vehicle.vehicle_name || "—"} · ${deal.vehicle.registration_number || deal.vehicle.vehicle_number || "—"}`,
+      0,
+    ],
+    [t("step.seller", "Seller"), sellerDisplayName, 1],
     ...(maintenanceExpense > 0 && isOwner
       ? [[t("maintenance.summary_label", "Maintenance Cost"), money(maintenanceExpense), 2]]
       : []),
     [t("step.buyer", "Buyer"), deal.buyer.name || t("summary.not_assigned", "Not assigned"), 3],
-    [t("section.seller_witness", "Seller witness"), deal.witnesses[0].name || t("summary.not_recorded", "Not recorded"), 1],
-    [t("section.buyer_witness", "Buyer witness"), deal.witnesses[1].name || t("summary.not_recorded", "Not recorded"), 3],
+    [
+      t("section.seller_witness", "Seller witness"),
+      deal.witnesses[0]?.name || t("summary.not_recorded", "Not recorded"),
+      1,
+    ],
+    [
+      t("section.buyer_witness", "Buyer witness"),
+      deal.witnesses[1]?.name || t("summary.not_recorded", "Not recorded"),
+      3,
+    ],
     ...(isOwner
       ? [
           [t("field.purchase_price", "Purchase price"), money(deal.payments.purchase_price), 5],
@@ -26,17 +45,24 @@ export const DealSummary = ({ deal, edit }) => {
           [t("section.commission", "Commission"), money(commission(deal.payments, maintenanceExpense)), 5],
         ]
       : []),
-    [t("photo.photos_count", "Photos"), `${Object.values(deal.photos).filter(Boolean).length} / 32 ${t("summary.attached", "attached")}`, 0],
+    [
+      t("photo.photos_count", "Photos"),
+      `${Object.values(deal.photos).filter(Boolean).length} / 32 ${t("summary.attached", "attached")}`,
+      0,
+    ],
   ];
 
   if (deal.agent?.name && isOwner) {
-    const bal = deal.agent.amount_balance !== "" && deal.agent.amount_balance != null
-      ? Number(deal.agent.amount_balance)
-      : Math.max(0, (Number(deal.agent.total_amount) || 0) - (Number(deal.agent.amount_paid) || 0));
+    let bal = 0;
+    if (deal.agent.amount_balance !== "" && deal.agent.amount_balance != null) {
+      bal = Number(deal.agent.amount_balance);
+    } else {
+      bal = Math.max(0, (Number(deal.agent.total_amount) || 0) - (Number(deal.agent.amount_paid) || 0));
+    }
     rows.push([
       t("step.agent", "Agent"),
       `${deal.agent.name}${deal.agent.task ? ` · ${deal.agent.task}` : ""} · ${t("summary.balance", "Balance")}: ${money(bal)}`,
-      4
+      4,
     ]);
   }
 
@@ -56,7 +82,7 @@ export const DealSummary = ({ deal, edit }) => {
                 aria-label={`${t("summary.edit", "Edit")} ${label}`}
                 data-testid={`summary-edit-${label.toLowerCase().replaceAll(" ", "-")}`}
               >
-                <Pencil size={13}/>
+                <Pencil size={13} />
               </button>
             )}
           </dd>
@@ -76,9 +102,11 @@ export const ReviewStep = ({ deal, update, edit }) => {
       <section className="wizard-group">
         <div className="section-title">
           <h2>{t("section.deal_summary", "Deal summary")}</h2>
-          <span className="status-pill gold" data-testid="summary-bill-number">{deal.bill_number}</span>
+          <span className="status-pill gold" data-testid="summary-bill-number">
+            {deal.bill_number}
+          </span>
         </div>
-        <DealSummary deal={deal} edit={edit}/>
+        <DealSummary deal={deal} edit={edit} />
       </section>
 
       <section className="wizard-group">
@@ -86,8 +114,28 @@ export const ReviewStep = ({ deal, update, edit }) => {
           <h2>{t("section.deal_status", "Deal status")}</h2>
         </div>
         <div className="form-grid wizard-fields">
-          <DealField config={{ key: "status", label: "Stock status", type: "select", options: ["In Stock", "Out of Stock", "Sold"] }} prefix="review" value={deal.status} onChange={update}/>
-          <DealField config={{ key: "rc_status", label: "RC transfer status", type: "select", options: ["Pending", "Completed"] }} prefix="review" value={deal.rc_status} onChange={update}/>
+          <DealField
+            config={{
+              key: "status",
+              label: "Stock status",
+              type: "select",
+              options: ["In Stock", "Out of Stock", "Sold"],
+            }}
+            prefix="review"
+            value={deal.status}
+            onChange={update}
+          />
+          <DealField
+            config={{
+              key: "rc_status",
+              label: "RC transfer status",
+              type: "select",
+              options: ["Pending", "Completed"],
+            }}
+            prefix="review"
+            value={deal.rc_status}
+            onChange={update}
+          />
         </div>
       </section>
 
@@ -95,7 +143,12 @@ export const ReviewStep = ({ deal, update, edit }) => {
         <div className="section-title">
           <h2>{t("section.notes_remarks", "Notes & remarks")}</h2>
         </div>
-        <DealField config={{ key: "notes", label: "Notes & remarks", type: "textarea" }} prefix="deal" value={deal.notes} onChange={update}/>
+        <DealField
+          config={{ key: "notes", label: "Notes & remarks", type: "textarea" }}
+          prefix="deal"
+          value={deal.notes}
+          onChange={update}
+        />
       </section>
     </>
   );

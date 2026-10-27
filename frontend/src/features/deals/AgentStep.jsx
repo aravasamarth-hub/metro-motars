@@ -73,15 +73,15 @@ export const AgentStep = ({ deal, updateSection, errors = {} }) => {
     if (key === "total_amount") {
       const tot = value;
       const paid = agent.amount_paid;
-      if (tot !== "" && tot != null && !isNaN(Number(tot))) {
-        const p = paid !== "" && paid != null && !isNaN(Number(paid)) ? Number(paid) : 0;
+      if (tot !== "" && tot != null && !Number.isNaN(Number(tot))) {
+        const p = paid !== "" && paid != null && !Number.isNaN(Number(paid)) ? Number(paid) : 0;
         updateSection("agent", "amount_balance", String(Math.max(0, Number(tot) - p)));
       }
     } else if (key === "amount_paid") {
       const paid = value;
       const tot = agent.total_amount;
-      if (tot !== "" && tot != null && !isNaN(Number(tot))) {
-        const p = paid !== "" && paid != null && !isNaN(Number(paid)) ? Number(paid) : 0;
+      if (tot !== "" && tot != null && !Number.isNaN(Number(tot))) {
+        const p = paid !== "" && paid != null && !Number.isNaN(Number(paid)) ? Number(paid) : 0;
         updateSection("agent", "amount_balance", String(Math.max(0, Number(tot) - p)));
       }
     }
@@ -94,11 +94,11 @@ export const AgentStep = ({ deal, updateSection, errors = {} }) => {
     if (typeof agent.task === "string" && agent.task.trim()) {
       const text = agent.task.toLowerCase();
       const matched = RTO_TASKS.filter(
-        (t) =>
-          text.includes(t.label.toLowerCase()) ||
-          text.includes(t.id.toLowerCase()) ||
-          text.includes(`${t.num}.`)
-      ).map((t) => t.id);
+        (taskItem) =>
+          text.includes(taskItem.label.toLowerCase()) ||
+          text.includes(taskItem.id.toLowerCase()) ||
+          text.includes(`${taskItem.num}.`)
+      ).map((taskItem) => taskItem.id);
       if (text.includes("other") && !matched.includes("OTHERS")) {
         matched.push("OTHERS");
       }
@@ -113,7 +113,7 @@ export const AgentStep = ({ deal, updateSection, errors = {} }) => {
   const formatTaskSummary = (taskIds, customDoc, amounts = taskAmounts) => {
     return taskIds
       .map((id) => {
-        const item = RTO_TASKS.find((t) => t.id === id);
+        const item = RTO_TASKS.find((taskItem) => taskItem.id === id);
         if (!item) return id;
         let title = `${item.num}. ${item.label}`;
         if (id === "OTHERS") {
@@ -121,7 +121,7 @@ export const AgentStep = ({ deal, updateSection, errors = {} }) => {
           title = doc ? `${item.num}. Others (${doc})` : `${item.num}. Others`;
         }
         const amt = amounts[id];
-        if (amt !== "" && amt != null && !isNaN(Number(amt)) && Number(amt) > 0) {
+        if (amt !== "" && amt != null && !Number.isNaN(Number(amt)) && Number(amt) > 0) {
           return `${title} (₹${Number(amt).toLocaleString("en-IN")})`;
         }
         return title;
@@ -133,7 +133,7 @@ export const AgentStep = ({ deal, updateSection, errors = {} }) => {
   const calculateTotalFromAmounts = (taskIds, amounts) => {
     return taskIds.reduce((sum, id) => {
       const val = amounts[id];
-      return sum + (val !== "" && val != null && !isNaN(Number(val)) ? Number(val) : 0);
+      return sum + (val !== "" && val != null && !Number.isNaN(Number(val)) ? Number(val) : 0);
     }, 0);
   };
 
@@ -145,16 +145,15 @@ export const AgentStep = ({ deal, updateSection, errors = {} }) => {
       next = [...selectedIds, taskId];
     }
     next.sort((a, b) => {
-      const idxA = RTO_TASKS.findIndex((t) => t.id === a);
-      const idxB = RTO_TASKS.findIndex((t) => t.id === b);
+      const idxA = RTO_TASKS.findIndex((taskItem) => taskItem.id === a);
+      const idxB = RTO_TASKS.findIndex((taskItem) => taskItem.id === b);
       return idxA - idxB;
     });
 
-    // Automatically calculate Total amount by summing the amounts of all selected tasks
     const newTotal = calculateTotalFromAmounts(next, taskAmounts);
     if (newTotal > 0) {
       handleAgentChange("total_amount", String(newTotal));
-      const p = agent.amount_paid !== "" && agent.amount_paid != null && !isNaN(Number(agent.amount_paid)) ? Number(agent.amount_paid) : 0;
+      const p = agent.amount_paid !== "" && agent.amount_paid != null && !Number.isNaN(Number(agent.amount_paid)) ? Number(agent.amount_paid) : 0;
       handleAgentChange("amount_balance", String(Math.max(0, newTotal - p)));
     } else if (next.length === 0) {
       handleAgentChange("total_amount", "");
@@ -171,11 +170,10 @@ export const AgentStep = ({ deal, updateSection, errors = {} }) => {
     setTaskAmounts(updatedAmounts);
     handleAgentChange("task_amounts", updatedAmounts);
 
-    // Sum up the amounts of all selected tasks
     const newTotal = calculateTotalFromAmounts(selectedIds, updatedAmounts);
     if (newTotal > 0) {
       handleAgentChange("total_amount", String(newTotal));
-      const p = agent.amount_paid !== "" && agent.amount_paid != null && !isNaN(Number(agent.amount_paid)) ? Number(agent.amount_paid) : 0;
+      const p = agent.amount_paid !== "" && agent.amount_paid != null && !Number.isNaN(Number(agent.amount_paid)) ? Number(agent.amount_paid) : 0;
       handleAgentChange("amount_balance", String(Math.max(0, newTotal - p)));
     } else {
       handleAgentChange("total_amount", "");
@@ -195,8 +193,8 @@ export const AgentStep = ({ deal, updateSection, errors = {} }) => {
     if (!next.includes("OTHERS")) {
       next = [...next, "OTHERS"];
       next.sort((a, b) => {
-        const idxA = RTO_TASKS.findIndex((t) => t.id === a);
-        const idxB = RTO_TASKS.findIndex((t) => t.id === b);
+        const idxA = RTO_TASKS.findIndex((taskItem) => taskItem.id === a);
+        const idxB = RTO_TASKS.findIndex((taskItem) => taskItem.id === b);
         return idxA - idxB;
       });
       handleAgentChange("tasks", next);
@@ -208,11 +206,11 @@ export const AgentStep = ({ deal, updateSection, errors = {} }) => {
 
   const handleSelectAll = (e) => {
     e.preventDefault();
-    const allIds = RTO_TASKS.map((t) => t.id);
+    const allIds = RTO_TASKS.map((taskItem) => taskItem.id);
     const newTotal = calculateTotalFromAmounts(allIds, taskAmounts);
     if (newTotal > 0) {
       handleAgentChange("total_amount", String(newTotal));
-      const p = agent.amount_paid !== "" && agent.amount_paid != null && !isNaN(Number(agent.amount_paid)) ? Number(agent.amount_paid) : 0;
+      const p = agent.amount_paid !== "" && agent.amount_paid != null && !Number.isNaN(Number(agent.amount_paid)) ? Number(agent.amount_paid) : 0;
       handleAgentChange("amount_balance", String(Math.max(0, newTotal - p)));
     }
     const taskSummary = formatTaskSummary(allIds, otherDoc, taskAmounts);
@@ -240,14 +238,22 @@ export const AgentStep = ({ deal, updateSection, errors = {} }) => {
     (agent.total_amount !== "" && agent.total_amount != null) ||
     (agent.amount_paid !== "" && agent.amount_paid != null);
 
-  // Open editable WhatsApp message preview & sender modal
+  let statusClass = "blue";
+  let statusText = t("agent.unpaid", "Unpaid");
+  if (paid >= total && total > 0) {
+    statusClass = "green";
+    statusText = t("agent.paid_in_full", "Paid in Full");
+  } else if (paid > 0) {
+    statusClass = "gold";
+    statusText = `${t("agent.balance", "Balance")}: ${money(balance)}`;
+  }
+
   const handleSendWhatsApp = () => {
     setIsWhatsAppModalOpen(true);
   };
 
   return (
     <div className="agent-step-container" data-testid="agent-step-container">
-      {/* Step title */}
       <h2 className="seller-step-title">{t("agent.title", "Agent")}</h2>
 
       <section className="wizard-group">
@@ -262,18 +268,13 @@ export const AgentStep = ({ deal, updateSection, errors = {} }) => {
           <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
             {hasAgentAmounts && (
               <span
-                className={`status-pill ${paid >= total && total > 0 ? "green" : paid > 0 ? "gold" : "blue"}`}
+                className={`status-pill ${statusClass}`}
                 data-testid="agent-status-pill"
               >
-                {paid >= total && total > 0
-                  ? t("agent.paid_in_full", "Paid in Full")
-                  : paid > 0
-                  ? `${t("agent.balance", "Balance")}: ${money(balance)}`
-                  : t("agent.unpaid", "Unpaid")}
+                {statusText}
               </span>
             )}
 
-            {/* WhatsApp Notification Button */}
             <button
               type="button"
               className="agent-whatsapp-btn"
@@ -327,7 +328,6 @@ export const AgentStep = ({ deal, updateSection, errors = {} }) => {
             onChange={handleAgentChange}
           />
 
-          {/* Time of work assigned for all of them together */}
           <label className="form-field wizard-field" htmlFor="agent-assigned-at">
             <span>{t("agent.assigned_at", "Time of work assigned")}</span>
             <input
@@ -340,7 +340,6 @@ export const AgentStep = ({ deal, updateSection, errors = {} }) => {
           </label>
         </div>
 
-        {/* RTO Work Checklist with Square Checkboxes and Amounts */}
         <div className="agent-tasks-section" data-testid="agent-tasks-section">
           <div className="agent-tasks-header">
             <div className="agent-tasks-header-left">
@@ -381,18 +380,15 @@ export const AgentStep = ({ deal, updateSection, errors = {} }) => {
                     key={task.id}
                     className={`agent-task-card agent-task-card-others ${isSelected ? "selected" : ""}`}
                     data-testid="agent-task-others"
-                    onClick={!isSelected ? () => handleToggleTask("OTHERS") : undefined}
                   >
                     <div className="agent-task-others-row">
                       <div className="agent-task-main">
                         <label
                           className="agent-task-others-checkbox-label"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleToggleTask("OTHERS");
-                          }}
+                          htmlFor="agent-task-checkbox-others"
                         >
                           <input
+                            id="agent-task-checkbox-others"
                             type="checkbox"
                             checked={isSelected}
                             onChange={() => handleToggleTask("OTHERS")}
@@ -415,11 +411,9 @@ export const AgentStep = ({ deal, updateSection, errors = {} }) => {
                         </label>
                       </div>
 
-                      {/* Amount beside Others - displayed when selected */}
                       {isSelected && (
                         <div
                           className="agent-task-amount-wrap"
-                          onClick={(e) => e.stopPropagation()}
                           title="Enter amount for this task"
                         >
                           <span className="agent-task-currency-prefix">₹</span>
@@ -445,7 +439,6 @@ export const AgentStep = ({ deal, updateSection, errors = {} }) => {
                           placeholder="Enter document / certificate name (e.g. Form 28, Police Verification)..."
                           value={otherDoc}
                           onChange={handleOtherDocChange}
-                          onClick={(e) => e.stopPropagation()}
                           data-testid="agent-task-others-input"
                           autoFocus
                         />
@@ -460,9 +453,11 @@ export const AgentStep = ({ deal, updateSection, errors = {} }) => {
                   key={task.id}
                   className={`agent-task-card ${isSelected ? "selected" : ""}`}
                   data-testid={`agent-task-${task.id.toLowerCase()}`}
+                  htmlFor={`agent-task-checkbox-${task.id.toLowerCase()}`}
                 >
                   <div className="agent-task-main">
                     <input
+                      id={`agent-task-checkbox-${task.id.toLowerCase()}`}
                       type="checkbox"
                       checked={isSelected}
                       onChange={() => handleToggleTask(task.id)}
@@ -484,7 +479,6 @@ export const AgentStep = ({ deal, updateSection, errors = {} }) => {
                     </span>
                   </div>
 
-                  {/* Amount beside the task - displayed when selected */}
                   {isSelected && (
                     <div
                       className="agent-task-amount-wrap"
@@ -510,7 +504,7 @@ export const AgentStep = ({ deal, updateSection, errors = {} }) => {
           </div>
 
           {errors["agent.task"] && (
-            <small className="field-error" style={{ marginTop: "10px" }}>
+            <small className="field-error" role="alert" style={{ marginTop: "10px" }}>
               {errors["agent.task"]}
             </small>
           )}
@@ -596,7 +590,6 @@ export const AgentStep = ({ deal, updateSection, errors = {} }) => {
         )}
       </section>
 
-      {/* Editable WhatsApp Work Notification Modal */}
       <AgentWhatsAppModal
         isOpen={isWhatsAppModalOpen}
         onClose={() => setIsWhatsAppModalOpen(false)}

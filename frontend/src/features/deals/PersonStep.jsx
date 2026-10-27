@@ -54,6 +54,16 @@ export const PersonStep = ({ group, deal, updateSection, updateWitness, setPhoto
     (sellingPrice !== "" && sellingPrice != null) ||
     (receivedFromBuyer !== "" && receivedFromBuyer != null);
 
+  let statusPillClass = "blue";
+  let statusPillText = t("payment.unpaid", "Unpaid");
+  if (receivedNum >= priceNum && priceNum > 0) {
+    statusPillClass = "green";
+    statusPillText = t("payment.paid_in_full", "Paid in Full");
+  } else if (receivedNum > 0) {
+    statusPillClass = "gold";
+    statusPillText = `${t("payment.pending", "Pending")}: ${money(pendingNum)}`;
+  }
+
   return (
     <div className="person-step-container" data-testid={`${group}-step-container`}>
       {/* Step title */}
@@ -101,14 +111,10 @@ export const PersonStep = ({ group, deal, updateSection, updateWitness, setPhoto
             <h2>{t("section.buyer_payments", "Payment & pricing details")}</h2>
             {hasAmounts && (
               <span
-                className={`status-pill ${receivedNum >= priceNum && priceNum > 0 ? "green" : receivedNum > 0 ? "gold" : "blue"}`}
+                className={`status-pill ${statusPillClass}`}
                 data-testid="buyer-payment-status-pill"
               >
-                {receivedNum >= priceNum && priceNum > 0
-                  ? t("payment.paid_in_full", "Paid in Full")
-                  : receivedNum > 0
-                  ? `${t("payment.pending", "Pending")}: ${money(pendingNum)}`
-                  : t("payment.unpaid", "Unpaid")}
+                {statusPillText}
               </span>
             )}
           </div>
@@ -202,12 +208,12 @@ export const WitnessSection = ({ group, deal, updateWitness, setPhoto, errors })
       </div>
       <FieldGrid
         fields={witnessFields}
-        value={deal.witnesses[index]}
+        value={deal?.witnesses?.[index] || {}}
         prefix={`witnesses.${index}`}
         errors={errors}
         onChange={(key, value) => updateWitness(index, key, value)}
       />
-      <PhotoSlots group={`witness-${index + 1}`} photos={deal.photos} onChange={setPhoto} />
+      <PhotoSlots group={`witness-${index + 1}`} photos={deal?.photos || {}} onChange={setPhoto} />
     </section>
   );
 };

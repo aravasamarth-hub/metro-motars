@@ -10,7 +10,7 @@ import {
  * into a Base64 Data URL or string URL for @react-pdf/renderer.
  * Returns null on any failure, guaranteeing that PDF generation never crashes.
  */
-async function resolveImageToDataUrl(imageInput: any): Promise<string | null> {
+async function resolveImageToDataUrl(imageInput: unknown): Promise<string | null> {
   if (!imageInput) return null;
 
   if (typeof imageInput === "string") {
@@ -18,34 +18,31 @@ async function resolveImageToDataUrl(imageInput: any): Promise<string | null> {
     return trimmed.length > 0 ? trimmed : null;
   }
 
-  if (typeof imageInput.dataUrl === "string" && imageInput.dataUrl.trim().length > 0) {
-    return imageInput.dataUrl;
-  }
-
-  if (typeof imageInput.url === "string" && imageInput.url.trim().length > 0) {
-    return imageInput.url;
-  }
-
-  if (typeof imageInput.src === "string" && imageInput.src.trim().length > 0) {
-    return imageInput.src;
-  }
-
-  const blob =
-    imageInput.blob ||
-    (imageInput instanceof Blob || imageInput instanceof File ? imageInput : null);
-
-  if (blob) {
-    try {
-      return await new Promise<string | null>((resolve) => {
-        const reader = new FileReader();
-        reader.onload = () => {
-          resolve(typeof reader.result === "string" ? reader.result : null);
-        };
-        reader.onerror = () => resolve(null);
-        reader.readAsDataURL(blob);
-      });
-    } catch {
-      return null;
+  if (typeof imageInput === "object" && imageInput !== null) {
+    const record = imageInput as Record<string, unknown>;
+    if (typeof record.dataUrl === "string" && record.dataUrl.trim().length > 0) {
+      return record.dataUrl;
+    }
+    if (typeof record.url === "string" && record.url.trim().length > 0) {
+      return record.url;
+    }
+    if (typeof record.src === "string" && record.src.trim().length > 0) {
+      return record.src;
+    }
+    const blob = record.blob || (imageInput instanceof Blob || imageInput instanceof File ? imageInput : null);
+    if (blob instanceof Blob) {
+      try {
+        return await new Promise<string | null>((resolve) => {
+          const reader = new FileReader();
+          reader.onload = () => {
+            resolve(typeof reader.result === "string" ? reader.result : null);
+          };
+          reader.onerror = () => resolve(null);
+          reader.readAsDataURL(blob);
+        });
+      } catch {
+        return null;
+      }
     }
   }
 
@@ -56,7 +53,7 @@ async function resolveImageToDataUrl(imageInput: any): Promise<string | null> {
  * Directly generates and triggers automatic download of the Seller Agreement PDF.
  * Name format: Bill-001-Seller-Agreement.pdf
  */
-export async function downloadSellerAgreementPDF(deal: SellerAgreementDeal): Promise<string> {
+export async function downloadSellerAgreementPDF(deal: Readonly<SellerAgreementDeal>): Promise<string> {
   // Pre-resolve all photos safely
   const [
     sellerPhoto,
@@ -115,8 +112,8 @@ export async function downloadSellerAgreementPDF(deal: SellerAgreementDeal): Pro
     witnessThumb,
   };
 
-  const doc = React.createElement(SellerAgreementPDF, { deal, resolvedImages }) as any;
-  const instance = pdf(doc);
+  const doc = React.createElement(SellerAgreementPDF, { deal, resolvedImages });
+  const instance = pdf(doc as React.ReactElement);
   const blob = await instance.toBlob();
 
   const rawBillNumber = deal.billNumber || deal.bill_number || "Bill-001";
@@ -144,14 +141,14 @@ export function useSellerAgreement() {
   const [generating, setGenerating] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
-  const generateAgreement = useCallback(async (deal: SellerAgreementDeal) => {
+  const generateAgreement = useCallback(async (deal: Readonly<SellerAgreementDeal>) => {
     setGenerating(true);
     setError(null);
     try {
       const fileName = await downloadSellerAgreementPDF(deal);
       return fileName;
-    } catch (err: any) {
-      const message = err?.message || "Failed to generate Seller Agreement PDF";
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Failed to generate Seller Agreement PDF";
       setError(message);
       throw err;
     } finally {
@@ -167,3 +164,4 @@ export function useSellerAgreement() {
 }
 
 export default useSellerAgreement;
+
