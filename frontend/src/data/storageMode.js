@@ -2,7 +2,7 @@
  * Storage Mode Configuration for Metro Motors
  *
  * Explicitly manages whether the frontend operates in:
- * - "local": IndexedDB browser-local storage (metro-motors-ui-v1). Perfect for demos, offline use, and zero-setup testing.
+ * - "local": IndexedDB browser-local storage (metro-motors-app-v1). Perfect for demos, offline use, and zero-setup testing.
  * - "remote": Authenticated FastAPI backend + MongoDB centralized persistence.
  *
  * CRITICAL RULE: Storage mode transitions must be explicit.

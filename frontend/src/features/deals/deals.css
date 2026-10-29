@@ -45,7 +45,7 @@
 .theme-dark .field-error { color: #f19e97; }
 .amount-pending-display:disabled {
   background: rgba(171, 132, 47, 0.08) !important;
-  color: #ab842f !important;
+  color: var(--pending-gold, #ab842f) !important;
   font-weight: 700 !important;
   font-size: 13px !important;
   opacity: 1 !important;
@@ -120,7 +120,7 @@
 .local-record-meta { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 15px; border-bottom: 1px solid var(--local-border); padding: 5px 0 24px; margin-bottom: 22px; }
 .local-record-meta > span { color: var(--local-muted); font-size: 11px; }
 .local-success { display: flex; align-items: center; gap: 10px; border: 1px solid rgba(73, 209, 155, 0.333); padding: 14px; border-radius: 6px; font-size: 12px; color: #24865f; margin-bottom: 24px; }
-.theme-dark .local-success { color: #83d7b2; background: rgba(73, 209, 155, 0.031); }
+.theme-dark .local-success { color: var(--mm-accent, #83d7b2); background: rgba(73, 209, 155, 0.031); }
 .local-success svg { flex: none; }
 .local-notes { font-size: 13px; line-height: 1.8; white-space: pre-wrap; overflow-wrap: anywhere; }
 .metric-grid.local-dashboard-metrics { grid-template-columns: repeat(3,minmax(0,1fr)); gap: 20px; margin-bottom: 34px; }
@@ -138,9 +138,7 @@
 .local-deals-table .table-bike { flex: none; }
 .local-deals-table .table-vehicle { gap: 7px; }
 .local-deals-table .local-status-stack { flex-direction: column; align-items: flex-start; }
-.bill-number-link { text-align: left; color: #ab842f; font-weight: 700; transition: color .18s; }
-.theme-dark .bill-number-link { color: var(--gold); }
-.bill-number-link:hover { text-decoration: underline; }
+/* Consolidated into main .bill-number-link component rule */
 .local-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 235px; padding: 35px 20px; gap: 15px; color: var(--local-muted); text-align: center; font-size: 12px; }
 .local-empty svg { color: #ab842f; }
 .local-empty h2 { font-size: 15px; color: inherit; }
@@ -188,7 +186,85 @@
   .local-page .toolbar .select-field select { min-width: 0; max-width: 100%; }
   .local-page .toolbar .select-field > span { display: none; }
 }
-@media(prefers-reduced-motion:reduce) { .wizard-body { animation: none; } .local-page * { scroll-behavior: auto !important; transition-duration: 0s !important; } }
+@media (prefers-reduced-motion: reduce) {
+  /* Universal WCAG 2.2 AA / SonarQube S9440 reduced-motion accessibility override */
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .wizard-body,
+  .photo-dialog-download-btn,
+  .topbar .theme-toggle,
+  .topbar .theme-toggle .theme-toggle-icon,
+  .slot-action-btn,
+  .add-photo-box,
+  .add-photo-icon-circle,
+  .language-toggle-btn,
+  .language-chevron,
+  .language-dropdown-menu,
+  .identity-card,
+  .identity-btn-primary,
+  .identity-btn-secondary,
+  .signature-color-btn,
+  .signature-btn-save,
+  .camera-snap-trigger,
+  .autofill-sparkle-icon,
+  .chassis-pulse-dot,
+  .cockpit-card,
+  .payment-method-card,
+  .payment-method-icon-wrap,
+  .dashboard-page-luxury,
+  .eyebrow-beacon,
+  .metric-icon,
+  .luxury-view-all-btn,
+  .agent-modal-backdrop,
+  .agent-modal-card,
+  .agents-kpi-card,
+  .agent-handover-modal-backdrop,
+  .agent-handover-modal-shell,
+  .agent-section-highlighted,
+  .followups-category-section,
+  .maintenance-inline-add-form,
+  .agreement-toggle-btn,
+  .luxury-autofill-btn,
+  .luxury-step-circle,
+  .luxury-nav-btn,
+  .luxury-save-btn,
+  .luxury-continue-btn,
+  .hud-metric-pill,
+  .quick-chip,
+  .dashboard-cta-new-deal,
+  .luxury-metric-card,
+  .fleet-filter-pill,
+  .row-actions button,
+  .finances-card,
+  .luxury-open-btn,
+  .agent-task-card,
+  .agent-task-checkbox,
+  .agent-whatsapp-btn,
+  .agent-modal-close-btn,
+  .agent-modal-copy-btn,
+  .agent-modal-send-btn,
+  .agent-view-btn,
+  .agent-deal-card,
+  .agent-deal-action-btn.whatsapp,
+  .followup-action-btn.whatsapp,
+  .role-choice-pill,
+  .maintenance-checkbox-box,
+  .followups-page-luxury,
+  .deals-page-luxury,
+  .finances-page-luxury,
+  .settings-page-luxury {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
 
 /* ── Seller step heading ──────────────────────────────────────────────────── */
 .seller-step-title {
@@ -238,18 +314,18 @@
   border-radius: 8px;
   border: 1px solid rgba(229, 185, 76, 0.65);
   background: rgba(229, 185, 76, 0.15);
-  color: #fbbf24;
+  color: var(--mm-accent, #fbbf24);
   font-size: 13px;
   font-weight: 700;
   cursor: pointer;
-  transition: all .2s ease;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
   white-space: nowrap;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 .agreement-toggle-btn:hover {
   background: rgba(229, 185, 76, 0.28);
   border-color: #fbbf24;
-  color: #ffffff;
+  color: var(--mm-accent, #ffffff);
   transform: translateY(-1px);
   box-shadow: 0 4px 16px rgba(229, 185, 76, 0.25);
 }
@@ -275,8 +351,8 @@
   font-size: 12px;
   border: 1px solid transparent;
 }
-.seller-msg-ok  { color: #16805c; background: #d9f8eb; border-color: #49d19b; }
-.seller-msg-err { color: #bd4d4b; background: #fce3e1; border-color: #f28f8c; }
+.seller-msg-ok  { color: #11684a; background: #d9f8eb; border-color: #49d19b; }
+.seller-msg-err { color: #9e3634; background: #fce3e1; border-color: #f28f8c; }
 
 /* Photo section header actions (count + dealer toggle) */
 .photo-section-actions {
@@ -352,7 +428,7 @@
 .wsv2-done .wsv2-circle {
   background: rgba(73, 209, 155, 0.12);
   border-color: rgba(73, 209, 155, 0.533);
-  color: #49d19b;
+  color: var(--mm-accent, #49d19b);
 }
 .wsv2-done:hover {
   background: rgba(73, 209, 155, 0.08);
@@ -364,7 +440,7 @@
 .theme-light .wsv2-done .wsv2-circle {
   background: #d1fae5;
   border-color: #10b981;
-  color: #059669;
+  color: #047857;
 }
 .theme-light .wsv2-done:hover {
   background: #ecfdf5;
@@ -377,7 +453,7 @@
 .wsv2-error .wsv2-circle {
   background: rgba(239, 68, 68, 0.12);
   border-color: rgba(239, 68, 68, 0.6);
-  color: #ef4444;
+  color: var(--mm-accent, #ef4444);
 }
 .wsv2-error:hover {
   background: rgba(239, 68, 68, 0.08);
@@ -529,7 +605,7 @@
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.18s ease;
+  transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease, box-shadow 0.18s ease;
 }
 .stock-switch-btn:hover {
   background: rgba(229, 185, 76, 0.08);
@@ -565,7 +641,7 @@
 }
 .theme-light .stock-switch-btn.rc-pending.active {
   background: #fcf1cf;
-  color: #926c11;
+  color: #785608;
   border-color: #e5bf5c;
 }
 .stock-switch-btn.rc-transferred.active {
@@ -597,7 +673,7 @@
   line-height: 1 !important;
   cursor: pointer !important;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.22) !important;
-  transition: background 0.18s ease, border-color 0.18s ease, transform 0.12s ease, box-shadow 0.18s ease !important;
+  transition: background 0.18s ease, border-color 0.18s ease, transform 0.12s ease, box-shadow 0.18s ease;
   user-select: none !important;
 }
 
@@ -712,13 +788,13 @@
 .slot-upload-btn {
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid var(--local-border);
-  color: #c0d1e2;
+  color: var(--mm-accent, #c0d1e2);
 }
 
 .slot-upload-btn:hover {
   background: rgba(255, 255, 255, 0.08);
   border-color: #4b6885;
-  color: #ffffff;
+  color: var(--mm-accent, #ffffff);
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
 }
 
@@ -760,7 +836,7 @@
   border: 2px dashed #2d4560 !important;
   background: rgba(20, 35, 52, 0.047) !important;
   cursor: pointer;
-  transition: border-color 0.2s ease, background 0.2s ease, transform 0.14s ease, box-shadow 0.2s ease !important;
+  transition: border-color 0.2s ease, background 0.2s ease, transform 0.14s ease, box-shadow 0.2s ease;
   display: flex;
   flex-direction: column;
 }
@@ -801,7 +877,7 @@
   transform: scale(1.08) rotate(90deg);
   background: rgba(229, 185, 76, 0.18);
   border-color: var(--gold);
-  color: #f7d580;
+  color: var(--mm-accent, #f7d580);
 }
 
 .add-photo-title {
@@ -858,7 +934,7 @@
 .theme-light .add-photo-icon-circle {
   background: #e7eff6;
   border-color: #cbdbe8;
-  color: #a87e22;
+  color: #785610;
 }
 
 .theme-light .add-photo-title {
@@ -867,7 +943,7 @@
 
 .theme-light .add-photo-box-caption {
   background: #edf3f8;
-  color: #946e1c;
+  color: #7a5810;
 }
 
 /* ── Topbar Language Switcher ────────────────── */
@@ -1075,12 +1151,12 @@
 
 .language-option-item.selected .language-badge {
   background: rgba(212, 167, 55, 0.2);
-  color: #e5b94c;
+  color: var(--mm-accent, #e5b94c);
 }
 
 .theme-light .language-option-item.selected .language-badge {
   background: rgba(236, 207, 127, 0.267);
-  color: #8c6414;
+  color: var(--mm-accent, #8c6414);
 }
 
 .language-names {
@@ -1116,7 +1192,6 @@
 /* ═══════════════════════════════════════════════════════════════════════════
    3-CARD PARTY IDENTITY ROW (Photo | Signature | Thumb Impression)
    ═══════════════════════════════════════════════════════════════════════════ */
-
 .party-identity-section {
   margin-bottom: 24px;
 }
@@ -1259,7 +1334,7 @@
 
 .theme-light .badge-optional {
   background: #edf2f7;
-  color: #64748b;
+  color: #475569;
 }
 
 .theme-light .badge-success {
@@ -1439,7 +1514,7 @@
   font-size: 12.5px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.16s ease;
+  transition: background 0.16s ease, border-color 0.16s ease, color 0.16s ease, transform 0.16s ease, box-shadow 0.16s ease;
 }
 
 .identity-btn-primary {
@@ -1455,7 +1530,7 @@
 
 .identity-btn-primary.gold-highlight {
   background: rgba(212, 167, 55, 0.133);
-  color: #f59e0b;
+  color: var(--mm-accent, #f59e0b);
   border-color: rgba(245, 158, 11, 0.333);
 }
 
@@ -1553,7 +1628,6 @@
 /* ═══════════════════════════════════════════════════════════════════════════
    SIGNATURE PAD MODAL
    ═══════════════════════════════════════════════════════════════════════════ */
-
 .signature-pad-dialog {
   max-width: 580px !important;
   background: #0f1724 !important;
@@ -1705,7 +1779,7 @@
   font-size: 11.5px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
 
 .signature-aux-btn:hover:not(:disabled) {
@@ -1741,7 +1815,7 @@
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.15s;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
 
 .signature-btn-cancel:hover {
@@ -1761,7 +1835,7 @@
   font-size: 13px;
   font-weight: 700;
   cursor: pointer;
-  transition: all 0.15s;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
   box-shadow: 0 2px 10px rgba(229, 185, 76, 0.25);
 }
 
@@ -1780,7 +1854,6 @@
 /* ═══════════════════════════════════════════════════════════════════════════
    LIVE CAMERA MODAL
    ═══════════════════════════════════════════════════════════════════════════ */
-
 .live-camera-dialog {
   max-width: 620px !important;
   background: #0b121d !important;
@@ -2129,7 +2202,7 @@
   border: 1px solid rgba(229, 185, 76, 0.3);
   color: var(--gold, #e5b94c);
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: background 0.2s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.2s cubic-bezier(0.4, 0, 0.2, 1), color 0.2s cubic-bezier(0.4, 0, 0.2, 1), transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .luxury-autofill-btn:hover:not(:disabled) {
@@ -2276,7 +2349,7 @@
   background: transparent;
   border: 1px solid transparent;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
   text-align: left;
 }
 
@@ -2299,13 +2372,13 @@
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
   color: var(--local-muted, #94a3b8);
-  transition: all 0.25s ease;
+  transition: background 0.25s ease, border-color 0.25s ease, color 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
 }
 
 .theme-light .luxury-step-circle {
   background: #f1f5f9;
   border-color: #cbd5e1;
-  color: #64748b;
+  color: #475569;
 }
 
 .luxury-step-text {
@@ -2376,7 +2449,7 @@
 .luxury-step-item.wsv2-done .luxury-step-circle {
   background: rgba(16, 185, 129, 0.12);
   border-color: rgba(16, 185, 129, 0.4);
-  color: #10b981;
+  color: var(--mm-accent, #10b981);
 }
 
 .luxury-step-item.wsv2-done .luxury-step-title {
@@ -2391,7 +2464,7 @@
 .luxury-step-item.wsv2-error .luxury-step-circle {
   background: rgba(245, 158, 11, 0.12);
   border-color: rgba(245, 158, 11, 0.4);
-  color: #f59e0b;
+  color: var(--mm-accent, #f59e0b);
 }
 
 /* Alert / Workflow box */
@@ -2404,7 +2477,7 @@
   background: rgba(245, 158, 11, 0.08);
   border: 1px solid rgba(245, 158, 11, 0.3);
   margin-bottom: 24px;
-  color: #fde68a;
+  color: var(--mm-accent, #fde68a);
   font-size: 13px;
 }
 
@@ -2448,7 +2521,7 @@
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.18s ease;
+  transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
 }
 
 .luxury-save-status {
@@ -2486,7 +2559,7 @@
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.18s ease;
+  transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
 }
 
 .luxury-save-btn:hover:not(:disabled) {
@@ -2518,7 +2591,7 @@
   font-weight: 700;
   cursor: pointer;
   box-shadow: 0 4px 14px rgba(229, 185, 76, 0.35);
-  transition: all 0.18s ease;
+  transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
 }
 
 .luxury-continue-btn:hover:not(:disabled) {
@@ -2534,7 +2607,6 @@
 /* ==========================================================================
    VEHICLE SPECIFICATION HUD & INTERACTIVE QUICK SELECT CHIPS
    ========================================================================== */
-
 .vehicle-hud-container {
   margin-bottom: 24px;
 }
@@ -2639,7 +2711,7 @@
   outline: none;
   width: 100%;
   max-width: 520px;
-  transition: all 0.2s ease;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
   font-family: inherit;
 }
 
@@ -2757,7 +2829,7 @@
   border-radius: 10px;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.07);
-  transition: all 0.2s ease;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
   min-width: 0;
 }
 
@@ -2797,7 +2869,7 @@
 
 .hud-condition-icon {
   background: rgba(16, 185, 129, 0.12);
-  color: #10b981;
+  color: var(--mm-accent, #10b981);
 }
 
 .hud-metric-details {
@@ -2958,7 +3030,7 @@
   border: 1px solid rgba(255, 255, 255, 0.12);
   color: var(--text, #cbd5e1);
   cursor: pointer;
-  transition: all 0.16s ease;
+  transition: background 0.16s ease, border-color 0.16s ease, color 0.16s ease, transform 0.16s ease;
 }
 
 .quick-chip:hover {
@@ -2990,7 +3062,6 @@
 /* ==========================================================================
    FINANCIAL COCKPIT & VISUAL PAYMENT METHODS
    ========================================================================== */
-
 .financial-cockpit-container {
   margin-bottom: 28px;
 }
@@ -3110,7 +3181,7 @@
   font-size: 11px;
   font-weight: 700;
   background: rgba(16, 185, 129, 0.15);
-  color: #10b981;
+  color: var(--mm-accent, #10b981);
 }
 
 /* Payment Method Cards Grid */
@@ -3144,7 +3215,7 @@
   background: rgba(255, 255, 255, 0.03);
   border: 1.5px solid rgba(255, 255, 255, 0.08);
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: background 0.2s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.2s cubic-bezier(0.4, 0, 0.2, 1), color 0.2s cubic-bezier(0.4, 0, 0.2, 1), transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .payment-method-card:hover {
@@ -3235,21 +3306,21 @@
 }
 
 .theme-dark .nav-link {
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: background 0.2s cubic-bezier(0.4, 0, 0.2, 1), color 0.2s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   border-radius: 9px;
   margin: 1px 0;
 }
 
 .theme-dark .nav-link:hover {
   background: rgba(255, 255, 255, 0.05) !important;
-  color: #ffffff !important;
+  color: var(--mm-accent, #ffffff) !important;
   transform: translateX(3px);
 }
 
 .theme-dark .nav-link.active {
   background: linear-gradient(90deg, rgba(229, 185, 76, 0.18) 0%, rgba(229, 185, 76, 0.04) 100%) !important;
   border-left: 3.5px solid #e5b94c !important;
-  color: #f5d47a !important;
+  color: var(--mm-accent, #f5d47a) !important;
   box-shadow: 0 4px 18px rgba(229, 185, 76, 0.15) !important;
   font-weight: 700;
 }
@@ -3359,7 +3430,7 @@
   letter-spacing: 0.02em;
   cursor: pointer;
   box-shadow: 0 4px 18px rgba(229, 185, 76, 0.35);
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: background 0.2s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.2s cubic-bezier(0.4, 0, 0.2, 1), color 0.2s cubic-bezier(0.4, 0, 0.2, 1), transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .dashboard-cta-new-deal:hover {
@@ -3397,7 +3468,7 @@
   border: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.06);
   cursor: pointer;
-  transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: background 0.22s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.22s cubic-bezier(0.4, 0, 0.2, 1), transform 0.22s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.22s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   flex-direction: column;
   min-height: 160px;
@@ -3466,28 +3537,28 @@
 
 .orb-gold {
   background: radial-gradient(circle, rgba(229, 185, 76, 0.25) 0%, rgba(229, 185, 76, 0.05) 100%);
-  color: #f5d47a;
+  color: var(--mm-accent, #f5d47a);
   border: 1px solid rgba(229, 185, 76, 0.4);
   box-shadow: 0 0 16px rgba(229, 185, 76, 0.25);
 }
 
 .orb-blue {
   background: radial-gradient(circle, rgba(59, 130, 246, 0.25) 0%, rgba(59, 130, 246, 0.05) 100%);
-  color: #60a5fa;
+  color: var(--mm-accent, #60a5fa);
   border: 1px solid rgba(59, 130, 246, 0.4);
   box-shadow: 0 0 16px rgba(59, 130, 246, 0.25);
 }
 
 .orb-amber {
   background: radial-gradient(circle, rgba(245, 158, 11, 0.25) 0%, rgba(245, 158, 11, 0.05) 100%);
-  color: #fbbf24;
+  color: var(--mm-accent, #fbbf24);
   border: 1px solid rgba(245, 158, 11, 0.4);
   box-shadow: 0 0 16px rgba(245, 158, 11, 0.25);
 }
 
 .orb-emerald {
   background: radial-gradient(circle, rgba(16, 185, 129, 0.25) 0%, rgba(16, 185, 129, 0.05) 100%);
-  color: #34d399;
+  color: var(--mm-accent, #34d399);
   border: 1px solid rgba(16, 185, 129, 0.4);
   box-shadow: 0 0 16px rgba(16, 185, 129, 0.25);
 }
@@ -3524,25 +3595,25 @@
 
 .gold-chip {
   background: rgba(229, 185, 76, 0.12);
-  color: #e5b94c;
+  color: var(--mm-accent, #e5b94c);
   border: 1px solid rgba(229, 185, 76, 0.25);
 }
 
 .blue-chip {
   background: rgba(59, 130, 246, 0.12);
-  color: #60a5fa;
+  color: var(--mm-accent, #60a5fa);
   border: 1px solid rgba(59, 130, 246, 0.25);
 }
 
 .amber-chip {
   background: rgba(245, 158, 11, 0.12);
-  color: #fbbf24;
+  color: var(--mm-accent, #fbbf24);
   border: 1px solid rgba(245, 158, 11, 0.25);
 }
 
 .emerald-chip {
   background: rgba(16, 185, 129, 0.12);
-  color: #34d399;
+  color: var(--mm-accent, #34d399);
   border: 1px solid rgba(16, 185, 129, 0.25);
 }
 
@@ -3644,12 +3715,12 @@
   border: 1px solid rgba(255, 255, 255, 0.1);
   color: var(--local-muted, #94a3b8);
   cursor: pointer;
-  transition: all 0.18s ease;
+  transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease, transform 0.18s ease;
 }
 
 .fleet-filter-pill:hover {
   background: rgba(255, 255, 255, 0.1);
-  color: #ffffff;
+  color: var(--mm-accent, #ffffff);
   border-color: rgba(255, 255, 255, 0.2);
 }
 
@@ -3732,6 +3803,7 @@
 }
 
 .bill-number-link {
+  text-align: left;
   font-family: 'Manrope', 'SF Mono', monospace;
   font-size: 12px;
   font-weight: 800;
@@ -3741,7 +3813,7 @@
   border-radius: 6px;
   padding: 4px 8px;
   display: inline-block;
-  transition: all 0.16s ease;
+  transition: color 0.16s ease, border-color 0.16s ease, text-decoration-color 0.16s ease;
 }
 
 .bill-number-link:hover {
@@ -3762,7 +3834,7 @@
   height: 32px !important;
   border-radius: 8px !important;
   background: rgba(59, 130, 246, 0.12) !important;
-  color: #60a5fa !important;
+  color: var(--mm-accent, #60a5fa) !important;
   border: 1px solid rgba(59, 130, 246, 0.25) !important;
   display: grid;
   place-items: center;
@@ -3801,25 +3873,25 @@
 
 .theme-dark .status-pill.blue {
   background: rgba(59, 130, 246, 0.15) !important;
-  color: #93c5fd !important;
+  color: var(--mm-accent, #93c5fd) !important;
   border: 1px solid rgba(59, 130, 246, 0.35) !important;
 }
 
 .theme-dark .status-pill.green {
   background: rgba(16, 185, 129, 0.15) !important;
-  color: #6ee7b7 !important;
+  color: var(--mm-accent, #6ee7b7) !important;
   border: 1px solid rgba(16, 185, 129, 0.35) !important;
 }
 
 .theme-dark .status-pill.gold {
   background: rgba(245, 158, 11, 0.15) !important;
-  color: #fcd34d !important;
+  color: var(--mm-accent, #fcd34d) !important;
   border: 1px solid rgba(245, 158, 11, 0.35) !important;
 }
 
 .theme-dark .status-pill.red {
   background: rgba(239, 68, 68, 0.15) !important;
-  color: #fca5a5 !important;
+  color: var(--mm-accent, #fca5a5) !important;
   border: 1px solid rgba(239, 68, 68, 0.35) !important;
 }
 
@@ -3831,7 +3903,7 @@
   background: rgba(255, 255, 255, 0.04) !important;
   border: 1px solid rgba(255, 255, 255, 0.08) !important;
   color: var(--local-muted, #94a3b8) !important;
-  transition: all 0.16s ease !important;
+  transition: background 0.16s ease, border-color 0.16s ease, color 0.16s ease, transform 0.16s ease;
 }
 
 .row-actions button:hover {
@@ -3844,7 +3916,6 @@
 /* ==========================================================================
    EXECUTIVE FINANCIAL TREASURY COCKPIT (/finances)
    ========================================================================== */
-
 .finances-page-luxury {
   animation: fadeIn 0.25s ease-out;
 }
@@ -3900,7 +3971,7 @@
   border-radius: 10px;
   background: rgba(16, 185, 129, 0.08);
   border: 1px solid rgba(16, 185, 129, 0.25);
-  color: #6ee7b7;
+  color: var(--mm-accent, #6ee7b7);
   font-size: 12px;
   font-weight: 600;
 }
@@ -3919,7 +3990,7 @@
   border-radius: 9px;
   background: rgba(245, 158, 11, 0.08);
   border: 1px solid rgba(245, 158, 11, 0.25);
-  color: #fde68a;
+  color: var(--mm-accent, #fde68a);
   font-size: 12px;
   font-weight: 600;
   margin-bottom: 24px;
@@ -3965,7 +4036,7 @@
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.06);
   display: flex;
   flex-direction: column;
-  transition: all 0.2s ease;
+  transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
 }
 
 .theme-light .finances-card {
@@ -4005,14 +4076,14 @@
 
 .orb-cyan {
   background: radial-gradient(circle, rgba(6, 182, 212, 0.25) 0%, rgba(6, 182, 212, 0.05) 100%);
-  color: #22d3ee;
+  color: var(--mm-accent, #22d3ee);
   border: 1px solid rgba(6, 182, 212, 0.4);
   box-shadow: 0 0 16px rgba(6, 182, 212, 0.25);
 }
 
 .orb-purple {
   background: radial-gradient(circle, rgba(168, 85, 247, 0.25) 0%, rgba(168, 85, 247, 0.05) 100%);
-  color: #c084fc;
+  color: var(--mm-accent, #c084fc);
   border: 1px solid rgba(168, 85, 247, 0.4);
   box-shadow: 0 0 16px rgba(168, 85, 247, 0.25);
 }
@@ -4048,13 +4119,13 @@
 
 .cyan-chip {
   background: rgba(6, 182, 212, 0.12);
-  color: #22d3ee;
+  color: var(--mm-accent, #22d3ee);
   border: 1px solid rgba(6, 182, 212, 0.25);
 }
 
 .purple-chip {
   background: rgba(168, 85, 247, 0.12);
-  color: #c084fc;
+  color: var(--mm-accent, #c084fc);
   border: 1px solid rgba(168, 85, 247, 0.25);
 }
 
@@ -4112,9 +4183,9 @@
   border-radius: 6px;
 }
 
-.stat-cyan { color: #22d3ee; background: rgba(6, 182, 212, 0.1); }
-.stat-amber { color: #fbbf24; background: rgba(245, 158, 11, 0.1); }
-.stat-purple { color: #c084fc; background: rgba(168, 85, 247, 0.1); }
+.stat-cyan { color: var(--mm-accent, #22d3ee); background: rgba(6, 182, 212, 0.1); }
+.stat-amber { color: var(--mm-accent, #fbbf24); background: rgba(245, 158, 11, 0.1); }
+.stat-purple { color: var(--mm-accent, #c084fc); background: rgba(168, 85, 247, 0.1); }
 
 .cashflow-progress-track {
   display: flex;
@@ -4241,7 +4312,6 @@
 /* ==========================================================================
    DEALS MANAGEMENT COCKPIT (/deals)
    ========================================================================== */
-
 .deals-page-luxury {
   animation: fadeIn 0.25s ease-out;
 }
@@ -4275,12 +4345,12 @@
   border: 1px solid rgba(255, 255, 255, 0.09);
   color: var(--local-muted, #94a3b8);
   cursor: pointer;
-  transition: all 0.18s ease;
+  transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
 }
 
 .deals-micro-pill:hover {
   background: rgba(255, 255, 255, 0.09);
-  color: #ffffff;
+  color: var(--mm-accent, #ffffff);
   border-color: rgba(255, 255, 255, 0.2);
 }
 
@@ -4352,7 +4422,6 @@
 /* ==========================================================================
    CUSTOMER RELATIONSHIPS & FOLLOW-UPS (/follow-ups)
    ========================================================================== */
-
 .followups-page-luxury {
   animation: fadeIn 0.25s ease-out;
 }
@@ -4386,14 +4455,14 @@
 
 .crm-urgent {
   background: rgba(239, 68, 68, 0.12);
-  color: #f87171;
+  color: var(--mm-accent, #f87171);
   border: 1px solid rgba(239, 68, 68, 0.3);
   box-shadow: 0 0 10px rgba(239, 68, 68, 0.15);
 }
 
 .crm-upcoming {
   background: rgba(59, 130, 246, 0.12);
-  color: #60a5fa;
+  color: var(--mm-accent, #60a5fa);
   border: 1px solid rgba(59, 130, 246, 0.3);
 }
 
@@ -4426,7 +4495,7 @@
   padding: 14px 12px;
   border-radius: 10px;
   border-top: 1px solid rgba(255, 255, 255, 0.06);
-  transition: all 0.18s ease;
+  transition: background 0.18s ease, border-color 0.18s ease;
 }
 
 .luxury-follow-row:hover {
@@ -4468,7 +4537,7 @@
 
 .date-urgent {
   background: rgba(239, 68, 68, 0.15);
-  color: #fca5a5;
+  color: var(--mm-accent, #fca5a5);
   border: 1px solid rgba(239, 68, 68, 0.35);
 }
 
@@ -4488,7 +4557,7 @@
   color: var(--text, #f1f5f9) !important;
   font-size: 11px !important;
   font-weight: 700 !important;
-  transition: all 0.16s ease !important;
+  transition: background 0.16s ease, border-color 0.16s ease, color 0.16s ease, transform 0.16s ease, box-shadow 0.16s ease;
 }
 
 .luxury-open-btn:hover {
@@ -4501,7 +4570,6 @@
 /* ==========================================================================
    SHOWROOM SETTINGS & PROFILE ATELIER (/settings)
    ========================================================================== */
-
 .settings-page-luxury {
   animation: fadeIn 0.25s ease-out;
 }
@@ -4613,7 +4681,7 @@
   font-size: 12px;
   font-weight: 600;
   color: var(--text, #f1f5f9);
-  transition: all 0.16s ease;
+  transition: background 0.16s ease, border-color 0.16s ease, color 0.16s ease;
 }
 
 .luxury-setting-field div:hover {
@@ -4647,7 +4715,7 @@
   border-radius: 10px;
   background: rgba(16, 185, 129, 0.12);
   border: 1px solid rgba(16, 185, 129, 0.3);
-  color: #34d399;
+  color: var(--mm-accent, #34d399);
   display: grid;
   place-items: center;
 }
@@ -4755,7 +4823,7 @@
   cursor: pointer;
   padding: 4px 6px;
   border-radius: 4px;
-  transition: all 0.15s ease;
+  transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
 }
 .agent-tasks-btn-link:hover {
   color: var(--gold, #d4af37);
@@ -4778,7 +4846,7 @@
   border: 1px solid var(--local-border, #1f3247);
   cursor: pointer;
   user-select: none;
-  transition: all 0.18s ease;
+  transition: background 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
   position: relative;
 }
 
@@ -4821,7 +4889,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.15s ease;
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
   color: #ffffff;
 }
 
@@ -4842,7 +4910,7 @@
 
 .theme-light .agent-task-card.selected .agent-task-checkbox {
   border-color: #ca8a04;
-  background: #ca8a04;
+  background: #854d0e;
   color: #ffffff;
 }
 
@@ -4918,7 +4986,7 @@
   color: var(--text, #f1f5f9);
   font-size: 13px;
   outline: none;
-  transition: all 0.15s ease;
+  transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
 }
 
 .agent-task-others-input:focus {
@@ -4964,7 +5032,7 @@
   min-width: 95px;
   max-width: 115px;
   flex-shrink: 0;
-  transition: all 0.15s ease;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .agent-task-amount-wrap:focus-within {
@@ -5023,14 +5091,14 @@
   align-items: center;
   gap: 8px;
   background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
-  color: #ffffff !important;
+  color: var(--mm-accent, #ffffff) !important;
   border: none;
   border-radius: 8px;
   padding: 8px 16px;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
   box-shadow: 0 2px 8px rgba(37, 211, 102, 0.25);
   user-select: none;
   text-decoration: none;
@@ -5040,7 +5108,7 @@
   background: linear-gradient(135deg, #2fe673 0%, #17a493 100%);
   transform: translateY(-1px);
   box-shadow: 0 4px 14px rgba(37, 211, 102, 0.4);
-  color: #ffffff !important;
+  color: var(--mm-accent, #ffffff) !important;
 }
 
 .agent-whatsapp-btn:active {
@@ -5128,7 +5196,7 @@
   border-radius: 10px;
   background: linear-gradient(135deg, rgba(37, 211, 102, 0.2) 0%, rgba(18, 140, 126, 0.2) 100%);
   border: 1px solid rgba(37, 211, 102, 0.4);
-  color: #25D366;
+  color: var(--mm-accent, #25D366);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -5156,7 +5224,7 @@
   padding: 2px 7px;
   border-radius: 4px;
   background: rgba(212, 160, 23, 0.15);
-  color: #e5b338;
+  color: var(--mm-accent, #e5b338);
   border: 1px solid rgba(212, 160, 23, 0.3);
 }
 
@@ -5176,12 +5244,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.15s ease;
+  transition: background 0.15s ease, color 0.15s ease, transform 0.15s ease;
 }
 
 .agent-modal-close-btn:hover {
   background: rgba(255, 255, 255, 0.08);
-  color: #ffffff;
+  color: var(--mm-accent, #ffffff);
 }
 
 .agent-modal-body {
@@ -5296,7 +5364,7 @@
   border-radius: 8px;
   padding: 8px 14px;
   font-size: 12.5px;
-  color: #f1f5f9;
+  color: var(--mm-accent, #f1f5f9);
 }
 
 .agent-modal-chip-label {
@@ -5346,12 +5414,12 @@
   font-size: 11px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
 
 .agent-modal-reset-btn:hover {
   background: rgba(255, 255, 255, 0.06);
-  color: #ffffff;
+  color: var(--mm-accent, #ffffff);
   border-color: rgba(255, 255, 255, 0.25);
 }
 
@@ -5420,25 +5488,25 @@
   gap: 7px;
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.14);
-  color: #e2e8f0;
+  color: var(--mm-accent, #e2e8f0);
   padding: 8px 16px;
   border-radius: 8px;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
 }
 
 .agent-modal-copy-btn:hover {
   background: rgba(255, 255, 255, 0.12);
   border-color: rgba(255, 255, 255, 0.25);
-  color: #ffffff;
+  color: var(--mm-accent, #ffffff);
 }
 
 .agent-modal-copy-btn.copied {
   background: rgba(34, 197, 94, 0.15);
   border-color: #22c55e;
-  color: #4ade80;
+  color: var(--mm-accent, #4ade80);
 }
 
 .agent-modal-cancel-btn {
@@ -5450,12 +5518,12 @@
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
 
 .agent-modal-cancel-btn:hover {
   background: rgba(255, 255, 255, 0.06);
-  color: #ffffff;
+  color: var(--mm-accent, #ffffff);
 }
 
 .agent-modal-send-btn {
@@ -5464,13 +5532,13 @@
   gap: 8px;
   background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
   border: none;
-  color: #ffffff !important;
+  color: var(--mm-accent, #ffffff) !important;
   padding: 8px 20px;
   border-radius: 8px;
   font-size: 13.5px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
   box-shadow: 0 4px 14px rgba(37, 211, 102, 0.35);
 }
 
@@ -5643,25 +5711,25 @@
 .agents-kpi-icon-wrap.blue {
   background: rgba(59, 130, 246, 0.15);
   border: 1px solid rgba(59, 130, 246, 0.35);
-  color: #60a5fa;
+  color: var(--mm-accent, #60a5fa);
 }
 
 .agents-kpi-icon-wrap.cyan {
   background: rgba(6, 182, 212, 0.15);
   border: 1px solid rgba(6, 182, 212, 0.35);
-  color: #38bdf8;
+  color: var(--mm-accent, #38bdf8);
 }
 
 .agents-kpi-icon-wrap.green {
   background: rgba(34, 197, 94, 0.15);
   border: 1px solid rgba(34, 197, 94, 0.35);
-  color: #4ade80;
+  color: var(--mm-accent, #4ade80);
 }
 
 .agents-kpi-icon-wrap.gold {
   background: rgba(212, 160, 23, 0.15);
   border: 1px solid rgba(212, 160, 23, 0.35);
-  color: #facc15;
+  color: var(--mm-accent, #facc15);
 }
 
 .agents-kpi-info {
@@ -5723,7 +5791,7 @@
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
 
 .agents-filter-pill:hover {
@@ -5732,7 +5800,7 @@
 
 .agents-filter-pill.active {
   background: rgba(212, 160, 23, 0.15);
-  color: #facc15;
+  color: var(--mm-accent, #facc15);
   border: 1px solid rgba(212, 160, 23, 0.3);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
@@ -5789,7 +5857,7 @@
   border-radius: 10px;
   background: linear-gradient(135deg, rgba(212, 160, 23, 0.2) 0%, rgba(212, 160, 23, 0.05) 100%);
   border: 1px solid rgba(212, 160, 23, 0.3);
-  color: #facc15;
+  color: var(--mm-accent, #facc15);
   font-size: 13px;
   font-weight: 800;
   display: flex;
@@ -5842,19 +5910,19 @@
 
 .agent-number-badge.clients {
   background: rgba(56, 189, 248, 0.12);
-  color: #38bdf8;
+  color: var(--mm-accent, #38bdf8);
   border: 1px solid rgba(56, 189, 248, 0.3);
 }
 
 .agent-number-badge.pending {
   background: rgba(245, 158, 11, 0.14);
-  color: #fbbf24;
+  color: var(--mm-accent, #fbbf24);
   border: 1px solid rgba(245, 158, 11, 0.35);
 }
 
 .agent-number-badge.completed {
   background: rgba(34, 197, 94, 0.14);
-  color: #4ade80;
+  color: var(--mm-accent, #4ade80);
   border: 1px solid rgba(34, 197, 94, 0.35);
 }
 
@@ -5893,13 +5961,13 @@
   font-weight: 600;
   border-radius: 8px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
 }
 
 .agent-view-btn:hover {
   background: rgba(212, 160, 23, 0.15);
   border-color: rgba(212, 160, 23, 0.4);
-  color: #facc15;
+  color: var(--mm-accent, #facc15);
 }
 
 /* Empty State */
@@ -6024,7 +6092,7 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
-  transition: all 0.2s ease;
+  transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
 }
 
 .agent-deal-card:hover {
@@ -6062,7 +6130,7 @@
   padding: 2px 8px;
   border-radius: 6px;
   background: rgba(212, 160, 23, 0.12);
-  color: #facc15;
+  color: var(--mm-accent, #facc15);
   border: 1px solid rgba(212, 160, 23, 0.25);
 }
 
@@ -6076,7 +6144,7 @@
 .agent-deal-reg-no {
   font-size: 11.5px;
   font-weight: 600;
-  color: #94a3b8;
+  color: var(--mm-accent, #94a3b8);
   padding: 1px 6px;
   background: rgba(255, 255, 255, 0.05);
   border-radius: 4px;
@@ -6183,18 +6251,18 @@
   font-weight: 600;
   cursor: pointer;
   border: 1px solid transparent;
-  transition: all 0.15s ease;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
 
 .agent-deal-status-toggle.completed {
   background: rgba(34, 197, 94, 0.12);
-  color: #4ade80;
+  color: var(--mm-accent, #4ade80);
   border-color: rgba(34, 197, 94, 0.3);
 }
 
 .agent-deal-status-toggle.pending {
   background: rgba(245, 158, 11, 0.12);
-  color: #fbbf24;
+  color: var(--mm-accent, #fbbf24);
   border-color: rgba(245, 158, 11, 0.3);
 }
 
@@ -6214,18 +6282,18 @@
   gap: 6px;
   background: rgba(37, 211, 102, 0.12);
   border: 1px solid rgba(37, 211, 102, 0.3);
-  color: #25D366;
+  color: var(--mm-accent, #25D366);
   padding: 6px 12px;
   border-radius: 8px;
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: background 0.15s ease, color 0.15s ease, transform 0.15s ease;
 }
 
 .agent-deal-action-btn.whatsapp:hover {
   background: rgba(37, 211, 102, 0.2);
-  color: #2fe673;
+  color: var(--mm-accent, #2fe673);
 }
 
 .agent-deal-go-btn {
@@ -6373,7 +6441,6 @@
 /* ==========================================================================
    ENHANCED FOLLOW-UPS: BUYER, SELLER & AGENT PIPELINES
    ========================================================================== */
-
 .followups-toolbar {
   display: flex;
   align-items: center;
@@ -6448,19 +6515,19 @@
 
 .followups-category-icon.blue {
   background: rgba(56, 189, 248, 0.15);
-  color: #38bdf8;
+  color: var(--mm-accent, #38bdf8);
   border: 1px solid rgba(56, 189, 248, 0.3);
 }
 
 .followups-category-icon.amber {
   background: rgba(251, 191, 36, 0.15);
-  color: #fbbf24;
+  color: var(--mm-accent, #fbbf24);
   border: 1px solid rgba(251, 191, 36, 0.3);
 }
 
 .followups-category-icon.purple {
   background: rgba(192, 132, 252, 0.15);
-  color: #c084fc;
+  color: var(--mm-accent, #c084fc);
   border: 1px solid rgba(192, 132, 252, 0.3);
 }
 
@@ -6483,19 +6550,19 @@
 
 .followup-role-pill.buyer {
   background: rgba(56, 189, 248, 0.15);
-  color: #38bdf8;
+  color: var(--mm-accent, #38bdf8);
   border: 1px solid rgba(56, 189, 248, 0.3);
 }
 
 .followup-role-pill.seller {
   background: rgba(251, 191, 36, 0.15);
-  color: #fbbf24;
+  color: var(--mm-accent, #fbbf24);
   border: 1px solid rgba(251, 191, 36, 0.3);
 }
 
 .followup-role-pill.agent {
   background: rgba(192, 132, 252, 0.15);
-  color: #c084fc;
+  color: var(--mm-accent, #c084fc);
   border: 1px solid rgba(192, 132, 252, 0.3);
 }
 
@@ -6522,7 +6589,7 @@
   place-items: center;
   cursor: pointer;
   color: #10b981;
-  transition: all 0.15s ease;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
   padding: 0;
 }
 
@@ -6531,26 +6598,25 @@
 }
 
 .followup-checkbox-btn.checked {
-  background: #10b981;
-  border-color: #10b981;
+  background: #047857; border-color: #047857;
   color: #ffffff;
 }
 
 .person-avatar.role-buyer {
   background: linear-gradient(135deg, rgba(56, 189, 248, 0.2), rgba(56, 189, 248, 0.05)) !important;
-  color: #38bdf8 !important;
+  color: var(--mm-accent, #38bdf8) !important;
   border: 1px solid rgba(56, 189, 248, 0.3) !important;
 }
 
 .person-avatar.role-seller {
   background: linear-gradient(135deg, rgba(251, 191, 36, 0.2), rgba(251, 191, 36, 0.05)) !important;
-  color: #fbbf24 !important;
+  color: var(--mm-accent, #fbbf24) !important;
   border: 1px solid rgba(251, 191, 36, 0.3) !important;
 }
 
 .person-avatar.role-agent {
   background: linear-gradient(135deg, rgba(192, 132, 252, 0.2), rgba(192, 132, 252, 0.05)) !important;
-  color: #c084fc !important;
+  color: var(--mm-accent, #c084fc) !important;
   border: 1px solid rgba(192, 132, 252, 0.3) !important;
 }
 
@@ -6605,16 +6671,16 @@
   border-radius: 7px;
   background: rgba(37, 211, 102, 0.12);
   border: 1px solid rgba(37, 211, 102, 0.35);
-  color: #25d366;
+  color: var(--mm-accent, #25d366);
   font-size: 11px;
   font-weight: 700;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: background 0.15s ease, color 0.15s ease, transform 0.15s ease;
 }
 
 .followup-action-btn.whatsapp:hover {
-  background: #25d366;
-  color: #ffffff;
+  background: #128c7e;
+  color: var(--mm-accent, #ffffff);
   transform: translateY(-1px);
 }
 
@@ -6666,7 +6732,7 @@
   font-size: 12px;
   font-weight: 700;
   cursor: pointer;
-  transition: all 0.16s ease;
+  transition: background 0.16s ease, border-color 0.16s ease, color 0.16s ease, transform 0.16s ease;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -6682,19 +6748,19 @@
 .role-choice-pill.buyer.selected {
   background: rgba(56, 189, 248, 0.2);
   border-color: #38bdf8;
-  color: #38bdf8;
+  color: var(--mm-accent, #38bdf8);
 }
 
 .role-choice-pill.seller.selected {
   background: rgba(251, 191, 36, 0.2);
   border-color: #fbbf24;
-  color: #fbbf24;
+  color: var(--mm-accent, #fbbf24);
 }
 
 .role-choice-pill.agent.selected {
   background: rgba(192, 132, 252, 0.2);
   border-color: #c084fc;
-  color: #c084fc;
+  color: var(--mm-accent, #c084fc);
 }
 
 .followup-form-row {
@@ -6756,7 +6822,6 @@
 /* ==========================================================================
    MECHANICAL MAINTENANCE & REFURBISHMENT EXPENSES SECTION
    ========================================================================== */
-
 .maintenance-section-card {
   margin-top: 28px;
   background: rgba(16, 29, 45, 0.85);
@@ -6794,7 +6859,7 @@
   height: 44px;
   border-radius: 12px;
   background: rgba(245, 158, 11, 0.15);
-  color: #f59e0b;
+  color: var(--mm-accent, #f59e0b);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -6804,7 +6869,7 @@
 
 .theme-light .maintenance-icon-bubble {
   background: #fef3c7;
-  color: #d97706;
+  color: #92400e;
   border-color: #fde68a;
 }
 
@@ -6829,7 +6894,7 @@
   font-size: 12px;
   font-weight: 700;
   background: rgba(245, 158, 11, 0.15);
-  color: #f59e0b;
+  color: var(--mm-accent, #f59e0b);
   border: 1px solid rgba(245, 158, 11, 0.3);
 }
 
@@ -6920,7 +6985,7 @@
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
 
 .maintenance-mini-btn:hover {
@@ -6952,7 +7017,7 @@
   font-size: 13px;
   font-weight: 700;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
 
 .maintenance-add-custom-trigger:hover {
@@ -7040,7 +7105,7 @@
   padding: 7px 16px;
   font-size: 12px;
   background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-  color: #ffffff;
+  color: var(--mm-accent, #ffffff);
   border: none;
   border-radius: 8px;
   font-weight: 700;
@@ -7072,7 +7137,7 @@
   border-radius: 10px;
   background: rgba(255, 255, 255, 0.02);
   border: 1px solid rgba(255, 255, 255, 0.06);
-  transition: all 0.18s ease;
+  transition: background 0.18s ease, border-color 0.18s ease;
 }
 
 .maintenance-item-row:hover {
@@ -7111,7 +7176,7 @@
   justify-content: center;
   cursor: pointer;
   flex-shrink: 0;
-  transition: all 0.15s ease;
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
   padding: 0;
 }
 
@@ -7175,7 +7240,7 @@
   padding: 2px 5px;
   border-radius: 4px;
   background: rgba(59, 130, 246, 0.15);
-  color: #60a5fa;
+  color: var(--mm-accent, #60a5fa);
   letter-spacing: 0.05em;
   flex-shrink: 0;
 }
@@ -7247,7 +7312,7 @@
 }
 
 .maintenance-item-delete-btn:hover {
-  color: #ef4444;
+  color: var(--mm-accent, #ef4444);
   background: rgba(239, 68, 68, 0.1);
 }
 
@@ -7346,7 +7411,7 @@
   border-radius: 999px;
   background: rgba(245, 158, 11, 0.15);
   border: 1px solid rgba(245, 158, 11, 0.3);
-  color: #f59e0b;
+  color: var(--mm-accent, #f59e0b);
   font-size: 13px;
 }
 

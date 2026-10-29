@@ -6,7 +6,7 @@ const STORE = "records";
 let connection;
 const open = () => {
   if (!connection) connection = new Promise((resolve, reject) => {
-    const request = indexedDB.open("metro-motors-ui-v1", 1);
+    const request = indexedDB.open("metro-motors-app-v1", 1);
     request.onupgradeneeded = () => request.result.createObjectStore(STORE, { keyPath: "id" });
     request.onsuccess = () => resolve(request.result);
     request.onerror = () => reject(new Error("Browser storage is unavailable. Enable site storage to save deals."));

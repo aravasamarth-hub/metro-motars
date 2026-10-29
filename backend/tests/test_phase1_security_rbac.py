@@ -336,7 +336,55 @@ def test_15_customer_role_is_strictly_forbidden_from_internal_showroom_routes():
     customer_token = get_token_for("CUSTOMER", "public_user@gmail.com", "Public Customer")
     headers = {"Authorization": f"Bearer {customer_token}"}
 
-    for path in ("/api/sellers", "/api/buyers", "/api/witnesses", "/api/documents", "/api/deals", "/api/deals/DEAL-001/workspace"):
+    for path in (
+        "/api/sellers",
+        "/api/buyers",
+        "/api/witnesses",
+        "/api/documents",
+        "/api/deals",
+        "/api/deals/DEAL-001/workspace",
+        "/api/overview/deals",
+        "/api/overview/dashboard",
+        "/api/vehicles",
+    ):
         res = client.get(path, headers=headers)
         assert res.status_code == 403, f"Expected 403 Forbidden for CUSTOMER on {path}, got {res.status_code}"
+
+
+def test_16_customer_blocked_from_bill_documents():
+    """Verify customer role is strictly forbidden from querying internal bill documents."""
+    customer_token = get_token_for("CUSTOMER", "public_user@gmail.com", "Public Customer")
+    headers = {"Authorization": f"Bearer {customer_token}"}
+    for bill_id in ("BILL-BUYER-001", "BILL-INTER-001"):
+        res = client.get(f"/api/bills/{bill_id}/document", headers=headers)
+        assert res.status_code == 403, f"Expected 403 on bill document {bill_id}, got {res.status_code}"
+
+
+def test_17_staff_and_owner_can_access_vehicles_inventory():
+    """Verify OWNER, MANAGER, and WORKER roles have can_view_inventory permission."""
+    owner_token = get_token_for("OWNER", "alex@metromotors.in", "Alex Kumar")
+    manager_token = get_token_for("MANAGER", "manager@metromotors.in", "Showroom Manager")
+    worker_token = get_token_for("WORKER", "staff@metromotors.in", "Staff Member")
+
+    for token in (owner_token, manager_token, worker_token):
+        res = client.get("/api/vehicles", headers={"Authorization": f"Bearer {token}"})
+        assert res.status_code == 200, f"Expected 200 for role token, got {res.status_code}"
+
+
+def test_18_download_pdf_sanitizes_filename_and_blocks_header_injection():
+    """Verify /api/download-pdf strips path traversal and header injection characters."""
+    bad_inputs = [
+        ("test\r\nInjected: True/../../evil.pdf", "evil.pdf"),
+        ("../../../etc/passwd", "passwd.pdf"),
+        (r"..\..\windows\system32\calc.exe", "calc.exe.pdf"),
+        ('test"filename;with<quotes>.pdf', "test_filename_with_quotes_.pdf"),
+    ]
+    for raw, expected_substr in bad_inputs:
+        res = client.post("/api/download-pdf", data={"filename": raw})
+        assert res.status_code == 200
+        cd = res.headers.get("content-disposition", "")
+        assert "\r" not in cd and "\n" not in cd
+        assert ".." not in cd
+        assert expected_substr in cd
+
 

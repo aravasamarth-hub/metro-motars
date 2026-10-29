@@ -92,3 +92,6 @@ atlas-credentials.env
 # Runtime upload and dynamic persistence data
 backend/data/uploads/
 backend/data/*.jsonl
+
+backend/data/uploads_bak/
+*.bak

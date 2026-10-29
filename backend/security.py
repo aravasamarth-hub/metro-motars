@@ -32,6 +32,7 @@ security_bearer = HTTPBearer(auto_error=False)
 # CUSTOMER: Zero internal showroom access
 ROLE_PERMISSIONS: dict[str, dict[str, bool]] = {
     "OWNER": {
+        "can_view_inventory": True,
         "can_view_prices": True,
         "can_view_agent_financials": True,
         "can_view_payments": True,
@@ -45,6 +46,7 @@ ROLE_PERMISSIONS: dict[str, dict[str, bool]] = {
         "can_edit_deals": True,
     },
     "MANAGER": {
+        "can_view_inventory": True,
         "can_view_prices": True,
         "can_view_agent_financials": False,
         "can_view_payments": True,
@@ -58,6 +60,7 @@ ROLE_PERMISSIONS: dict[str, dict[str, bool]] = {
         "can_edit_deals": True,
     },
     "WORKER": {
+        "can_view_inventory": True,
         "can_view_prices": False,
         "can_view_agent_financials": False,
         "can_view_payments": False,
@@ -71,6 +74,7 @@ ROLE_PERMISSIONS: dict[str, dict[str, bool]] = {
         "can_edit_deals": True,
     },
     "CUSTOMER": {
+        "can_view_inventory": False,
         "can_view_prices": False,
         "can_view_agent_financials": False,
         "can_view_payments": False,

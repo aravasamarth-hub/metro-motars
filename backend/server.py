@@ -1,4 +1,5 @@
 import asyncio
+import re
 import logging
 import os
 import uuid
@@ -48,6 +49,12 @@ from security import (
     require_role,
 )
 from storage_service import SecurityError, get_storage_provider
+from billing_service import (
+    BillFinancialCalculationRequest,
+    BillFinancialCalculationResponse,
+    calculate_bill_financials,
+    is_valid_bill_number_format,
+)
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / ".env")
@@ -386,6 +393,28 @@ async def validate_deal_links(data: dict[str, Any]) -> None:
 async def validate_child_deal(data: dict[str, Any]) -> None:
     await require_entity("deals", "deal_id", data["deal_id"])
 
+async def validate_bill_entity(data: dict[str, Any]) -> None:
+    deal_id = data.get("deal_id")
+    if deal_id:
+        await require_entity("deals", "deal_id", deal_id)
+    bill_number = data.get("bill_number")
+    bill_id = data.get("bill_id")
+    if bill_number:
+        existing_bill = await db.bills.find_one({"bill_number": bill_number}, {"_id": 0})
+        if existing_bill and (not bill_id or existing_bill.get("bill_id") != bill_id):
+            raise HTTPException(
+                status_code=409,
+                detail=f"Duplicate bill number: Bill number '{bill_number}' is already allocated to another bill.",
+            )
+    bill_type = data.get("bill_type")
+    if deal_id and bill_type:
+        existing_type = await db.bills.find_one({"deal_id": deal_id, "bill_type": bill_type}, {"_id": 0})
+        if existing_type and (not bill_id or existing_type.get("bill_id") != bill_id):
+            raise HTTPException(
+                status_code=409,
+                detail=f"Duplicate bill for deal: A bill of type '{bill_type}' already exists for deal '{deal_id}'.",
+            )
+
 
 async def find_or_create_person(collection_name: str, id_field: str, prefix: str, person: dict[str, Any]) -> dict[str, Any]:
     existing = await COLLECTIONS[collection_name].find_one({"phone": person["phone"]}, {"_id": 0})
@@ -554,6 +583,16 @@ async def create_deal(payload: DealCreate):
 @api_router.get("/deals", response_model=list[RecordResponse], dependencies=[Depends(require_role("OWNER", "MANAGER", "WORKER"))])
 async def list_deals():
     return await list_entities("deals")
+
+
+@api_router.get("/deals/next-bill-number", dependencies=[Depends(require_role("OWNER", "MANAGER", "WORKER"))])
+async def get_next_bill_number():
+    """
+    Allocates and returns the next monotonically increasing bill number in format MM-YY-NNNN.
+    Preserves atomic sequence guarantees.
+    """
+    bill_number = await allocate_bill_number()
+    return {"bill_number": bill_number}
 
 
 @api_router.get("/deals/{deal_id}", response_model=RecordResponse, dependencies=[Depends(require_role("OWNER", "MANAGER", "WORKER"))])
@@ -756,6 +795,30 @@ async def generate_bill(deal_id: str, payload: BillGenerateRequest):
     return await find_one("bills", "bill_id", bill_id)
 
 
+@api_router.post("/bills/calculate", response_model=BillFinancialCalculationResponse, dependencies=[Depends(require_role("OWNER", "MANAGER", "WORKER"))])
+def calculate_bill_endpoint(payload: BillFinancialCalculationRequest):
+    """
+    Deterministically calculates vehicle bill line items, discounts, additional charges,
+    remaining balance, and payment status without floating point drift or ungrounded math.
+    """
+    try:
+        return calculate_bill_financials(
+            selling_price=payload.selling_price,
+            discount=payload.discount,
+            additional_charges=payload.additional_charges,
+            advance_received=payload.advance_received,
+            gst_rate_percent=payload.gst_rate_percent,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc))
+
+
+@api_router.post("/bills/validate-calculation", response_model=BillFinancialCalculationResponse, dependencies=[Depends(require_role("OWNER", "MANAGER", "WORKER"))])
+def validate_bill_calculation_endpoint(payload: BillFinancialCalculationRequest):
+    """Alias for /bills/calculate to support validation workflows."""
+    return calculate_bill_endpoint(payload)
+
+
 @api_router.post("/media/upload", dependencies=[Depends(require_role("OWNER", "MANAGER", "WORKER"))])
 async def upload_media(
     file: UploadFile = File(...),
@@ -836,7 +899,7 @@ async def build_deal_overview() -> list[dict[str, Any]]:
     return rows
 
 
-@api_router.get("/overview/deals", response_model=list[RecordResponse])
+@api_router.get("/overview/deals", response_model=list[RecordResponse], dependencies=[Depends(require_role("OWNER", "MANAGER", "WORKER"))])
 async def deals_overview(current_user: dict[str, Any] = Depends(get_current_user)):
     rows = await build_deal_overview()
     can_view_finances = current_user.get("permissions", {}).get(CAN_VIEW_FINANCES, False)
@@ -854,7 +917,7 @@ async def deals_overview(current_user: dict[str, Any] = Depends(get_current_user
     return safe_rows
 
 
-@api_router.get("/overview/dashboard", response_model=dict[str, Any])
+@api_router.get("/overview/dashboard", response_model=dict[str, Any], dependencies=[Depends(require_role("OWNER", "MANAGER", "WORKER"))])
 async def dashboard_overview(current_user: dict[str, Any] = Depends(get_current_user)):
     rows = await build_deal_overview()
     vehicles = await db.vehicles.find({}, {"_id": 0}).sort("created_date", -1).to_list(2000)
@@ -888,7 +951,7 @@ async def dashboard_overview(current_user: dict[str, Any] = Depends(get_current_
     }
 
 
-@api_router.get("/bills/{bill_id}/document", response_model=dict[str, Any])
+@api_router.get("/bills/{bill_id}/document", response_model=dict[str, Any], dependencies=[Depends(require_role("OWNER", "MANAGER", "WORKER"))])
 async def bill_document(bill_id: str, current_user: dict[str, Any] = Depends(get_current_user)):
     bill = await require_entity("bills", "bill_id", bill_id)
     can_view_finances = current_user.get("permissions", {}).get(CAN_VIEW_FINANCES, False)
@@ -993,7 +1056,7 @@ async def finances_summary():
 async def download_pdf_stream(request: Request):
     form = await request.form()
     uploaded_file = form.get("file")
-    filename = form.get("filename", "Seller-Bill.pdf")
+    filename = re.sub(r"[^a-zA-Z0-9_\.-]", "_", os.path.basename(str(form.get("filename", "Seller-Bill.pdf"))))
     if not str(filename).endswith(".pdf"):
         filename = f"{filename}.pdf"
 
@@ -1200,7 +1263,7 @@ register_simple_crud("buyers", "buyers", "buyer_id", "BUYER", PersonCreate, Pers
 register_simple_crud("witnesses", "witnesses", "witness_id", "WITNESS", WitnessCreate, WitnessUpdate, validate_child_deal)
 register_simple_crud("payments", "payments", "payment_id", "PAY", PaymentCreate, PaymentUpdate, validate_child_deal)
 register_simple_crud("documents", "documents", "document_id", "DOC", DocumentCreate, DocumentUpdate, validate_child_deal)
-register_simple_crud("bills", "bills", "bill_id", "BILL", BillCreate, BillUpdate, validate_child_deal)
+register_simple_crud("bills", "bills", "bill_id", "BILL", BillCreate, BillUpdate, validate_bill_entity)
 
 
 @app.on_event("startup")
@@ -1240,4 +1303,4 @@ async def shutdown_db_client():
     """Cleanly close database connection pool upon application termination."""
     await db_manager.close()
     if client is not None:
-        client.close()
+        client.close()
