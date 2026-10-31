@@ -1,0 +1,101 @@
+name: Supabase Keepalive
+
+# ==============================================================================
+# Metro Motors / Metro Motors — Automated Supabase Free Project Keepalive
+#
+# Schedule:
+#   - Runs every 8 hours at minute 17 (00:17, 08:17, 16:17 UTC).
+#   - Periodic database activity prevents automated pausing due to inactivity.
+#
+# Manual trigger:
+#   - workflow_dispatch enabled so it can be tested manually anytime via
+#     GitHub Actions tab -> "Run workflow".
+#
+# Security & Free-Tier Rules:
+#   - Uses only SUPABASE_URL and SUPABASE_PUBLISHABLE_KEY (anon key).
+#   - ZERO use of service_role key.
+#   - Read-only check: Queries only /rest/v1/project_keepalive?id=eq.1&select=id.
+#   - No database writes, no OTPs triggered, no fake users or log entries created.
+#   - Secrets are masked automatically by GitHub Actions and never logged.
+# ==============================================================================
+
+on:
+  schedule:
+    - cron: "17 */8 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: supabase-keepalive
+  cancel-in-progress: true
+
+jobs:
+  keepalive:
+    name: Supabase Inactivity Keepalive
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Validate and Ping Supabase Health-Check Endpoint
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_PUBLISHABLE_KEY }}
+        run: |
+          set -euo pipefail
+
+          # 1. Verify secrets configuration without printing values
+          if [ -z "${SUPABASE_URL:-}" ] || [ -z "${SUPABASE_PUBLISHABLE_KEY:-}" ]; then
+            echo "::error::Required GitHub Secrets are missing!"
+            echo "Please configure SUPABASE_URL and SUPABASE_PUBLISHABLE_KEY in Repository Settings -> Secrets and variables -> Actions."
+            exit 1
+          fi
+
+          # Strip any accidental trailing slashes from the project URL
+          CLEAN_URL="${SUPABASE_URL%/}"
+
+          echo "Initiating lightweight read-only health ping to Supabase REST API..."
+
+          # 2. Query the keepalive table via PostgREST endpoint
+          #    -s: silent, -S: show error on failure, -w: output HTTP status code
+          #    --retry: retry up to 2 times on transient network hiccups
+          HTTP_STATUS=$(curl -s -S -o response.json -w "%{http_code}" \
+            --retry 2 \
+            --max-time 30 \
+            "${CLEAN_URL}/rest/v1/project_keepalive?id=eq.1&select=id" \
+            -H "apikey: ${SUPABASE_PUBLISHABLE_KEY}" \
+            -H "Authorization: Bearer ${SUPABASE_PUBLISHABLE_KEY}" \
+            -H "Accept: application/json")
+
+          echo "HTTP response status code: ${HTTP_STATUS}"
+
+          # 3. Handle HTTP status codes with clear, non-technical diagnostics
+          if [ "$HTTP_STATUS" -eq 401 ]; then
+            echo "::error::HTTP 401 Unauthorized: The SUPABASE_PUBLISHABLE_KEY (anon key) is invalid or malformed."
+            exit 1
+          elif [ "$HTTP_STATUS" -eq 403 ]; then
+            echo "::error::HTTP 403 Forbidden: Row Level Security (RLS) policy or schema permission denied."
+            echo "Ensure 001_create_project_keepalive.sql has been executed in the Supabase SQL Editor."
+            exit 1
+          elif [ "$HTTP_STATUS" -eq 404 ]; then
+            echo "::error::HTTP 404 Not Found: The table 'project_keepalive' was not found on Supabase."
+            echo "Please verify the SQL migration was executed in the 'public' schema of your Supabase project."
+            exit 1
+          elif [ "$HTTP_STATUS" -ne 200 ]; then
+            echo "::error::HTTP ${HTTP_STATUS}: Unexpected error response from Supabase."
+            echo "Your Supabase project may be paused or undergoing maintenance."
+            cat response.json 2>/dev/null || true
+            exit 1
+          fi
+
+          # 4. Verify the response payload contains the expected single record with id=1
+          if ! jq -e 'type == "array" and length == 1 and .[0].id == 1' response.json >/dev/null 2>&1; then
+            echo "::error::Payload mismatch: Expected exactly [{ \"id\": 1 }], received:"
+            cat response.json
+            exit 1
+          fi
+
+          echo "✅ Supabase project keepalive check completed successfully (HTTP 200, row verified)."
+          echo "Database activity registered. Project inactivity timer refreshed."
+
