@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, CartesianGrid } from "recharts";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
@@ -26,6 +26,16 @@ const BRAND_DATA: SegmentInventory[] = [
   { name: "BharatBenz", count: 3, avgDaysToSell: 12, color: "#f97316" },
   { name: "Bajaj / Saarthi", count: 3, avgDaysToSell: 5, color: "#10b981" },
 ];
+
+function getGradientId(color: string) {
+  if (color === "#f59e0b") return "url(#invGoldGrad)";
+  if (color === "#10b981") return "url(#invGreenGrad)";
+  if (color === "#38bdf8") return "url(#invSkyGrad)";
+  if (color === "#dc2626" || color === "#ef4444") return "url(#invRedGrad)";
+  if (color === "#818cf8") return "url(#invIndigoGrad)";
+  if (color === "#f97316") return "url(#invOrangeGrad)";
+  return color;
+}
 
 export function InventoryDistributionBarChart() {
   const [viewMode, setViewMode] = useState<"segment" | "brand">("segment");
@@ -83,23 +93,65 @@ export function InventoryDistributionBarChart() {
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
               data={chartData}
-              barCategoryGap={viewMode === "segment" ? "12%" : "15%"}
-              barGap={4}
-              maxBarSize={44}
-              margin={{ top: 10, right: 10, left: -25, bottom: 0 }}
+              barCategoryGap={viewMode === "segment" ? "18%" : "15%"}
+              barGap={3}
+              maxBarSize={38}
+              margin={{ top: 12, right: 12, left: -20, bottom: 5 }}
             >
+              <defs>
+                <linearGradient id="invGoldGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#fde047" stopOpacity={0.98} />
+                  <stop offset="60%" stopColor="#f59e0b" stopOpacity={0.9} />
+                  <stop offset="100%" stopColor="#b45309" stopOpacity={0.85} />
+                </linearGradient>
+                <linearGradient id="invGreenGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#34d399" stopOpacity={0.95} />
+                  <stop offset="60%" stopColor="#10b981" stopOpacity={0.9} />
+                  <stop offset="100%" stopColor="#047857" stopOpacity={0.8} />
+                </linearGradient>
+                <linearGradient id="invSkyGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#67e8f9" stopOpacity={0.95} />
+                  <stop offset="60%" stopColor="#38bdf8" stopOpacity={0.9} />
+                  <stop offset="100%" stopColor="#0284c7" stopOpacity={0.8} />
+                </linearGradient>
+                <linearGradient id="invRedGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#f87171" stopOpacity={0.95} />
+                  <stop offset="60%" stopColor="#ef4444" stopOpacity={0.9} />
+                  <stop offset="100%" stopColor="#b91c1c" stopOpacity={0.8} />
+                </linearGradient>
+                <linearGradient id="invIndigoGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#a5b4fc" stopOpacity={0.95} />
+                  <stop offset="60%" stopColor="#818cf8" stopOpacity={0.9} />
+                  <stop offset="100%" stopColor="#4338ca" stopOpacity={0.8} />
+                </linearGradient>
+                <linearGradient id="invOrangeGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#fb923c" stopOpacity={0.95} />
+                  <stop offset="60%" stopColor="#f97316" stopOpacity={0.9} />
+                  <stop offset="100%" stopColor="#c2410c" stopOpacity={0.8} />
+                </linearGradient>
+              </defs>
+
+              <CartesianGrid
+                stroke="rgba(255, 255, 255, 0.08)"
+                strokeDasharray="3 3"
+                vertical={false}
+              />
+
               <XAxis
                 dataKey="name"
                 stroke="#64748b"
                 fontSize={11}
                 tickLine={false}
-                axisLine={false}
+                axisLine={{ stroke: "rgba(255, 255, 255, 0.18)", strokeWidth: 1 }}
+                tick={{ fill: "#94a3b8", fontSize: 11 }}
+                interval={0}
               />
               <YAxis
                 stroke="#64748b"
                 fontSize={11}
                 tickLine={false}
                 axisLine={false}
+                tick={{ fill: "#94a3b8", fontSize: 10 }}
               />
               <Tooltip
                 cursor={{ fill: "rgba(255, 255, 255, 0.04)" }}
@@ -124,9 +176,9 @@ export function InventoryDistributionBarChart() {
                   return null;
                 }}
               />
-              <Bar dataKey="count" radius={[6, 6, 0, 0]}>
+              <Bar dataKey="count" radius={[6, 6, 0, 0]} maxBarSize={36}>
                 {chartData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} />
+                  <Cell key={`cell-${index}`} fill={getGradientId(entry.color)} />
                 ))}
               </Bar>
             </BarChart>

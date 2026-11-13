@@ -76,17 +76,16 @@ export function AgentCommissionChart({ data = DEFAULT_AGENT_DATA }: { data?: Age
   });
 
 
-  // Summary calculations
+  // Calculate live summary metrics across visible agents
   const totalPaidSum = normalizedData.reduce((acc, d) => acc + d.amountPaid, 0);
   const totalBalanceSum = normalizedData.reduce((acc, d) => acc + d.amountBalance, 0);
   const avgDaysTaken = (
     normalizedData.reduce((acc, d) => acc + d.daysTaken, 0) / (normalizedData.length || 1)
   ).toFixed(1);
 
-  // Dynamic bar sizing & spacing so the 3 sticks stay tightly clustered side-by-side
+  // Dynamic bar sizing & spacing so the sticks stay tightly clustered side-by-side
   const isFewAgents = normalizedData.length <= 2;
-  const barSize = isFewAgents ? 22 : normalizedData.length <= 5 ? 18 : 14;
-  const barGap = 4;
+  const barGap = 3;
 
   return (
     <Card className="border-neutral-800 bg-neutral-900/90 backdrop-blur-xl shadow-2xl relative overflow-hidden transition-all duration-300">
@@ -172,9 +171,9 @@ export function AgentCommissionChart({ data = DEFAULT_AGENT_DATA }: { data?: Age
             <BarChart
               data={normalizedData}
               margin={{ top: 18, right: 28, left: -10, bottom: 25 }}
-              barCategoryGap={isFewAgents ? "35%" : "15%"}
+              barCategoryGap={isFewAgents ? "32%" : "16%"}
               barGap={barGap}
-              barSize={barSize}
+              maxBarSize={38}
             >
               <defs>
                 {/* 1. Green Gradient for Amount Paid */}
@@ -206,7 +205,7 @@ export function AgentCommissionChart({ data = DEFAULT_AGENT_DATA }: { data?: Age
               </defs>
 
               <CartesianGrid
-                stroke="rgba(255, 255, 255, 0.05)"
+                stroke="rgba(255, 255, 255, 0.08)"
                 strokeDasharray="3 3"
                 vertical={false}
               />
@@ -216,12 +215,12 @@ export function AgentCommissionChart({ data = DEFAULT_AGENT_DATA }: { data?: Age
                 stroke="#64748b"
                 fontSize={11}
                 tickLine={false}
-                axisLine={{ stroke: "rgba(255, 255, 255, 0.1)" }}
+                axisLine={{ stroke: "rgba(255, 255, 255, 0.18)", strokeWidth: 1 }}
                 tick={{ fill: "#94a3b8", fontSize: 11 }}
                 interval={0}
-                angle={normalizedData.length > 3 ? -10 : 0}
-                textAnchor={normalizedData.length > 3 ? "end" : "middle"}
-                dy={normalizedData.length > 3 ? 6 : 8}
+                angle={-10}
+                textAnchor="end"
+                dy={6}
               />
 
               {/* Left Y Axis: Currency Amount (₹k) */}
@@ -338,9 +337,9 @@ export function AgentCommissionChart({ data = DEFAULT_AGENT_DATA }: { data?: Age
                   dataKey="amountPaid"
                   name="Amount Paid"
                   fill="url(#paidGreenGrad)"
-                  radius={[5, 5, 1, 1]}
-                  barSize={barSize}
-                  minPointSize={4}
+                  radius={[6, 6, 0, 0]}
+                  maxBarSize={16}
+                  minPointSize={2}
                   animationDuration={700}
                 />
               )}
@@ -352,9 +351,9 @@ export function AgentCommissionChart({ data = DEFAULT_AGENT_DATA }: { data?: Age
                   dataKey="amountBalance"
                   name="Amount Balance"
                   fill="url(#balanceYellowGrad)"
-                  radius={[5, 5, 1, 1]}
-                  barSize={barSize}
-                  minPointSize={4}
+                  radius={[6, 6, 0, 0]}
+                  maxBarSize={16}
+                  minPointSize={2}
                   animationDuration={850}
                 />
               )}
@@ -366,9 +365,9 @@ export function AgentCommissionChart({ data = DEFAULT_AGENT_DATA }: { data?: Age
                   dataKey="daysTaken"
                   name="Time Taken (Days)"
                   fill="url(#daysBlueGrad)"
-                  radius={[5, 5, 1, 1]}
-                  barSize={barSize}
-                  minPointSize={4}
+                  radius={[6, 6, 0, 0]}
+                  maxBarSize={16}
+                  minPointSize={2}
                   animationDuration={1000}
                 />
               )}

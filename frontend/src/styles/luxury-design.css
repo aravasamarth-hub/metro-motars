@@ -96,24 +96,44 @@ html:not(.dark) .theme-switch-btn.active .theme-toggle-icon {
 }
 
 /* ── 1. Sidebar Theming ─────────────────────────────────────────────────── */
-/* Compact Bar Chart Spacing — keeps graph sticks close together */
+/* Compact Bar Chart Spacing & Reference Lines — dashed grid lines, baseline, rounded gradient sticks */
 .bar-chart {
   display: flex !important;
   justify-content: center !important;
   align-items: flex-end !important;
   gap: 8px !important;
+  position: relative !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.18) !important;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent 0px,
+    transparent 36px,
+    rgba(255, 255, 255, 0.08) 36px,
+    rgba(255, 255, 255, 0.08) 37px
+  ) !important;
+  padding-bottom: 4px !important;
 }
 
 .bar-col {
   flex: 0 1 36px !important;
   max-width: 44px !important;
   width: 36px !important;
+  gap: 4px !important;
 }
 
 .bar {
-  width: 22px !important;
+  width: 20px !important;
   max-width: 22px !important;
   margin: 0 auto !important;
+  border-radius: 6px 6px 0 0 !important;
+  background: linear-gradient(180deg, #facc15 0%, #eab308 50%, #ca8a04 100%) !important;
+  box-shadow: 0 2px 8px rgba(234, 179, 8, 0.25) !important;
+  transition: all 0.3s ease !important;
+}
+
+.bar:hover {
+  filter: brightness(1.15) !important;
+  transform: translateY(-2px) !important;
 }
 
 /* Fixed / Sticky Desktop Sidebar on Scroll */

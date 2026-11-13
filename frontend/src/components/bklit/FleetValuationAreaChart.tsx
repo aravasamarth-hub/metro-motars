@@ -86,13 +86,13 @@ export function FleetValuationAreaChart({ data = DEFAULT_FLEET_DATA }: { data?: 
                   <stop offset="95%" stopColor="#38bdf8" stopOpacity={0.0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" vertical={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255, 255, 255, 0.08)" vertical={false} />
               <XAxis
                 dataKey="month"
                 stroke="#64748b"
                 fontSize={11}
                 tickLine={false}
-                axisLine={false}
+                axisLine={{ stroke: "rgba(255, 255, 255, 0.18)", strokeWidth: 1 }}
               />
               <YAxis
                 stroke="#64748b"
