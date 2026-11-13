@@ -28,6 +28,67 @@ def sanitize_uri(uri: str) -> str:
     return re.sub(r"://([^:]+):([^@]+)@", r"://\1:***@", uri)
 
 
+
+ASC = pymongo.ASCENDING
+
+# Core showroom entities keyed by a UUID business id.
+_ENTITY_ID_FIELDS = [
+    ("deals", "deal_id"),
+    ("vehicles", "vehicle_id"),
+    ("sellers", "seller_id"),
+    ("buyers", "buyer_id"),
+    ("witnesses", "witness_id"),
+    ("payments", "payment_id"),
+    ("documents", "document_id"),
+    ("bills", "bill_id"),
+]
+
+
+def _user_index_specs() -> list[tuple]:
+    return [
+        ("users", [("normalizedEmail", ASC)], {"unique": True, "name": "idx_users_normalized_email_unique"}),
+        ("users", [("email", ASC)], {"name": "idx_users_email"}),
+        ("users", [("googleSubjectId", ASC)], {"sparse": True, "name": "idx_users_google_sub"}),
+        ("users", [("role", ASC)], {"name": "idx_users_role"}),
+    ]
+
+
+def _password_reset_index_specs() -> list[tuple]:
+    coll = "password_reset_requests"
+    return [
+        (coll, [("email", ASC)], {"name": "idx_pwd_reset_email"}),
+        (coll, [("recoveryToken", ASC)], {"sparse": True, "name": "idx_pwd_reset_recovery_token"}),
+        (coll, [("expiresAt", ASC)], {"expireAfterSeconds": 0, "name": "idx_pwd_reset_ttl_expires"}),
+    ]
+
+
+def _showroom_index_specs() -> list[tuple]:
+    specs = [
+        (coll, [(field, ASC)], {"unique": True, "name": f"idx_{coll}_{field}_unique"})
+        for coll, field in _ENTITY_ID_FIELDS
+    ]
+    specs += [
+        ("bills", [("bill_number", ASC)], {"unique": True, "name": "idx_bills_bill_number_unique"}),
+        (
+            "bills",
+            [("deal_id", ASC), ("bill_type", ASC)],
+            {"unique": True, "name": "idx_bills_deal_id_bill_type_unique"},
+        ),
+        (
+            "deals",
+            [("idempotency_key", ASC)],
+            {"unique": True, "sparse": True, "name": "idx_deals_idempotency_key_unique"},
+        ),
+        # counters._id is unique by definition in MongoDB; an explicit unique _id index is
+        # rejected by the server, so it is intentionally not declared here.
+    ]
+    return specs
+
+
+def _index_specs() -> list[tuple]:
+    """All (collection, keys, options) index declarations, grouped by entity."""
+    return _user_index_specs() + _password_reset_index_specs() + _showroom_index_specs()
+
 class DatabaseManager:
     """
     Manages lifecycle of AsyncIOMotorClient with resilient connection pooling,
@@ -104,89 +165,23 @@ class DatabaseManager:
             return None
 
     async def ensure_indexes(self) -> None:
-        """Create required indexes and unique constraints on collections."""
+        """Create required indexes and unique constraints on collections.
+
+        Each index is created independently so one failure never skips the rest.
+        """
         if not self._is_connected or self._db is None:
             return
 
-        try:
-            # 1. Users collection: unique normalized email index
-            await self._db.users.create_index(
-                [("normalizedEmail", pymongo.ASCENDING)],
-                unique=True,
-                name="idx_users_normalized_email_unique",
-            )
-            await self._db.users.create_index(
-                [("email", pymongo.ASCENDING)],
-                name="idx_users_email",
-            )
-            await self._db.users.create_index(
-                [("googleSubjectId", pymongo.ASCENDING)],
-                sparse=True,
-                name="idx_users_google_sub",
-            )
-            await self._db.users.create_index(
-                [("role", pymongo.ASCENDING)],
-                name="idx_users_role",
-            )
+        failures = 0
+        for collection_name, keys, options in _index_specs():
+            try:
+                await self._db[collection_name].create_index(keys, **options)
+            except Exception as exc:
+                failures += 1
+                logger.warning(f"Index {options.get('name')} on {collection_name} deferred: {exc}")
 
-            # 2. Password Reset Requests: unique recovery token, email index, and TTL expiry
-            await self._db.password_reset_requests.create_index(
-                [("email", pymongo.ASCENDING)],
-                name="idx_pwd_reset_email",
-            )
-            await self._db.password_reset_requests.create_index(
-                [("recoveryToken", pymongo.ASCENDING)],
-                sparse=True,
-                name="idx_pwd_reset_recovery_token",
-            )
-            await self._db.password_reset_requests.create_index(
-                [("expiresAt", pymongo.ASCENDING)],
-                expireAfterSeconds=0,
-                name="idx_pwd_reset_ttl_expires",
-            )
-
-            # 3. Core Showroom Collections
-            for collection_name, id_field in [
-                ("deals", "deal_id"),
-                ("vehicles", "vehicle_id"),
-                ("sellers", "seller_id"),
-                ("buyers", "buyer_id"),
-                ("witnesses", "witness_id"),
-                ("payments", "payment_id"),
-                ("documents", "document_id"),
-                ("bills", "bill_id"),
-            ]:
-                await self._db[collection_name].create_index(
-                    [(id_field, pymongo.ASCENDING)],
-                    unique=True,
-                    name=f"idx_{collection_name}_{id_field}_unique",
-                )
-
-            await self._db.bills.create_index(
-                [("bill_number", pymongo.ASCENDING)],
-                unique=True,
-                name="idx_bills_bill_number_unique",
-            )
-            await self._db.bills.create_index(
-                [("deal_id", pymongo.ASCENDING), ("bill_type", pymongo.ASCENDING)],
-                unique=True,
-                name="idx_bills_deal_id_bill_type_unique",
-            )
-            await self._db.deals.create_index(
-                [("idempotency_key", pymongo.ASCENDING)],
-                unique=True,
-                sparse=True,
-                name="idx_deals_idempotency_key_unique",
-            )
-            await self._db.counters.create_index(
-                [("_id", pymongo.ASCENDING)],
-                unique=True,
-                name="idx_counters_id_unique",
-            )
-
+        if failures == 0:
             logger.info("MongoDB Atlas database indexes verified successfully.")
-        except Exception as exc:
-            logger.warning(f"Database index creation deferred: {exc}")
 
     async def close(self) -> None:
         """Close connection pool cleanly upon application shutdown."""

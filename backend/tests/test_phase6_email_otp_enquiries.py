@@ -18,6 +18,7 @@ os.environ["JWT_SECRET_KEY"] = "test_secret_key_for_unit_tests_metro_motors_2026
 os.environ["ENV"] = "test"
 
 from fastapi import HTTPException
+from test_secrets import TEST_RESET_NEW_PASSWORD
 
 from auth_service import (
     RESET_REQUEST_COOLDOWNS,
@@ -139,7 +140,7 @@ def test_03_otp_recovery_lifecycle_and_single_use():
     assert "No active password reset request" in str(exc_reused.value.detail) or "Invalid" in str(exc_reused.value.detail)
 
     # Step 4: Reset password with recovery token
-    new_password = "SuperStrongPassword2026!"
+    new_password = TEST_RESET_NEW_PASSWORD
     res_reset = asyncio.run(reset_password_with_recovery_token(email, recovery_token, new_password, new_password))
     assert res_reset["success"] is True
 

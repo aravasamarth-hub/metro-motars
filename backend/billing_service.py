@@ -5,10 +5,11 @@ bill-number format verification, and duplicate prevention schemas.
 Derived from Agent 27 (Document Extraction) and Agent 31 (Invoice Processing).
 """
 
-from decimal import Decimal, ROUND_HALF_UP
 import math
 import re
-from typing import Any, Literal
+from decimal import ROUND_HALF_UP, Decimal
+from typing import Literal
+
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 BILL_NUMBER_REGEX = re.compile(r"^MM-\d{2}-\d{4}$")
@@ -84,6 +85,51 @@ class BillFinancialCalculationResponse(BaseModel):
     missing_business_rules: list[str] = Field(default_factory=list)
 
 
+_CENT = Decimal("0.01")
+_ZERO = Decimal("0.0")
+
+
+def _to_money(value: Decimal) -> float:
+    """Quantizes a Decimal to paise using ROUND_HALF_UP."""
+    return float(value.quantize(_CENT, rounding=ROUND_HALF_UP))
+
+
+def _validate_non_negative_amounts(**amounts: float) -> None:
+    """Raises ValueError if any named amount is negative or non-finite."""
+    labels = {
+        "selling_price": "Selling price",
+        "discount": "Discount",
+        "additional_charges": "Additional charges",
+        "advance_received": "Advance received",
+    }
+    for name, value in amounts.items():
+        if not math.isfinite(value) or value < 0:
+            raise ValueError(f"{labels.get(name, name)} must be a non-negative finite number.")
+
+
+def _calculate_tax(final_dec: Decimal, final_amount: float, gst_rate_percent: float | None):
+    """Returns (tax_amount, grand_total, missing_rules). Never invents a tax rate."""
+    if gst_rate_percent is None:
+        return 0.0, final_amount, [
+            "GST tax rate unconfigured: calculation uses base invoice total without invented tax rates."
+        ]
+    tax_amount = _to_money((final_dec * Decimal(str(gst_rate_percent))) / Decimal("100.0"))
+    return tax_amount, round_currency(final_amount + tax_amount), []
+
+
+def _derive_payment_status(final_amount: float, advance: float) -> str:
+    """Maps invoice total vs advance into a payment status (order of checks is significant)."""
+    if final_amount > 0 and advance >= final_amount:
+        return "Paid"
+    if 0 < advance < final_amount:
+        return "Partially Paid"
+    if final_amount == 0 and advance > 0:
+        return "Advance Paid"
+    if advance > final_amount > 0:  # Unreachable today ("Paid" wins); kept for contract parity.
+        return "Credit / Overpaid"
+    return "Pending"
+
+
 def calculate_bill_financials(
     selling_price: float,
     discount: float = 0.0,
@@ -95,66 +141,31 @@ def calculate_bill_financials(
     Deterministically computes vehicle bill financials matching BuyerBillDocument logic.
     Guarantees no floating-point rounding drift.
     """
-    if not math.isfinite(selling_price) or selling_price < 0:
-        raise ValueError("Selling price must be a non-negative finite number.")
-    if not math.isfinite(discount) or discount < 0:
-        raise ValueError("Discount must be a non-negative finite number.")
-    if not math.isfinite(additional_charges) or additional_charges < 0:
-        raise ValueError("Additional charges must be a non-negative finite number.")
-    if not math.isfinite(advance_received) or advance_received < 0:
-        raise ValueError("Advance received must be a non-negative finite number.")
+    _validate_non_negative_amounts(
+        selling_price=selling_price,
+        discount=discount,
+        additional_charges=additional_charges,
+        advance_received=advance_received,
+    )
 
-    sp_dec = Decimal(str(selling_price))
-    disc_dec = Decimal(str(discount))
-    add_dec = Decimal(str(additional_charges))
-    adv_dec = Decimal(str(advance_received))
-
-    subtotal_dec = sp_dec + add_dec
-    final_dec = max(Decimal("0.0"), sp_dec - disc_dec + add_dec)
-    balance_dec = max(Decimal("0.0"), final_dec - adv_dec)
-
-    sp = float(sp_dec.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
-    disc = float(disc_dec.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
-    add_chg = float(add_dec.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
-    adv = float(adv_dec.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
-    subtotal = float(subtotal_dec.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
-    final_amount = float(final_dec.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
-    balance = float(balance_dec.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
-
-    missing_rules: list[str] = []
-    tax_amount = 0.0
-    grand_total = final_amount
-    if gst_rate_percent is not None:
-        rate_dec = Decimal(str(gst_rate_percent))
-        tax_dec = (final_dec * rate_dec) / Decimal("100.0")
-        tax_amount = float(tax_dec.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
-        grand_total = round_currency(final_amount + tax_amount)
-    else:
-        missing_rules.append("GST tax rate unconfigured: calculation uses base invoice total without invented tax rates.")
-
-    if final_amount > 0 and adv >= final_amount:
-        status = "Paid"
-    elif adv > 0 and adv < final_amount:
-        status = "Partially Paid"
-    elif final_amount == 0 and adv > 0:
-        status = "Advance Paid"
-    elif adv > final_amount and final_amount > 0:
-        status = "Credit / Overpaid"
-    else:
-        status = "Pending"
-
-    words = amount_in_words(grand_total)
+    sp_dec, disc_dec, add_dec, adv_dec = (
+        Decimal(str(v)) for v in (selling_price, discount, additional_charges, advance_received)
+    )
+    final_dec = max(_ZERO, sp_dec - disc_dec + add_dec)
+    final_amount = _to_money(final_dec)
+    advance = _to_money(adv_dec)
+    tax_amount, grand_total, missing_rules = _calculate_tax(final_dec, final_amount, gst_rate_percent)
 
     return BillFinancialCalculationResponse(
-        selling_price=sp,
-        discount=disc,
-        additional_charges=add_chg,
-        subtotal=subtotal,
+        selling_price=_to_money(sp_dec),
+        discount=_to_money(disc_dec),
+        additional_charges=_to_money(add_dec),
+        subtotal=_to_money(sp_dec + add_dec),
         final_invoice_amount=final_amount,
-        advance_received=adv,
-        remaining_balance=balance,
-        payment_status=status,
-        amount_in_words=words,
+        advance_received=advance,
+        remaining_balance=_to_money(max(_ZERO, final_dec - adv_dec)),
+        payment_status=_derive_payment_status(final_amount, advance),
+        amount_in_words=amount_in_words(grand_total),
         gst_rate_percent=gst_rate_percent,
         tax_amount=tax_amount,
         grand_total_with_tax=grand_total,

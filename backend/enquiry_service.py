@@ -123,21 +123,30 @@ def persist_enquiry(record: dict) -> bool:
     return True
 
 
+def _parse_enquiry_line(line: str) -> dict | None:
+    """Parses one JSONL line; returns None for blank or corrupt lines."""
+    stripped = line.strip()
+    if not stripped:
+        return None
+    try:
+        return json.loads(stripped)
+    except Exception:
+        return None
+
+
+def _read_enquiry_records() -> list[dict]:
+    """Reads all valid enquiry records (oldest first). Caller must hold file_lock."""
+    with open(ENQUIRIES_FILE, encoding="utf-8") as f:
+        return [rec for rec in map(_parse_enquiry_line, f) if rec is not None]
+
+
 def list_saved_enquiries(limit: int = 100) -> list[dict]:
-    """Reads saved enquiries from disk for audit or staff review."""
+    """Reads saved enquiries from disk for audit or staff review (newest first)."""
     if not ENQUIRIES_FILE.exists():
         return []
-    records = []
     with file_lock:
         try:
-            with open(ENQUIRIES_FILE, encoding="utf-8") as f:
-                for line in f:
-                    stripped = line.strip()
-                    if stripped:
-                        try:
-                            records.append(json.loads(stripped))
-                        except Exception:
-                            continue
+            records = _read_enquiry_records()
         except Exception as e:
             logger.error(f"Error reading enquiries file: {e}")
             return []

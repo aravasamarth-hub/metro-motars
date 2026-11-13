@@ -1,7 +1,7 @@
 import asyncio
-import re
 import logging
 import os
+import re
 import uuid
 from datetime import UTC, datetime
 from pathlib import Path
@@ -34,6 +34,11 @@ from auth_service import (
     reset_password_with_recovery_token,
     verify_password_recovery_otp,
 )
+from billing_service import (
+    BillFinancialCalculationRequest,
+    BillFinancialCalculationResponse,
+    calculate_bill_financials,
+)
 from database import db_manager
 from email_service import email_service
 from enquiry_service import (
@@ -49,12 +54,6 @@ from security import (
     require_role,
 )
 from storage_service import SecurityError, get_storage_provider
-from billing_service import (
-    BillFinancialCalculationRequest,
-    BillFinancialCalculationResponse,
-    calculate_bill_financials,
-    is_valid_bill_number_format,
-)
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / ".env")
@@ -1056,7 +1055,10 @@ async def finances_summary():
 async def download_pdf_stream(request: Request):
     form = await request.form()
     uploaded_file = form.get("file")
-    filename = re.sub(r"[^a-zA-Z0-9_\.-]", "_", os.path.basename(str(form.get("filename", "Seller-Bill.pdf"))))
+    raw_name = str(form.get("filename", "Seller-Bill.pdf")).replace("\\", "/")
+    filename = re.sub(r"[^a-zA-Z0-9_\.-]", "_", os.path.basename(raw_name))
+    # Collapse dot-runs (no "..") and strip leading dots so no traversal-like or hidden names survive.
+    filename = re.sub(r"\.{2,}", "_", filename).lstrip(".") or "Seller-Bill.pdf"
     if not str(filename).endswith(".pdf"):
         filename = f"{filename}.pdf"
 

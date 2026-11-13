@@ -14,8 +14,8 @@ Empirically tests Phase 4 requirements:
 11. Resilient failure and recovery behavior.
 """
 
-import asyncio
 import os
+
 import pytest
 from starlette.testclient import TestClient
 
@@ -25,9 +25,11 @@ os.environ["ENV"] = "test"
 
 import server
 from auth_service import seed_default_showroom_users
+from billing_service import (
+    is_valid_bill_number_format,
+)
 from security import create_access_token
-from server import app, BILL_TYPE_SELLER_BUYER, BILL_TYPE_SELLER_INTERMEDIATE
-from billing_service import calculate_bill_financials, is_valid_bill_number_format, amount_in_words
+from server import BILL_TYPE_SELLER_BUYER, BILL_TYPE_SELLER_INTERMEDIATE, app
 
 client = TestClient(app)
 

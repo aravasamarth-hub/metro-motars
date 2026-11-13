@@ -17,6 +17,8 @@ from starlette.testclient import TestClient
 os.environ["DISABLE_REMOTE_DB"] = "1"
 os.environ["JWT_SECRET_KEY"] = "test_secret_key_for_unit_tests_metro_motors_2026"
 
+from test_secrets import TEST_HASH_PASSWORD
+
 from security import (
     create_access_token,
     decode_access_token,
@@ -30,7 +32,7 @@ client = TestClient(app)
 
 def test_password_hashing_and_verification():
     """Verify bcrypt salt rounds and comparison logic."""
-    raw_password = "SuperSecretPassword123!"
+    raw_password = TEST_HASH_PASSWORD
     hashed = hash_password(raw_password)
 
     assert hashed.startswith("$2b$12$")
