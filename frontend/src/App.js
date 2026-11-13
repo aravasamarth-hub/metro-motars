@@ -4,6 +4,7 @@ import { BriefcaseBusiness, CalendarDays, Check, ChevronDown, CircleDollarSign, 
 import "@/App.css";
 import "@/styles/luxury-design.css";
 import "@/features/deals/deals.css";
+import "@/styles/mm-design-system.css";
 import { dealRepository } from "@/data/dealRepository";
 import { AuthProvider, useAuth } from "@/context/AuthContext";
 

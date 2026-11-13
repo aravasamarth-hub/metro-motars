@@ -20,7 +20,7 @@ export const SHOWROOM_CONTACT = {
  */
 export function getWhatsAppEnquiryUrl(vehicle) {
   const message = vehicle
-    ? `Hello Metro Motors, I am interested in purchasing the ${vehicle.year} ${vehicle.title} (Price: ₹${vehicle.sellingPrice.toLocaleString("en-IN")}, Ref: ${vehicle.id}). Is this motorcycle currently available for inspection and test drive?`
+    ? `Hello Metro Motors, I am interested in purchasing the ${vehicle.year ? `${vehicle.year} ` : ""}${vehicle.title} (Price: ${vehicle.sellingPrice ? `₹${Number(vehicle.sellingPrice).toLocaleString("en-IN")}` : "on request"}, Ref: ${vehicle.id}). Is this vehicle currently available for inspection and test drive?`
     : `Hello Metro Motors, I would like to enquire about your available pre-owned motorcycle inventory.`;
 
   return `https://wa.me/${SHOWROOM_CONTACT.rawPhone}?text=${encodeURIComponent(message)}`;

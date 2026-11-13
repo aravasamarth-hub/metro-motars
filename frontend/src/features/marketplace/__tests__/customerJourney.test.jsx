@@ -122,7 +122,7 @@ describe("Phase 2: Customer Journey & Component Verification", () => {
     expect(html).toContain("Enquire");
   });
 
-  test("4. BrowseBikes renders empty state gracefully when no bikes match", () => {
+  test("4. BrowseBikes renders a graceful empty-inventory state with contact actions", () => {
     const html = renderToString(
       <BrowseBikes
         inventory={[]}
@@ -131,8 +131,9 @@ describe("Phase 2: Customer Journey & Component Verification", () => {
       />
     );
 
-    expect(html).toContain("No motorcycles match your filters");
-    expect(html).toContain("Show All Motorcycles");
+    expect(html).toContain("New arrivals are being inspected");
+    expect(html).toContain(`tel:${SHOWROOM_CONTACT.rawPhone}`);
+    expect(html).toContain("wa.me");
   });
 
   test("5. VehicleDetailModal renders technical specifications and gallery", () => {

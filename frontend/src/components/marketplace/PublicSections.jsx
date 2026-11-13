@@ -3,132 +3,238 @@ import { Link } from "react-router-dom";
 import {
   ShieldCheck,
   Shield,
-  CheckCircle2,
   Phone,
   MapPin,
   Clock,
-  Sparkles,
+  ArrowRight,
+  Bike,
+  CarFront,
+  Gauge,
+  Cog,
+  Zap,
+  BatteryCharging,
+  FileCheck2,
+  CircleDot,
+  Search,
+  CalendarCheck,
+  KeyRound,
+  MessageSquare,
+  Mail,
 } from "lucide-react";
-import { SHOWROOM_CONTACT } from "@/data/customerEnquiry";
+import { SHOWROOM_CONTACT, getWhatsAppEnquiryUrl } from "@/data/customerEnquiry";
+import VehicleCard from "./VehicleCard";
+import { ABOUT_IMAGE, vehicleTypeLabel, smoothScrollTo } from "./marketplaceUtils";
+
+function SectionHeader({ eyebrow, title, copy, action, center = false }) {
+  return (
+    <div className={`flex flex-col gap-5 ${center ? "items-center text-center" : "md:flex-row md:items-end md:justify-between"}`}>
+      <div className={center ? "max-w-2xl" : "max-w-2xl"}>
+        {eyebrow && <p className="mm-eyebrow">{eyebrow}</p>}
+        <h2 className="mm-display mt-3 text-3xl text-neutral-950 dark:text-white sm:text-[44px] sm:leading-[1.05]">{title}</h2>
+        {copy && <p className="mt-3 text-[15px] leading-relaxed text-neutral-600 dark:text-neutral-400">{copy}</p>}
+      </div>
+      {action}
+    </div>
+  );
+}
+
+/* ---------- Popular brands (derived from real stock) ---------- */
+export function BrandsSection({ byBrand = {}, onPickBrand }) {
+  const brands = Object.entries(byBrand).sort((a, b) => b[1] - a[1]);
+  if (brands.length === 0) return null;
+  return (
+    <section className="border-y border-black/[0.06] bg-white/60 py-8 dark:border-white/[0.06] dark:bg-white/[0.02]" aria-label="Popular brands" data-testid="brands-section">
+      <div className="mm-container flex flex-col gap-4 md:flex-row md:items-center">
+        <p className="shrink-0 text-[12px] font-semibold uppercase tracking-[0.18em] text-neutral-500">Popular brands</p>
+        <div className="-mx-5 flex gap-2 overflow-x-auto px-5 pb-1 [scrollbar-width:none] sm:-mx-8 sm:px-8 md:mx-0 md:flex-wrap md:px-0">
+          {brands.map(([brand, count]) => (
+            <button
+              key={brand}
+              type="button"
+              onClick={() => onPickBrand?.(brand)}
+              className="mm-chip !min-h-[40px] !px-4"
+              data-testid={`brand-chip-${brand}`}
+            >
+              <span className="font-semibold">{brand}</span>
+              <span className="text-neutral-400">{count}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ---------- Categories (vehicle_type) ---------- */
+const TYPE_META = {
+  "2 Wheeler with Gear": { icon: Bike, copy: "Commuters, cruisers & performance bikes" },
+  "2 Wheeler without Gear": { icon: Gauge, copy: "Gearless scooters for easy city riding" },
+  "4 Wheeler Car": { icon: CarFront, copy: "Hatchbacks, sedans & SUVs" },
+};
+
+export function CategoriesSection({ byType = {}, onPickType }) {
+  const types = Object.keys(TYPE_META).map((t) => ({ type: t, count: byType[t] || 0, ...TYPE_META[t] }));
+  return (
+    <section id="categories" className="mm-section !pb-0" data-testid="categories-section">
+      <div className="mm-container">
+        <SectionHeader eyebrow="Shop by category" title="What are you looking for?" />
+        <div className="mt-10 grid gap-4 sm:grid-cols-3">
+          {types.map(({ type, count, icon: Icon, copy }) => (
+            <button
+              key={type}
+              type="button"
+              onClick={() => onPickType?.(type)}
+              disabled={count === 0}
+              className="mm-card mm-vcard group flex items-center gap-5 p-6 text-left disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0 disabled:hover:shadow-none"
+              data-testid={`category-tile-${vehicleTypeLabel(type).toLowerCase()}`}
+            >
+              <span className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-neutral-950 text-[color:var(--mm-gold)] dark:bg-white/[0.06]">
+                <Icon size={26} strokeWidth={1.6} />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="mm-display block text-lg text-neutral-950 dark:text-white">{vehicleTypeLabel(type)}</span>
+                <span className="mt-0.5 block text-[13px] text-neutral-500 dark:text-neutral-400">{copy}</span>
+                <span className="mt-2 block text-[12px] font-semibold text-[color:var(--mm-gold-lo)] dark:text-[color:var(--mm-gold)]">
+                  {count > 0 ? `${count} in stock` : "None in stock right now"}
+                </span>
+              </span>
+              <ArrowRight size={18} className="shrink-0 text-neutral-400 transition-transform group-hover:translate-x-1" />
+            </button>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ---------- Horizontal rail (Featured / Recently added) ---------- */
+export function VehicleRail({ id, eyebrow, title, copy, vehicles = [], onSelect, onEnquire, testId }) {
+  if (vehicles.length === 0) return null;
+  return (
+    <section id={id} className="mm-section !pb-0" data-testid={testId}>
+      <div className="mm-container">
+        <SectionHeader
+          eyebrow={eyebrow}
+          title={title}
+          copy={copy}
+          action={
+            <button type="button" onClick={() => smoothScrollTo("#browse-bikes")} className="mm-btn mm-btn-outline shrink-0 self-start md:self-auto">
+              View all inventory <ArrowRight size={15} />
+            </button>
+          }
+        />
+        <div className="mm-rail mt-10">
+          {vehicles.map((bike) => (
+            <VehicleCard key={bike.id} bike={bike} onSelect={onSelect} onEnquire={onEnquire} />
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ---------- Trust / certification ---------- */
+const CHECKS = [
+  { icon: Cog, title: "Engine & Transmission Testing", desc: "Compression, cold-start idle, clutch engagement and smooth gearbox operation." },
+  { icon: CircleDot, title: "Chassis & Frame Alignment", desc: "Straightness checks for structural bending, accident damage or stress fractures." },
+  { icon: ShieldCheck, title: "Braking & Safety Systems", desc: "Rotor and pad wear, hydraulic fluid condition and ABS sensor diagnostics." },
+  { icon: BatteryCharging, title: "Electrical & Battery Health", desc: "Charging rate, battery under load, starter relay, lighting and console checks." },
+  { icon: FileCheck2, title: "Legal Title & RTO Verification", desc: "Registry check for active hypothecation, pending challans and authentic registration." },
+  { icon: Zap, title: "Suspension & Tyres", desc: "Fork seals, rear shock rebound and tread life verified on every wheel." },
+];
 
 export function CertificationSection() {
-  const checkItems = [
-    {
-      title: "Engine & Transmission Testing",
-      desc: "Full cylinder compression test, cold start idling analysis, clutch engagement check, and smooth gearbox operation.",
-    },
-    {
-      title: "Chassis & Frame Alignment",
-      desc: "Laser/dyno straightness verification ensuring zero structural bending, accidental damage, or hidden stress fractures.",
-    },
-    {
-      title: "Braking & Safety Systems",
-      desc: "Rotor wear measurement, brake pad thickness audit, hydraulic fluid flush, and ABS sensor diagnostic calibration.",
-    },
-    {
-      title: "Electrical & Battery Health",
-      desc: "Alternator charging rate, battery health check under load, starter relay, LED headlamp throw, and digital console verification.",
-    },
-    {
-      title: "Legal Title & RTO Verification",
-      desc: "100% verified Parivahan registry check confirming zero active hypothecation/loans, zero challans, and authentic registration.",
-    },
-    {
-      title: "Suspension & Tyres",
-      desc: "Fork seals and stanchion inspection, rear monoshock rebound test, and minimum 60% tread life verified on all wheels.",
-    },
-  ];
-
   return (
-    <section id="standards" className="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto scroll-mt-20">
-      <div className="text-center max-w-3xl mx-auto mb-14">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/25 text-emerald-500 font-bold text-xs uppercase tracking-wider mb-2">
-          <ShieldCheck size={14} /> Quality &amp; Trust
-        </div>
-        <h2 className="text-3xl sm:text-4xl font-black text-neutral-950 dark:text-white tracking-tight">
-          The 120-Point Showroom Certification
-        </h2>
-        <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-2">
-          Every motorcycle in our inventory undergoes a thorough multi-point mechanical and legal audit before being approved for sale.
-        </p>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {checkItems.map((item, idx) => (
-          <div
-            key={idx}
-            className="p-6 rounded-3xl bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 shadow-sm"
-          >
-            <div className="w-10 h-10 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-500 flex items-center justify-center font-bold text-sm mb-4">
-              <CheckCircle2 size={20} />
+    <section id="standards" className="mm-section" data-testid="certification-section">
+      <div className="mm-container">
+        <div className="overflow-hidden rounded-[28px] bg-[color:var(--mm-ink-900)] text-white">
+          <div className="grid gap-10 p-7 sm:p-10 lg:grid-cols-[0.9fr_1.1fr] lg:p-14">
+            <div>
+              <p className="mm-eyebrow !text-[color:var(--mm-gold)]">Quality &amp; Trust</p>
+              <h2 className="mm-display mt-3 text-3xl sm:text-[44px] sm:leading-[1.05]">The 120-Point Showroom Certification</h2>
+              <p className="mt-4 max-w-md text-[15px] leading-relaxed text-white/65">
+                Every vehicle undergoes a thorough mechanical and legal audit before it is approved for sale — so what you see is exactly what you ride home.
+              </p>
+              <div className="mt-8 grid max-w-md grid-cols-3 gap-4 border-t border-white/10 pt-6">
+                <div><div className="mm-display text-2xl text-[color:var(--mm-gold)]">120</div><p className="mt-1 text-[12px] text-white/55">Inspection points</p></div>
+                <div><div className="mm-display text-2xl">RTO</div><p className="mt-1 text-[12px] text-white/55">Transfer assistance</p></div>
+                <div><div className="mm-display text-2xl">Zero</div><p className="mt-1 text-[12px] text-white/55">Hidden broker fees</p></div>
+              </div>
             </div>
-            <h3 className="text-base font-bold text-neutral-900 dark:text-white mb-2">
-              {item.title}
-            </h3>
-            <p className="text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed">
-              {item.desc}
-            </p>
+            <ul className="grid gap-px overflow-hidden rounded-[20px] bg-white/[0.07] sm:grid-cols-2">
+              {CHECKS.map(({ icon: Icon, title, desc }) => (
+                <li key={title} className="bg-[color:var(--mm-ink-900)] p-6">
+                  <Icon size={20} className="text-[color:var(--mm-gold)]" strokeWidth={1.7} />
+                  <h3 className="mt-4 text-[15px] font-semibold">{title}</h3>
+                  <p className="mt-1.5 text-[13px] leading-relaxed text-white/55">{desc}</p>
+                </li>
+              ))}
+            </ul>
           </div>
-        ))}
+        </div>
       </div>
     </section>
   );
 }
 
+/* ---------- Buying process ---------- */
+const STEPS = [
+  { icon: Search, title: "Browse & shortlist", desc: "Explore verified listings with clear pricing and specifications." },
+  { icon: CalendarCheck, title: "Inspect & test ride", desc: "Visit the showroom to see the vehicle in person and ride it." },
+  { icon: FileCheck2, title: "Paperwork handled", desc: "We prepare sale documents and support the RTO transfer." },
+  { icon: KeyRound, title: "Ride home", desc: "Collect your keys with full documents and peace of mind." },
+];
+
+export function ProcessSection() {
+  return (
+    <section className="mm-section !pt-0" data-testid="process-section">
+      <div className="mm-container">
+        <SectionHeader eyebrow="How it works" title="Buying made simple" />
+        <ol className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {STEPS.map(({ icon: Icon, title, desc }, i) => (
+            <li key={title} className="mm-card p-6">
+              <div className="flex items-center justify-between">
+                <Icon size={22} className="text-[color:var(--mm-gold-lo)] dark:text-[color:var(--mm-gold)]" strokeWidth={1.7} />
+                <span className="mm-display text-[13px] text-neutral-400">0{i + 1}</span>
+              </div>
+              <h3 className="mm-display mt-6 text-[17px] text-neutral-950 dark:text-white">{title}</h3>
+              <p className="mt-1.5 text-[13.5px] leading-relaxed text-neutral-600 dark:text-neutral-400">{desc}</p>
+            </li>
+          ))}
+        </ol>
+      </div>
+    </section>
+  );
+}
+
+/* ---------- About ---------- */
 export function AboutShowroomSection() {
   return (
-    <section id="about" className="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto border-t border-neutral-200/80 dark:border-neutral-800/80 scroll-mt-20">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+    <section id="about" className="mm-section !pt-0" data-testid="about-section">
+      <div className="mm-container grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
+        <div className="relative aspect-[4/3] overflow-hidden rounded-[28px] bg-neutral-900">
+          <img src={ABOUT_IMAGE} alt="Pre-owned motorcycle at the Metro Motors showroom" loading="lazy" decoding="async" className="h-full w-full object-cover" />
+          <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-6 text-white">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--mm-gold)]">Flagship Showroom</p>
+            <p className="mt-1 text-[14px] font-medium text-white/85">100ft Road, Indiranagar, Bengaluru</p>
+          </div>
+        </div>
         <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/25 text-amber-500 font-bold text-xs uppercase tracking-wider mb-3">
-            <Sparkles size={13} /> Bangalore&apos;s Motorcycling Atelier
-          </div>
-          <h2 className="text-3xl sm:text-4xl font-black text-neutral-950 dark:text-white tracking-tight mb-4">
-            About Metro Motors
-          </h2>
-          <div className="space-y-4 text-sm text-neutral-600 dark:text-neutral-300 leading-relaxed">
+          <p className="mm-eyebrow">Bengaluru&apos;s pre-owned specialists</p>
+          <h2 className="mm-display mt-3 text-3xl text-neutral-950 dark:text-white sm:text-[44px] sm:leading-[1.05]">About Metro Motors</h2>
+          <div className="mt-5 space-y-4 text-[15px] leading-relaxed text-neutral-600 dark:text-neutral-300">
             <p>
-              Founded in Bangalore, <strong>Metro Motors</strong> was established with a singular mission: to make buying and owning a pre-owned performance motorcycle completely transparent, reliable, and hassle-free.
+              <strong className="text-neutral-900 dark:text-white">Metro Motors</strong> was founded to make buying a pre-owned vehicle transparent, reliable and hassle-free.
             </p>
             <p>
-              Unlike informal classifieds or unverified street brokers, every motorcycle in our flagship Indiranagar showroom has a verified history, authentic ownership documents, and an exhaustive 120-point mechanical evaluation.
+              Unlike informal classifieds, every vehicle in our Indiranagar showroom has a verified history, authentic ownership documents and a 120-point evaluation.
             </p>
-            <p>
-              From test rides to seamless RTO ownership transfers, our team manages the entire process so you can ride away with absolute peace of mind.
-            </p>
+            <p>From test rides to RTO ownership transfer, our team manages the process so you can ride away with peace of mind.</p>
           </div>
-
-          <div className="grid grid-cols-3 gap-4 pt-6 border-t border-neutral-200 dark:border-neutral-800 mt-6 text-center">
-            <div>
-              <div className="text-2xl font-black text-amber-500">100%</div>
-              <span className="text-[11px] text-neutral-500 font-medium">Verified History</span>
-            </div>
-            <div>
-              <div className="text-2xl font-black text-neutral-900 dark:text-white">RTO</div>
-              <span className="text-[11px] text-neutral-500 font-medium">Transfer Assistance</span>
-            </div>
-            <div>
-              <div className="text-2xl font-black text-emerald-500">Zero</div>
-              <span className="text-[11px] text-neutral-500 font-medium">Hidden Broker Fees</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="relative rounded-3xl overflow-hidden border border-neutral-200 dark:border-neutral-800 bg-neutral-950 aspect-[4/3] shadow-xl">
-          <img
-            src="https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&w=1200&q=80"
-            alt="Metro Motors Showroom Atelier"
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex items-end p-6">
-            <div className="text-white">
-              <span className="text-xs font-bold text-amber-400 uppercase tracking-wider block">
-                Flagship Showroom
-              </span>
-              <p className="text-sm font-semibold text-neutral-200">
-                100ft Road, Indiranagar, Bengaluru
-              </p>
-            </div>
+          <div className="mt-8 grid grid-cols-3 gap-4 border-t border-black/[0.08] pt-6 dark:border-white/[0.08]">
+            <div><div className="mm-display text-2xl text-[color:var(--mm-gold-lo)] dark:text-[color:var(--mm-gold)]">100%</div><p className="mt-1 text-[12px] text-neutral-500">Verified History</p></div>
+            <div><div className="mm-display text-2xl text-neutral-950 dark:text-white">RTO</div><p className="mt-1 text-[12px] text-neutral-500">Transfer Assistance</p></div>
+            <div><div className="mm-display text-2xl text-neutral-950 dark:text-white">7 days</div><p className="mt-1 text-[12px] text-neutral-500">Open Every Week</p></div>
           </div>
         </div>
       </div>
@@ -136,108 +242,104 @@ export function AboutShowroomSection() {
   );
 }
 
+/* ---------- Contact ---------- */
 export function ContactShowroomSection() {
+  const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(SHOWROOM_CONTACT.address)}`;
   return (
-    <section id="contact" className="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto border-t border-neutral-200/80 dark:border-neutral-800/80 scroll-mt-20">
-      <div className="text-center max-w-2xl mx-auto mb-12">
-        <h2 className="text-3xl sm:text-4xl font-black text-neutral-950 dark:text-white tracking-tight">
-          Visit Our Showroom
-        </h2>
-        <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-2">
-          Drop by to inspect any motorcycle in person or take a test drive. Our team is available 7 days a week.
-        </p>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-        <div className="p-6 rounded-3xl bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 text-center">
-          <div className="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center mx-auto mb-4">
-            <MapPin size={24} />
+    <section id="contact" className="mm-section !pt-0" data-testid="contact-section">
+      <div className="mm-container">
+        <div className="mm-card grid gap-10 p-7 sm:p-10 lg:grid-cols-[1fr_1.2fr] lg:p-12">
+          <div>
+            <p className="mm-eyebrow">Contact &amp; Location</p>
+            <h2 className="mm-display mt-3 text-3xl text-neutral-950 dark:text-white sm:text-[40px] sm:leading-[1.05]">Visit Our Showroom</h2>
+            <p className="mt-3 max-w-md text-[15px] leading-relaxed text-neutral-600 dark:text-neutral-400">
+              Drop by to inspect any vehicle in person or book a test ride. Our team is available 7 days a week.
+            </p>
+            <div className="mt-7 flex flex-wrap gap-3">
+              <a href={getWhatsAppEnquiryUrl(null)} target="_blank" rel="noopener noreferrer" className="mm-btn mm-btn-whatsapp" data-testid="contact-whatsapp-link">
+                <MessageSquare size={16} /> WhatsApp
+              </a>
+              <a href={`tel:${SHOWROOM_CONTACT.rawPhone}`} className="mm-btn mm-btn-dark" data-testid="contact-call-link">
+                <Phone size={16} /> Call now
+              </a>
+            </div>
           </div>
-          <h4 className="text-sm font-bold text-neutral-900 dark:text-white mb-1">
-            Showroom Location
-          </h4>
-          <p className="text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed">
-            {SHOWROOM_CONTACT.address}
-          </p>
-        </div>
-
-        <div className="p-6 rounded-3xl bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 text-center">
-          <div className="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center mx-auto mb-4">
-            <Phone size={24} />
-          </div>
-          <h4 className="text-sm font-bold text-neutral-900 dark:text-white mb-1">
-            Direct Phone &amp; WhatsApp
-          </h4>
-          <p className="text-xs text-neutral-600 dark:text-neutral-400 mb-2">
-            Call our team directly for availability:
-          </p>
-          <a
-            href={`tel:${SHOWROOM_CONTACT.rawPhone}`}
-            className="text-sm font-black text-amber-500 hover:text-amber-600 block"
-          >
-            {SHOWROOM_CONTACT.phone}
-          </a>
-        </div>
-
-        <div className="p-6 rounded-3xl bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 text-center">
-          <div className="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center mx-auto mb-4">
-            <Clock size={24} />
-          </div>
-          <h4 className="text-sm font-bold text-neutral-900 dark:text-white mb-1">
-            Showroom Hours
-          </h4>
-          <p className="text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed">
-            {SHOWROOM_CONTACT.businessHours}
-          </p>
+          <ul className="grid gap-4 sm:grid-cols-2">
+            <li className="rounded-[18px] border border-black/[0.07] p-5 dark:border-white/[0.07] sm:col-span-2">
+              <MapPin size={19} className="text-[color:var(--mm-gold-lo)] dark:text-[color:var(--mm-gold)]" />
+              <h3 className="mt-3 text-[14px] font-semibold text-neutral-900 dark:text-white">Showroom Location</h3>
+              <p className="mt-1 text-[14px] text-neutral-600 dark:text-neutral-400">{SHOWROOM_CONTACT.address}</p>
+              <a href={mapUrl} target="_blank" rel="noopener noreferrer" className="mt-3 inline-flex items-center gap-1 text-[13px] font-semibold text-[color:var(--mm-gold-lo)] hover:underline dark:text-[color:var(--mm-gold)]" data-testid="contact-directions-link">
+                Get directions <ArrowRight size={13} />
+              </a>
+            </li>
+            <li className="rounded-[18px] border border-black/[0.07] p-5 dark:border-white/[0.07]">
+              <Phone size={19} className="text-[color:var(--mm-gold-lo)] dark:text-[color:var(--mm-gold)]" />
+              <h3 className="mt-3 text-[14px] font-semibold text-neutral-900 dark:text-white">Direct Phone &amp; WhatsApp</h3>
+              <a href={`tel:${SHOWROOM_CONTACT.rawPhone}`} className="mt-1 block text-[14px] font-semibold text-neutral-900 hover:underline dark:text-white">{SHOWROOM_CONTACT.phone}</a>
+              <a href={`mailto:${SHOWROOM_CONTACT.email}`} className="mt-1 flex items-center gap-1.5 text-[13px] text-neutral-500 hover:underline"><Mail size={13} /> {SHOWROOM_CONTACT.email}</a>
+            </li>
+            <li className="rounded-[18px] border border-black/[0.07] p-5 dark:border-white/[0.07]">
+              <Clock size={19} className="text-[color:var(--mm-gold-lo)] dark:text-[color:var(--mm-gold)]" />
+              <h3 className="mt-3 text-[14px] font-semibold text-neutral-900 dark:text-white">Showroom Hours</h3>
+              <p className="mt-1 text-[14px] text-neutral-600 dark:text-neutral-400">{SHOWROOM_CONTACT.businessHours}</p>
+            </li>
+          </ul>
         </div>
       </div>
     </section>
   );
 }
 
+/* ---------- Footer ---------- */
 export function PublicFooter() {
+  const links = [
+    ["#browse-bikes", "Inventory"],
+    ["#categories", "Categories"],
+    ["#standards", "120-Point Check"],
+    ["#about", "About"],
+    ["#contact", "Contact"],
+  ];
   return (
-    <footer className="border-t border-neutral-200/80 dark:border-neutral-800/80 bg-neutral-50 dark:bg-neutral-950/60 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-6">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-xl bg-neutral-950 border border-amber-500/40 text-amber-500 font-black flex items-center justify-center text-xs">
-            MM
+    <footer className="bg-[color:var(--mm-ink-950)] text-white" data-testid="public-footer">
+      <div className="mm-container grid gap-10 py-14 md:grid-cols-[1.4fr_1fr_1fr]">
+        <div>
+          <div className="flex items-center gap-3">
+            <span className="grid h-9 w-9 place-items-center rounded-[10px] bg-[color:var(--mm-gold)] text-[13px] font-extrabold text-[#120f08]">MM</span>
+            <span className="mm-display text-[15px] tracking-[0.08em]">METRO <span className="text-[color:var(--mm-gold)]">MOTORS</span></span>
           </div>
-          <div>
-            <span className="font-bold text-sm text-neutral-900 dark:text-white">
-              Metro Motors Bengaluru
-            </span>
-            <span className="text-[11px] text-neutral-500 block">
-              Certified Pre-Owned Motorcycles
-            </span>
-          </div>
+          <p className="mt-4 max-w-sm text-[14px] leading-relaxed text-white/55">
+            Metro Motors Bengaluru — certified pre-owned motorcycles, scooters and cars with transparent pricing.
+          </p>
         </div>
-
-        <div className="flex items-center gap-6 text-xs text-neutral-500">
-          <a href="#browse-bikes" className="hover:text-amber-500 transition-colors">
-            Inventory
-          </a>
-          <a href="#standards" className="hover:text-amber-500 transition-colors">
-            120-Point Check
-          </a>
-          <a href="#about" className="hover:text-amber-500 transition-colors">
-            About
-          </a>
-          <a href="#contact" className="hover:text-amber-500 transition-colors">
-            Contact
-          </a>
+        <nav aria-label="Footer">
+          <p className="text-[12px] font-semibold uppercase tracking-[0.16em] text-white/40">Explore</p>
+          <ul className="mt-4 grid gap-2.5 text-[14px] text-white/70">
+            {links.map(([href, label]) => (
+              <li key={href}><a href={href} className="transition-colors hover:text-white">{label}</a></li>
+            ))}
+          </ul>
+        </nav>
+        <div>
+          <p className="text-[12px] font-semibold uppercase tracking-[0.16em] text-white/40">Showroom</p>
+          <ul className="mt-4 grid gap-2.5 text-[14px] text-white/70">
+            <li>{SHOWROOM_CONTACT.address}</li>
+            <li><a href={`tel:${SHOWROOM_CONTACT.rawPhone}`} className="hover:text-white">{SHOWROOM_CONTACT.phone}</a></li>
+            <li>{SHOWROOM_CONTACT.businessHours}</li>
+          </ul>
+        </div>
+      </div>
+      <div className="border-t border-white/[0.07]">
+        <div className="mm-container flex flex-col items-center justify-between gap-4 py-6 text-[12px] text-white/45 sm:flex-row">
+          <span>© {new Date().getFullYear()} Metro Motors. All rights reserved.</span>
           <Link
             to="/login"
-            className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-amber-500/90 hover:text-amber-400 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 font-semibold transition-all shadow-sm"
+            className="inline-flex items-center gap-1.5 rounded-full border border-white/15 px-3 py-1.5 font-medium text-white/70 transition-colors hover:border-[color:var(--mm-gold)] hover:text-white"
             data-testid="footer-admin-login-link"
           >
             <Shield size={12} />
             <span>Admin Login</span>
           </Link>
-        </div>
-
-        <div className="text-[11px] text-neutral-400">
-          © {new Date().getFullYear()} Metro Motors. All rights reserved.
         </div>
       </div>
     </footer>

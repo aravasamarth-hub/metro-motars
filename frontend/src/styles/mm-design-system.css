@@ -1,0 +1,294 @@
+/* ==========================================================================
+   Metro Motors Design System — v2
+   Tokens + reusable primitives shared by the public marketplace and the
+   showroom console. Loaded after legacy styles so it can refine them.
+   ========================================================================== */
+
+:root {
+  /* Ink (dark surfaces) */
+  --mm-ink-950: #07080a;
+  --mm-ink-900: #0c0e11;
+  --mm-ink-850: #111418;
+  --mm-ink-800: #171b20;
+  --mm-ink-700: #22282f;
+  /* Paper (light surfaces) */
+  --mm-paper: #f5f4f0;
+  --mm-paper-2: #ecebe6;
+  --mm-surface: #ffffff;
+  /* Brand gold */
+  --mm-gold: #d9a441;
+  --mm-gold-hi: #e9bd62;
+  --mm-gold-lo: #b9862a;
+  /* Status */
+  --mm-success: #22a06b;
+  --mm-danger: #d64545;
+  --mm-whatsapp: #1fae5b;
+  /* Radii */
+  --mm-r-sm: 8px;
+  --mm-r-md: 12px;
+  --mm-r-lg: 18px;
+  --mm-r-xl: 24px;
+  /* Elevation */
+  --mm-shadow-sm: 0 1px 2px rgba(10, 12, 16, 0.06), 0 1px 1px rgba(10, 12, 16, 0.04);
+  --mm-shadow-md: 0 8px 24px -8px rgba(10, 12, 16, 0.18);
+  --mm-shadow-lg: 0 24px 60px -20px rgba(10, 12, 16, 0.35);
+  /* Motion */
+  --mm-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --mm-fast: 160ms;
+  --mm-base: 280ms;
+  --mm-font-display: "Manrope", "DM Sans", system-ui, sans-serif;
+  --mm-font-body: "DM Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+/* ---------- Public marketplace shell ---------- */
+.mm-public {
+  font-family: var(--mm-font-body);
+  background: var(--mm-paper);
+  color: #111316;
+  min-height: 100vh;
+  overflow-x: clip;
+}
+.dark .mm-public,
+.mm-public.dark {
+  background: var(--mm-ink-950);
+  color: #eceae6;
+}
+.mm-display {
+  font-family: var(--mm-font-display);
+  letter-spacing: -0.035em;
+  font-weight: 700;
+}
+:where(.mm-eyebrow) { display: inline-flex; }
+.mm-eyebrow {
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--mm-gold-lo);
+}
+.dark .mm-eyebrow { color: var(--mm-gold); }
+.mm-eyebrow::before {
+  content: "";
+  width: 18px;
+  height: 1px;
+  background: currentColor;
+  opacity: 0.7;
+}
+.mm-container {
+  width: 100%;
+  max-width: 1280px;
+  margin-inline: auto;
+  padding-inline: 1.25rem;
+}
+@media (min-width: 640px) { .mm-container { padding-inline: 2rem; } }
+@media (min-width: 1280px) { .mm-container { padding-inline: 2.5rem; } }
+
+.mm-section { padding-block: 4.5rem; scroll-margin-top: 72px; }
+@media (min-width: 1024px) { .mm-section { padding-block: 6.5rem; } }
+
+/* ---------- Buttons ---------- */
+:where(.mm-btn) { display: inline-flex; }
+.mm-btn {
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 44px;
+  padding: 0 1.25rem;
+  border-radius: var(--mm-r-md);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  border: 1px solid transparent;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color var(--mm-fast) var(--mm-ease), border-color var(--mm-fast) var(--mm-ease),
+    color var(--mm-fast) var(--mm-ease), transform var(--mm-fast) var(--mm-ease), box-shadow var(--mm-base) var(--mm-ease);
+}
+.mm-btn:active { transform: translateY(1px) scale(0.99); }
+.mm-btn:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
+.mm-btn-sm { min-height: 36px; padding: 0 0.9rem; font-size: 13px; border-radius: 10px; }
+.mm-btn-lg { min-height: 52px; padding: 0 1.6rem; font-size: 15px; }
+.mm-btn-primary { background: var(--mm-gold); color: #120f08; }
+.mm-btn-primary:hover:not(:disabled) { background: var(--mm-gold-hi); box-shadow: 0 10px 28px -12px rgba(217, 164, 65, 0.7); }
+.mm-btn-dark { background: #111316; color: #fff; }
+.mm-btn-dark:hover:not(:disabled) { background: #22262b; }
+.dark .mm-btn-dark { background: #f3f1ec; color: #111316; }
+.dark .mm-btn-dark:hover:not(:disabled) { background: #fff; }
+.mm-btn-outline { background: transparent; border-color: rgba(17, 19, 22, 0.16); color: inherit; }
+.mm-btn-outline:hover:not(:disabled) { border-color: rgba(17, 19, 22, 0.4); background: rgba(17, 19, 22, 0.03); }
+.dark .mm-btn-outline { border-color: rgba(255, 255, 255, 0.16); }
+.dark .mm-btn-outline:hover:not(:disabled) { border-color: rgba(255, 255, 255, 0.4); background: rgba(255, 255, 255, 0.04); }
+.mm-btn-glass { background: rgba(255, 255, 255, 0.08); border-color: rgba(255, 255, 255, 0.22); color: #fff; backdrop-filter: blur(10px); }
+.mm-btn-glass:hover:not(:disabled) { background: rgba(255, 255, 255, 0.16); }
+.mm-btn-whatsapp { background: var(--mm-whatsapp); color: #fff; }
+.mm-btn-whatsapp:hover:not(:disabled) { background: #1a9a50; }
+:where(.mm-icon-btn) { display: inline-grid; }
+.mm-icon-btn {
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--mm-r-md);
+  color: inherit;
+  background: transparent;
+  border: 1px solid transparent;
+  transition: background-color var(--mm-fast) var(--mm-ease), border-color var(--mm-fast);
+}
+.mm-icon-btn:hover { background: rgba(17, 19, 22, 0.06); }
+.dark .mm-icon-btn:hover { background: rgba(255, 255, 255, 0.08); }
+
+/* ---------- Form controls ---------- */
+.mm-field-label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #4a4f57;
+}
+.dark .mm-field-label { color: #a7abb2; }
+.mm-input,
+.mm-select {
+  width: 100%;
+  min-height: 44px;
+  border-radius: var(--mm-r-md);
+  border: 1px solid rgba(17, 19, 22, 0.14);
+  background: var(--mm-surface);
+  color: #111316;
+  padding: 0 0.9rem;
+  font-size: 14px;
+  outline: none;
+  transition: border-color var(--mm-fast), box-shadow var(--mm-fast);
+}
+textarea.mm-input { padding: 0.7rem 0.9rem; min-height: 84px; resize: vertical; }
+.mm-select {
+  appearance: none;
+  padding-right: 2.25rem;
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23878b92' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.85rem center;
+}
+.dark .mm-input,
+.dark .mm-select {
+  background-color: var(--mm-ink-850);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: #eceae6;
+}
+.mm-input::placeholder { color: #9a9ea5; }
+.mm-input:focus,
+.mm-select:focus { border-color: var(--mm-gold); box-shadow: 0 0 0 3px rgba(217, 164, 65, 0.22); }
+.mm-input[aria-invalid="true"] { border-color: var(--mm-danger); box-shadow: 0 0 0 3px rgba(214, 69, 69, 0.15); }
+.mm-field-error { margin-top: 6px; font-size: 12px; color: var(--mm-danger); font-weight: 500; }
+
+/* ---------- Cards, chips & surfaces ---------- */
+.mm-card {
+  background: var(--mm-surface);
+  border: 1px solid rgba(17, 19, 22, 0.08);
+  border-radius: var(--mm-r-lg);
+  box-shadow: var(--mm-shadow-sm);
+}
+.dark .mm-card { background: var(--mm-ink-900); border-color: rgba(255, 255, 255, 0.07); box-shadow: none; }
+:where(.mm-chip) { display: inline-flex; }
+.mm-chip {
+  align-items: center;
+  gap: 6px;
+  min-height: 34px;
+  padding: 0 0.85rem;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 500;
+  border: 1px solid rgba(17, 19, 22, 0.12);
+  background: var(--mm-surface);
+  color: inherit;
+  transition: all var(--mm-fast) var(--mm-ease);
+  cursor: pointer;
+}
+.dark .mm-chip { background: var(--mm-ink-850); border-color: rgba(255, 255, 255, 0.1); }
+.mm-chip:hover { border-color: rgba(17, 19, 22, 0.35); }
+.dark .mm-chip:hover { border-color: rgba(255, 255, 255, 0.3); }
+.mm-chip[aria-pressed="true"] { background: #111316; color: #fff; border-color: #111316; }
+.dark .mm-chip[aria-pressed="true"] { background: var(--mm-gold); color: #120f08; border-color: var(--mm-gold); }
+:where(.mm-badge) { display: inline-flex; }
+.mm-badge {
+  align-items: center;
+  gap: 4px;
+  height: 24px;
+  padding: 0 0.55rem;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+.mm-divider { height: 1px; background: rgba(17, 19, 22, 0.08); }
+.dark .mm-divider { background: rgba(255, 255, 255, 0.07); }
+
+/* Vehicle card */
+.mm-vcard { transition: transform var(--mm-base) var(--mm-ease), box-shadow var(--mm-base) var(--mm-ease), border-color var(--mm-base); }
+.mm-vcard:hover { transform: translateY(-4px); box-shadow: var(--mm-shadow-lg); border-color: rgba(217, 164, 65, 0.35); }
+.mm-vcard img { transition: transform 700ms var(--mm-ease); }
+.mm-vcard:hover img { transform: scale(1.045); }
+
+/* Horizontal rail */
+.mm-rail {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(280px, 86%);
+  gap: 1rem;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  padding-bottom: 0.5rem;
+  scrollbar-width: none;
+}
+.mm-rail::-webkit-scrollbar { display: none; }
+.mm-rail > * { scroll-snap-align: start; }
+@media (min-width: 640px) { .mm-rail { grid-auto-columns: minmax(300px, 46%); } }
+@media (min-width: 1024px) { .mm-rail { grid-auto-columns: calc((100% - 3rem) / 4); gap: 1rem; } }
+
+/* Skeleton */
+.mm-skeleton {
+  background: linear-gradient(90deg, rgba(17, 19, 22, 0.06) 25%, rgba(17, 19, 22, 0.11) 37%, rgba(17, 19, 22, 0.06) 63%);
+  background-size: 400% 100%;
+  animation: mm-shimmer 1.4s ease infinite;
+  border-radius: var(--mm-r-md);
+}
+.dark .mm-skeleton { background-image: linear-gradient(90deg, rgba(255, 255, 255, 0.04) 25%, rgba(255, 255, 255, 0.09) 37%, rgba(255, 255, 255, 0.04) 63%); }
+@keyframes mm-shimmer { 0% { background-position: 100% 50%; } 100% { background-position: 0 50%; } }
+
+/* Entrance & overlay motion */
+@keyframes mm-fade-up { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+@keyframes mm-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes mm-pop { from { opacity: 0; transform: translateY(18px) scale(0.985); } to { opacity: 1; transform: none; } }
+@keyframes mm-sheet { from { transform: translateY(100%); } to { transform: none; } }
+.mm-anim-up { animation: mm-fade-up 700ms var(--mm-ease) both; }
+.mm-anim-delay-1 { animation-delay: 90ms; }
+.mm-anim-delay-2 { animation-delay: 180ms; }
+.mm-anim-delay-3 { animation-delay: 270ms; }
+.mm-backdrop { animation: mm-fade 200ms ease both; }
+.mm-dialog { animation: mm-pop 320ms var(--mm-ease) both; }
+.mm-sheet { animation: mm-sheet 320ms var(--mm-ease) both; }
+@media (min-width: 768px) { .mm-sheet { animation: mm-pop 320ms var(--mm-ease) both; } }
+
+.mm-hero-img { animation: mm-hero-zoom 1600ms var(--mm-ease) both; }
+@keyframes mm-hero-zoom { from { transform: scale(1.06); opacity: 0.4; } to { transform: scale(1); opacity: 1; } }
+
+/* Accessible focus everywhere in the new UI */
+.mm-public :focus-visible,
+.app-shell :focus-visible {
+  outline: 2px solid var(--mm-gold);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+.mm-sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+}
+
+/* Respect reduced-motion preferences across the whole app */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

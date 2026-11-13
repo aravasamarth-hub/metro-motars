@@ -174,12 +174,12 @@ export default function FunctionalNewDeal() {
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-5">
           <div>
             <div className="flex items-center gap-2.5 mb-2 flex-wrap">
-              <AnimePulseBeacon color="gold" size="sm" label="DEAL WORKSPACE CADENCE" />
+              <AnimePulseBeacon color="gold" size="sm" label="DEAL WORKSPACE" />
               <Badge variant="outline" className="border-amber-500/30 bg-amber-500/10 text-amber-400 font-mono text-[10px]">
                 Step 0{step + 1} of 0{STEPS.length}
               </Badge>
               <Badge variant="outline" className="border-emerald-500/30 bg-emerald-500/10 text-emerald-400 text-[10px]">
-                {completedCount} Sections Verified
+                {completedCount} {completedCount === 1 ? "Section" : "Sections"} Complete
               </Badge>
             </div>
 

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import {
   X,
   Calendar,
@@ -11,257 +11,249 @@ import {
   CheckCircle2,
   Phone,
   MessageSquare,
-  Sparkles,
+  ChevronLeft,
+  ChevronRight,
+  Cog,
+  UserRound,
   Award,
+  ArrowRight,
 } from "lucide-react";
 import { SHOWROOM_CONTACT, getWhatsAppEnquiryUrl } from "@/data/customerEnquiry";
 import { MOTORCYCLE_PLACEHOLDER_SVG } from "@/data/publicInventory";
+import VehicleCard from "./VehicleCard";
+import { formatPrice, formatKm, formatCc, vehicleTypeLabel, useOverlay } from "./marketplaceUtils";
 
-export default function VehicleDetailModal({ vehicle, isOpen, onClose, onOpenEnquiry }) {
+const onImgError = (e) => {
+  e.currentTarget.onerror = null;
+  e.currentTarget.src = MOTORCYCLE_PLACEHOLDER_SVG;
+};
+
+export default function VehicleDetailModal({ vehicle, isOpen, onClose, onOpenEnquiry, inventory = [], onSelectVehicle }) {
   const [activePhotoIndex, setActivePhotoIndex] = useState(0);
+  const open = Boolean(isOpen && vehicle);
+  useOverlay(open, onClose);
 
-  if (!isOpen || !vehicle) return null;
+  useEffect(() => {
+    setActivePhotoIndex(0);
+  }, [vehicle?.id]);
 
-  const photos = vehicle.photos && vehicle.photos.length > 0
-    ? vehicle.photos
-    : [{ id: "fallback", url: vehicle.primaryPhoto || MOTORCYCLE_PLACEHOLDER_SVG }];
+  const photos = useMemo(() => {
+    if (!vehicle) return [];
+    return vehicle.photos && vehicle.photos.length > 0
+      ? vehicle.photos
+      : [{ id: "fallback", url: vehicle.primaryPhoto || MOTORCYCLE_PLACEHOLDER_SVG }];
+  }, [vehicle]);
+
+  const step = useCallback(
+    (dir) => setActivePhotoIndex((i) => (i + dir + photos.length) % photos.length),
+    [photos.length]
+  );
+
+  useEffect(() => {
+    if (!open || photos.length < 2) return undefined;
+    const onKey = (e) => {
+      if (e.key === "ArrowRight") step(1);
+      if (e.key === "ArrowLeft") step(-1);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open, photos.length, step]);
+
+  const similar = useMemo(() => {
+    if (!vehicle) return [];
+    return inventory
+      .filter((b) => b.id !== vehicle.id && (b.vehicleType === vehicle.vehicleType || b.brand === vehicle.brand))
+      .slice(0, 3);
+  }, [inventory, vehicle]);
+
+  if (!open) return null;
 
   const currentPhoto = photos[activePhotoIndex]?.url || photos[0]?.url;
   const whatsappUrl = getWhatsAppEnquiryUrl(vehicle);
 
+  const specs = [
+    { icon: Calendar, label: "Year", value: vehicle.year || "—" },
+    { icon: Gauge, label: "Odometer", value: formatKm(vehicle.odometerKm) },
+    { icon: Zap, label: "Engine", value: formatCc(vehicle.engineCc) },
+    { icon: Fuel, label: "Fuel", value: vehicle.fuelType || "—" },
+    { icon: Cog, label: "Transmission", value: vehicle.transmission || "—" },
+    { icon: UserRound, label: "Ownership", value: vehicle.ownership || "—" },
+    { icon: Palette, label: "Color", value: vehicle.color || "—" },
+    { icon: MapPin, label: "Registration", value: vehicle.registrationLocation },
+  ];
+
+  const enquire = () => {
+    onClose();
+    onOpenEnquiry(vehicle);
+  };
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/80 backdrop-blur-md overflow-y-auto animate-in fade-in duration-200">
-      <div className="relative w-full max-w-4xl max-h-[92vh] overflow-y-auto bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-3xl shadow-2xl text-neutral-900 dark:text-neutral-100 flex flex-col">
-        {/* Sticky Header */}
-        <div className="sticky top-0 z-20 flex items-center justify-between px-6 py-4 border-b border-neutral-200 dark:border-neutral-800 bg-white/95 dark:bg-neutral-900/95 backdrop-blur-md">
-          <div className="flex items-center gap-2">
-            <span className="px-2.5 py-1 rounded-full text-[11px] font-black bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 uppercase tracking-wider">
-              {vehicle.status}
+    <div className="fixed inset-0 z-50 flex items-end justify-center md:items-center md:p-6" role="dialog" aria-modal="true" aria-label={vehicle.title} data-testid="vehicle-detail-modal">
+      <button type="button" className="mm-backdrop absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} aria-label="Close details" tabIndex={-1} />
+      <div className="mm-sheet relative flex h-[96dvh] w-full max-w-6xl flex-col overflow-hidden rounded-t-[24px] bg-[color:var(--mm-paper)] text-neutral-900 shadow-2xl dark:bg-[color:var(--mm-ink-900)] dark:text-neutral-100 md:h-auto md:max-h-[92vh] md:rounded-[24px]">
+        {/* Header */}
+        <div className="flex items-center justify-between gap-3 border-b border-black/[0.06] px-5 py-3.5 dark:border-white/[0.07] sm:px-6">
+          <div className="flex min-w-0 items-center gap-2.5">
+            <span className="mm-badge bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> {vehicle.status}
             </span>
-            <span className="text-xs text-neutral-500 dark:text-neutral-400 font-medium">
-              Ref ID: {vehicle.id}
-            </span>
+            <span className="truncate text-[12px] text-neutral-500">Ref ID: {vehicle.id}</span>
           </div>
-          <button
-            onClick={onClose}
-            className="p-2 rounded-xl text-neutral-500 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
-            aria-label="Close details"
-          >
-            <X size={22} />
+          <button type="button" onClick={onClose} className="mm-icon-btn" aria-label="Close details" data-testid="vehicle-detail-close">
+            <X size={21} />
           </button>
         </div>
 
-        <div className="p-6 sm:p-8 space-y-8">
-          {/* Top Title & Price Section */}
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-neutral-200/80 dark:border-neutral-800/80 pb-6">
-            <div>
-              <div className="text-xs font-bold uppercase tracking-wider text-amber-500 mb-1">
-                {vehicle.brand} · {vehicle.year}
-              </div>
-              <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-neutral-950 dark:text-white">
-                {vehicle.title}
-              </h2>
-              {vehicle.variant && (
-                <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-1">
-                  {vehicle.variant}
+        <div className="flex-1 overflow-y-auto">
+          <div className="grid gap-8 p-5 sm:p-6 lg:grid-cols-[minmax(0,1.45fr)_minmax(0,1fr)] lg:gap-10 lg:p-8">
+            {/* Left: gallery + details */}
+            <div className="min-w-0 space-y-8">
+              <div className="lg:hidden">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[color:var(--mm-gold-lo)] dark:text-[color:var(--mm-gold)]">
+                  {vehicle.brand}{vehicle.year ? ` · ${vehicle.year}` : ""}
                 </p>
+                <p className="mm-display mt-1 text-[22px] leading-tight text-neutral-950 dark:text-white">{vehicle.title}</p>
+              </div>
+              <div>
+                <div className="group relative aspect-[16/10] overflow-hidden rounded-[18px] bg-neutral-950">
+                  <img key={currentPhoto} src={currentPhoto} alt={`${vehicle.title} — photo ${activePhotoIndex + 1}`} onError={onImgError} className="mm-backdrop h-full w-full object-cover" data-testid="vehicle-detail-main-image" />
+                  <span className="mm-badge absolute left-4 top-4 bg-black/55 text-white backdrop-blur">
+                    <Award size={13} className="text-[color:var(--mm-gold)]" /> {vehicle.condition}
+                  </span>
+                  {photos.length > 1 && (
+                    <>
+                      <button type="button" onClick={() => step(-1)} className="absolute left-3 top-1/2 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-full bg-white/90 text-neutral-900 shadow-md transition hover:bg-white" aria-label="Previous photo" data-testid="gallery-prev">
+                        <ChevronLeft size={20} />
+                      </button>
+                      <button type="button" onClick={() => step(1)} className="absolute right-3 top-1/2 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-full bg-white/90 text-neutral-900 shadow-md transition hover:bg-white" aria-label="Next photo" data-testid="gallery-next">
+                        <ChevronRight size={20} />
+                      </button>
+                      <span className="mm-badge absolute bottom-4 right-4 bg-black/60 text-white" data-testid="gallery-counter">
+                        {activePhotoIndex + 1} / {photos.length}
+                      </span>
+                    </>
+                  )}
+                </div>
+                {photos.length > 1 && (
+                  <div className="mt-3 flex gap-2 overflow-x-auto pb-1 [scrollbar-width:thin]">
+                    {photos.map((p, idx) => (
+                      <button
+                        key={p.id || idx}
+                        type="button"
+                        onClick={() => setActivePhotoIndex(idx)}
+                        className={`h-16 w-24 shrink-0 overflow-hidden rounded-[10px] border-2 transition ${activePhotoIndex === idx ? "border-[color:var(--mm-gold)]" : "border-transparent opacity-60 hover:opacity-100"}`}
+                        aria-label={`Show photo ${idx + 1}`}
+                        aria-current={activePhotoIndex === idx}
+                        data-testid={`gallery-thumb-${idx}`}
+                      >
+                        <img src={p.url} alt="" loading="lazy" onError={onImgError} className="h-full w-full object-cover" />
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <h3 className="text-[12px] font-semibold uppercase tracking-[0.16em] text-neutral-500">Verified Technical Specifications</h3>
+                <dl className="mt-4 grid grid-cols-2 gap-px overflow-hidden rounded-[16px] border border-black/[0.06] bg-black/[0.06] dark:border-white/[0.07] dark:bg-white/[0.07] sm:grid-cols-4">
+                  {specs.map(({ icon: Icon, label, value }) => (
+                    <div key={label} className="bg-white p-4 dark:bg-[color:var(--mm-ink-850)]">
+                      <dt className="flex items-center gap-1.5 text-[12px] text-neutral-500"><Icon size={13} /> {label}</dt>
+                      <dd className="mt-1 truncate text-[14px] font-semibold text-neutral-900 dark:text-white" title={String(value)}>{value}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </div>
+
+              <div className="rounded-[16px] border border-[rgba(217,164,65,0.25)] bg-[rgba(217,164,65,0.06)] p-5">
+                <div className="flex items-center gap-2">
+                  <ShieldCheck size={18} className="text-[color:var(--mm-gold-lo)] dark:text-[color:var(--mm-gold)]" />
+                  <h3 className="text-[14px] font-semibold text-neutral-900 dark:text-white">120-Point Mechanical &amp; Title Verification</h3>
+                </div>
+                <ul className="mt-3 grid gap-2 sm:grid-cols-2">
+                  {(vehicle.inspectionSummary || []).map((item) => (
+                    <li key={item} className="flex items-center gap-2 text-[13px] text-neutral-700 dark:text-neutral-300">
+                      <CheckCircle2 size={14} className="shrink-0 text-emerald-500" /> {item}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {vehicle.description && (
+                <div>
+                  <h3 className="text-[12px] font-semibold uppercase tracking-[0.16em] text-neutral-500">Vehicle Overview</h3>
+                  <p className="mt-3 text-[15px] leading-relaxed text-neutral-700 dark:text-neutral-300">{vehicle.description}</p>
+                </div>
               )}
             </div>
-            <div className="sm:text-right">
-              <span className="text-xs font-semibold uppercase tracking-wider text-neutral-500 block">
-                Showroom Selling Price
-              </span>
-              <span className="text-3xl sm:text-4xl font-black text-amber-500">
-                ₹{vehicle.sellingPrice.toLocaleString("en-IN")}
-              </span>
-              <span className="text-[11px] text-emerald-500 font-bold block mt-0.5">
-                All RTO Transfer &amp; Certification Included
-              </span>
-            </div>
+
+            {/* Right: sticky purchase panel */}
+            <aside className="min-w-0">
+              <div className="lg:sticky lg:top-0 space-y-4">
+                <div className="mm-card p-6">
+                  <p className="text-[12px] font-semibold uppercase tracking-[0.16em] text-[color:var(--mm-gold-lo)] dark:text-[color:var(--mm-gold)]">
+                    {vehicle.brand}{vehicle.year ? ` · ${vehicle.year}` : ""}{vehicle.vehicleType ? ` · ${vehicleTypeLabel(vehicle.vehicleType)}` : ""}
+                  </p>
+                  <h2 className="mm-display mt-2 text-2xl leading-tight text-neutral-950 dark:text-white sm:text-[28px]">{vehicle.title}</h2>
+                  {vehicle.variant && <p className="mt-1 text-[14px] text-neutral-500">{vehicle.variant}</p>}
+
+                  <div className="mt-6 border-t border-black/[0.06] pt-5 dark:border-white/[0.07]">
+                    <span className="block text-[12px] text-neutral-500">Showroom Selling Price</span>
+                    <span className="mm-display mt-1 block text-[34px] leading-none text-neutral-950 dark:text-white" data-testid="vehicle-detail-price">{formatPrice(vehicle.sellingPrice)}</span>
+                    <span className="mt-2 flex items-center gap-1.5 text-[12px] font-medium text-emerald-600 dark:text-emerald-400">
+                      <CheckCircle2 size={13} /> All RTO Transfer &amp; Certification Included
+                    </span>
+                  </div>
+
+                  <div className="mt-6 grid gap-2.5">
+                    <button type="button" onClick={enquire} className="mm-btn mm-btn-primary mm-btn-lg w-full" data-testid="vehicle-detail-enquire">
+                      Contact to Purchase <ArrowRight size={16} />
+                    </button>
+                    <div className="grid grid-cols-2 gap-2.5">
+                      <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="mm-btn mm-btn-whatsapp" data-testid="vehicle-detail-whatsapp">
+                        <MessageSquare size={16} /> WhatsApp
+                      </a>
+                      <a href={`tel:${SHOWROOM_CONTACT.rawPhone}`} className="mm-btn mm-btn-outline" data-testid="vehicle-detail-call">
+                        <Phone size={16} /> Call Showroom
+                      </a>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mm-card p-5">
+                  <p className="text-[12px] font-semibold uppercase tracking-[0.16em] text-neutral-500">Showroom Location</p>
+                  <p className="mt-2 text-[14px] font-semibold text-neutral-900 dark:text-white">{SHOWROOM_CONTACT.name}</p>
+                  <p className="mt-0.5 text-[13px] text-neutral-600 dark:text-neutral-400">{SHOWROOM_CONTACT.address}</p>
+                  <p className="mt-2 text-[12px] text-neutral-500">{SHOWROOM_CONTACT.businessHours}</p>
+                </div>
+              </div>
+            </aside>
           </div>
 
-          {/* Photo Gallery */}
-          <div className="space-y-3">
-            <div className="relative w-full aspect-[16/10] sm:aspect-[16/9] rounded-2xl overflow-hidden bg-neutral-950 border border-neutral-200 dark:border-neutral-800 shadow-md">
-              <img
-                src={currentPhoto}
-                alt={vehicle.title}
-                onError={(e) => {
-                  e.currentTarget.onerror = null;
-                  e.currentTarget.src = MOTORCYCLE_PLACEHOLDER_SVG;
-                }}
-                className="w-full h-full object-cover transition-all duration-300"
-              />
-              <div className="absolute top-4 left-4">
-                <span className="px-3 py-1 rounded-full text-xs font-bold bg-black/60 text-white backdrop-blur-md flex items-center gap-1.5 border border-white/20">
-                  <Award size={14} className="text-amber-400" />
-                  {vehicle.condition}
-                </span>
-              </div>
-            </div>
-
-            {/* Thumbnails */}
-            {photos.length > 1 && (
-              <div className="flex gap-2.5 overflow-x-auto pb-2">
-                {photos.map((p, idx) => (
-                  <button
-                    key={p.id || idx}
-                    type="button"
-                    onClick={() => setActivePhotoIndex(idx)}
-                    className={`relative w-20 h-14 shrink-0 rounded-xl overflow-hidden border-2 transition-all ${
-                      activePhotoIndex === idx
-                        ? "border-amber-500 scale-105 shadow-md"
-                        : "border-transparent opacity-60 hover:opacity-100"
-                    }`}
-                  >
-                    <img
-                      src={p.url}
-                      alt=""
-                      onError={(e) => {
-                        e.currentTarget.onerror = null;
-                        e.currentTarget.src = MOTORCYCLE_PLACEHOLDER_SVG;
-                      }}
-                      className="w-full h-full object-cover"
-                    />
-                  </button>
+          {similar.length > 0 && (
+            <div className="border-t border-black/[0.06] p-5 dark:border-white/[0.07] sm:p-6 lg:p-8" data-testid="similar-vehicles">
+              <h3 className="mm-display text-xl text-neutral-950 dark:text-white">Similar vehicles</h3>
+              <div className="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                {similar.map((b) => (
+                  <VehicleCard key={b.id} bike={b} onSelect={onSelectVehicle} onEnquire={(x) => { onClose(); onOpenEnquiry(x); }} />
                 ))}
               </div>
-            )}
-          </div>
-
-          {/* Key Specifications Grid */}
-          <div>
-            <h4 className="text-xs font-black uppercase tracking-wider text-neutral-400 mb-4">
-              Verified Technical Specifications
-            </h4>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
-              <div className="p-3.5 rounded-2xl bg-neutral-100 dark:bg-neutral-800/60 border border-neutral-200 dark:border-neutral-800">
-                <div className="flex items-center gap-1.5 text-xs font-medium text-neutral-500 mb-1">
-                  <Calendar size={14} className="text-amber-500" /> Year
-                </div>
-                <div className="text-sm font-bold text-neutral-900 dark:text-white">
-                  {vehicle.year}
-                </div>
-              </div>
-
-              <div className="p-3.5 rounded-2xl bg-neutral-100 dark:bg-neutral-800/60 border border-neutral-200 dark:border-neutral-800">
-                <div className="flex items-center gap-1.5 text-xs font-medium text-neutral-500 mb-1">
-                  <Gauge size={14} className="text-amber-500" /> Odometer
-                </div>
-                <div className="text-sm font-bold text-neutral-900 dark:text-white">
-                  {vehicle.odometerKm?.toLocaleString("en-IN")} km
-                </div>
-              </div>
-
-              <div className="p-3.5 rounded-2xl bg-neutral-100 dark:bg-neutral-800/60 border border-neutral-200 dark:border-neutral-800">
-                <div className="flex items-center gap-1.5 text-xs font-medium text-neutral-500 mb-1">
-                  <Zap size={14} className="text-amber-500" /> Engine
-                </div>
-                <div className="text-sm font-bold text-neutral-900 dark:text-white">
-                  {vehicle.engineCc} cc
-                </div>
-              </div>
-
-              <div className="p-3.5 rounded-2xl bg-neutral-100 dark:bg-neutral-800/60 border border-neutral-200 dark:border-neutral-800">
-                <div className="flex items-center gap-1.5 text-xs font-medium text-neutral-500 mb-1">
-                  <Fuel size={14} className="text-amber-500" /> Fuel
-                </div>
-                <div className="text-sm font-bold text-neutral-900 dark:text-white truncate">
-                  {vehicle.fuelType}
-                </div>
-              </div>
-
-              <div className="p-3.5 rounded-2xl bg-neutral-100 dark:bg-neutral-800/60 border border-neutral-200 dark:border-neutral-800">
-                <div className="flex items-center gap-1.5 text-xs font-medium text-neutral-500 mb-1">
-                  <Palette size={14} className="text-amber-500" /> Color
-                </div>
-                <div className="text-sm font-bold text-neutral-900 dark:text-white truncate">
-                  {vehicle.color}
-                </div>
-              </div>
-
-              <div className="p-3.5 rounded-2xl bg-neutral-100 dark:bg-neutral-800/60 border border-neutral-200 dark:border-neutral-800">
-                <div className="flex items-center gap-1.5 text-xs font-medium text-neutral-500 mb-1">
-                  <MapPin size={14} className="text-amber-500" /> Registration
-                </div>
-                <div className="text-sm font-bold text-neutral-900 dark:text-white">
-                  {vehicle.registrationLocation}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* 120-Point Verification Checklist */}
-          <div className="p-5 rounded-2xl bg-amber-500/5 border border-amber-500/20">
-            <div className="flex items-center gap-2 mb-3">
-              <ShieldCheck size={18} className="text-amber-500" />
-              <h4 className="text-sm font-bold text-neutral-900 dark:text-white">
-                120-Point Mechanical &amp; Title Verification Guarantee
-              </h4>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-              {vehicle.inspectionSummary.map((item, idx) => (
-                <div key={idx} className="flex items-center gap-2 text-xs text-neutral-700 dark:text-neutral-300 font-medium">
-                  <CheckCircle2 size={14} className="text-emerald-500 shrink-0" />
-                  <span>{item}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Description */}
-          {vehicle.description && (
-            <div>
-              <h4 className="text-xs font-black uppercase tracking-wider text-neutral-400 mb-2">
-                Vehicle Overview
-              </h4>
-              <p className="text-sm text-neutral-700 dark:text-neutral-300 leading-relaxed">
-                {vehicle.description}
-              </p>
             </div>
           )}
+        </div>
 
-          {/* Action Footer */}
-          <div className="pt-4 border-t border-neutral-200 dark:border-neutral-800 flex flex-wrap items-center justify-between gap-4">
-            <div>
-              <span className="text-xs text-neutral-500 block">Showroom Location</span>
-              <span className="text-xs font-bold text-neutral-900 dark:text-white">
-                {SHOWROOM_CONTACT.address}
-              </span>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
-              <a
-                href={`tel:${SHOWROOM_CONTACT.rawPhone}`}
-                className="px-4 py-3 rounded-xl border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-xs font-bold flex items-center gap-1.5 transition-colors"
-              >
-                <Phone size={14} className="text-amber-500" />
-                <span>Call Showroom</span>
-              </a>
-
-              <a
-                href={whatsappUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="px-4 py-3 rounded-xl border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-bold flex items-center gap-1.5 transition-colors"
-              >
-                <MessageSquare size={14} />
-                <span>WhatsApp</span>
-              </a>
-
-              <button
-                type="button"
-                onClick={() => {
-                  onClose();
-                  onOpenEnquiry(vehicle);
-                }}
-                className="flex-1 sm:flex-none px-6 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-neutral-950 font-black text-xs shadow-lg shadow-amber-500/20 flex items-center justify-center gap-2 transition-all hover:scale-[1.02]"
-              >
-                <Sparkles size={14} />
-                <span>Contact to Purchase</span>
-              </button>
-            </div>
+        {/* Mobile sticky purchase bar */}
+        <div className="flex items-center gap-3 border-t border-black/[0.06] bg-[color:var(--mm-paper)] px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] dark:border-white/[0.07] dark:bg-[color:var(--mm-ink-900)] lg:hidden" data-testid="vehicle-detail-mobile-bar">
+          <div className="min-w-0 flex-1">
+            <span className="block text-[11px] text-neutral-500">Selling price</span>
+            <span className="mm-display block truncate text-[19px] text-neutral-950 dark:text-white">{formatPrice(vehicle.sellingPrice)}</span>
           </div>
+          <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="mm-btn mm-btn-whatsapp !px-3.5" aria-label="WhatsApp showroom">
+            <MessageSquare size={17} />
+          </a>
+          <button type="button" onClick={enquire} className="mm-btn mm-btn-primary" data-testid="vehicle-detail-mobile-enquire">
+            Enquire
+          </button>
         </div>
       </div>
     </div>

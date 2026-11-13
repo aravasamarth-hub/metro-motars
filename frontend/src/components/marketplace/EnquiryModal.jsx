@@ -1,6 +1,8 @@
-import React, { useState } from "react";
-import { X, Phone, MessageSquare, Send, CheckCircle2, ShieldCheck, Sparkles } from "lucide-react";
-import { SHOWROOM_CONTACT, getWhatsAppEnquiryUrl, submitPurchaseEnquiry } from "@/data/customerEnquiry";
+import React, { useState, useEffect } from "react";
+import { X, Phone, MessageSquare, Send, CheckCircle2, ShieldCheck, Loader2, Info } from "lucide-react";
+import { SHOWROOM_CONTACT, getWhatsAppEnquiryUrl, submitPurchaseEnquiry, validateEnquiryForm } from "@/data/customerEnquiry";
+import { MOTORCYCLE_PLACEHOLDER_SVG } from "@/data/publicInventory";
+import { formatPrice, formatKm, useOverlay } from "./marketplaceUtils";
 
 export default function EnquiryModal({ vehicle, isOpen, onClose }) {
   const [name, setName] = useState("");
@@ -11,8 +13,20 @@ export default function EnquiryModal({ vehicle, isOpen, onClose }) {
   const [success, setSuccess] = useState(false);
   const [submissionResult, setSubmissionResult] = useState(null);
   const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState({});
+  const open = Boolean(isOpen && vehicle);
+  useOverlay(open, onClose);
 
-  if (!isOpen || !vehicle) return null;
+  // Reset the form whenever a different vehicle is opened.
+  useEffect(() => {
+    if (!open) return;
+    setSuccess(false);
+    setSubmissionResult(null);
+    setError("");
+    setFieldErrors({});
+  }, [open, vehicle?.id]);
+
+  if (!open) return null;
 
   const whatsappUrl = getWhatsAppEnquiryUrl(vehicle);
 
@@ -20,6 +34,9 @@ export default function EnquiryModal({ vehicle, isOpen, onClose }) {
     e.preventDefault();
     if (busy) return; // Prevent double submit
     setError("");
+    const errs = validateEnquiryForm({ name, phone });
+    setFieldErrors(errs);
+    if (Object.keys(errs).length > 0) return;
     setBusy(true);
 
     try {
@@ -42,212 +59,163 @@ export default function EnquiryModal({ vehicle, isOpen, onClose }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="relative w-full max-w-lg bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-3xl shadow-2xl overflow-hidden">
-        {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-950/50">
+    <div className="fixed inset-0 z-[60] flex items-end justify-center sm:items-center sm:p-4" role="dialog" aria-modal="true" aria-labelledby="enquiry-title" data-testid="enquiry-modal">
+      <button type="button" className="mm-backdrop absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} aria-label="Close enquiry" tabIndex={-1} />
+      <div className="mm-sheet relative flex max-h-[94dvh] w-full max-w-lg flex-col overflow-hidden rounded-t-[24px] bg-[color:var(--mm-paper)] text-neutral-900 shadow-2xl dark:bg-[color:var(--mm-ink-900)] dark:text-neutral-100 sm:rounded-[24px]">
+        <div className="flex items-start justify-between gap-4 px-6 pb-4 pt-6">
           <div>
-            <div className="inline-flex items-center gap-1.5 text-xs font-bold text-amber-500 uppercase tracking-wider mb-1">
-              <Sparkles size={13} /> Contact Showroom
-            </div>
-            <h3 className="text-lg font-black text-neutral-900 dark:text-white">
-              Purchase Enquiry
-            </h3>
+            <p className="mm-eyebrow">Contact Showroom</p>
+            <h3 id="enquiry-title" className="mm-display mt-2 text-2xl text-neutral-950 dark:text-white">Purchase Enquiry</h3>
           </div>
-          <button
-            onClick={onClose}
-            className="p-2 rounded-xl text-neutral-500 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
-            aria-label="Close modal"
-          >
+          <button type="button" onClick={onClose} className="mm-icon-btn -mr-2 -mt-1" aria-label="Close modal" data-testid="enquiry-close">
             <X size={20} />
           </button>
         </div>
 
-        {/* Selected Vehicle Badge */}
-        <div className="px-6 py-3.5 bg-amber-500/10 border-b border-amber-500/20 flex items-center justify-between">
-          <div>
-            <p className="text-xs font-bold text-neutral-900 dark:text-neutral-100">
-              {vehicle.year} {vehicle.title}
-            </p>
-            <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-              {vehicle.odometerKm?.toLocaleString("en-IN")} km · {vehicle.registrationLocation}
-            </p>
+        <div className="mx-6 flex items-center gap-3 rounded-[14px] border border-black/[0.06] bg-white p-3 dark:border-white/[0.07] dark:bg-[color:var(--mm-ink-850)]">
+          <img
+            src={vehicle.primaryPhoto || MOTORCYCLE_PLACEHOLDER_SVG}
+            alt=""
+            className="h-12 w-16 shrink-0 rounded-[8px] object-cover"
+            onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = MOTORCYCLE_PLACEHOLDER_SVG; }}
+          />
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-[14px] font-semibold">{vehicle.year ? `${vehicle.year} ` : ""}{vehicle.title}</p>
+            <p className="truncate text-[12px] text-neutral-500">{formatKm(vehicle.odometerKm)} · {vehicle.registrationLocation}</p>
           </div>
-          <div className="text-right">
-            <span className="text-base font-black text-amber-600 dark:text-amber-400">
-              ₹{vehicle.sellingPrice?.toLocaleString("en-IN")}
-            </span>
-          </div>
+          <span className="mm-display shrink-0 text-[15px]">{formatPrice(vehicle.sellingPrice)}</span>
         </div>
 
-        {/* Content */}
-        <div className="p-6">
+        <div className="flex-1 overflow-y-auto px-6 pb-6 pt-5">
           {success ? (
-            <div className="py-8 text-center space-y-4">
-              <div className={`w-16 h-16 mx-auto rounded-full flex items-center justify-center ${
-                submissionResult?.isServerDelivered
-                  ? "bg-emerald-500/10 border border-emerald-500/20 text-emerald-500"
-                  : "bg-amber-500/10 border border-amber-500/20 text-amber-500"
-              }`}>
+            <div className="py-6 text-center" data-testid="enquiry-success">
+              <div className={`mx-auto grid h-16 w-16 place-items-center rounded-full ${submissionResult?.isServerDelivered ? "bg-emerald-500/10 text-emerald-500" : "bg-[rgba(217,164,65,0.15)] text-[color:var(--mm-gold-lo)]"}`}>
                 <CheckCircle2 size={32} />
               </div>
-              <h4 className="text-xl font-bold text-neutral-900 dark:text-white">
-                {submissionResult?.isServerDelivered
-                  ? "Enquiry Registered with Showroom!"
-                  : "Enquiry Logged in Local Preview"}
+              <h4 className="mm-display mt-5 text-xl text-neutral-950 dark:text-white">
+                {submissionResult?.isServerDelivered ? "Enquiry Registered with Showroom!" : "Enquiry Logged in Local Preview"}
               </h4>
-              <p className="text-xs text-neutral-600 dark:text-neutral-300 max-w-sm mx-auto leading-relaxed">
+              <p className="mx-auto mt-2 max-w-sm text-[14px] leading-relaxed text-neutral-600 dark:text-neutral-300">
                 {submissionResult?.isServerDelivered ? (
                   <>
-                    Thank you! Your enquiry has been received and logged in our showroom queue (Ref:{" "}
-                    <span className="font-mono font-bold text-amber-600 dark:text-amber-400">
-                      {submissionResult?.enquiryId}
-                    </span>
-                    ). A motorcycle specialist will contact you via {preferredMethod}.
+                    Thank you! Your enquiry has been received (Ref:{" "}
+                    <span className="font-mono font-semibold text-[color:var(--mm-gold-lo)] dark:text-[color:var(--mm-gold)]">{submissionResult?.enquiryId}</span>
+                    ). A specialist will contact you via {preferredMethod}.
                   </>
                 ) : (
                   <>
-                    Your enquiry has been saved to your browser&apos;s local storage.
-                    <span className="block font-semibold text-amber-600 dark:text-amber-400 mt-1">
-                      Note: Live server delivery is offline.
-                    </span>
-                    Please connect directly with our showroom team on WhatsApp or Call to guarantee your inspection.
+                    Your enquiry has been saved to this browser&apos;s local storage.
+                    <span className="mt-1 block font-semibold text-[color:var(--mm-gold-lo)] dark:text-[color:var(--mm-gold)]">Note: Live server delivery is offline.</span>
+                    Please connect with our showroom team on WhatsApp or by phone to confirm your inspection.
                   </>
                 )}
               </p>
-              <div className="pt-4 flex flex-col sm:flex-row gap-3 justify-center">
-                <a
-                  href={whatsappUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-md transition-colors"
-                >
-                  <MessageSquare size={15} /> Message on WhatsApp Now
+              <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
+                <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="mm-btn mm-btn-whatsapp">
+                  <MessageSquare size={16} /> Message on WhatsApp Now
                 </a>
-                <button
-                  onClick={onClose}
-                  className="px-5 py-2.5 rounded-xl text-xs font-bold bg-neutral-200 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 hover:bg-neutral-300 dark:hover:bg-neutral-700 transition-colors"
-                >
-                  Close
-                </button>
+                <button type="button" onClick={onClose} className="mm-btn mm-btn-outline" data-testid="enquiry-success-close">Close</button>
               </div>
             </div>
           ) : (
             <>
-              {/* Quick Direct Actions */}
-              <div className="grid grid-cols-2 gap-3 mb-4">
-                <a
-                  href={`tel:${SHOWROOM_CONTACT.rawPhone}`}
-                  className="flex items-center justify-center gap-2 p-3 rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-800/60 hover:border-amber-500/50 hover:bg-amber-500/5 text-neutral-900 dark:text-white text-xs font-bold transition-colors shadow-sm"
-                >
-                  <Phone size={15} className="text-amber-500" />
-                  <span>Call {SHOWROOM_CONTACT.phone}</span>
+              <div className="grid grid-cols-2 gap-2.5">
+                <a href={`tel:${SHOWROOM_CONTACT.rawPhone}`} className="mm-btn mm-btn-outline !text-[13px]" data-testid="enquiry-call-link">
+                  <Phone size={15} /> <span className="truncate">Call {SHOWROOM_CONTACT.phone}</span>
                 </a>
-                <a
-                  href={whatsappUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-2 p-3 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-bold transition-colors shadow-sm"
-                >
-                  <MessageSquare size={15} />
-                  <span>WhatsApp Showroom</span>
+                <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="mm-btn mm-btn-whatsapp !text-[13px]" data-testid="enquiry-whatsapp-link">
+                  <MessageSquare size={15} /> WhatsApp Showroom
                 </a>
               </div>
 
-              {/* Local Storage Limitation Disclosure */}
-              <div className="p-3 mb-4 rounded-xl bg-amber-500/10 border border-amber-500/20 text-[11px] text-amber-700 dark:text-amber-300 leading-snug">
-                <span className="font-bold">Preview Notice:</span> Web enquiries are logged in local browser storage only. For live vehicle booking, please connect directly via WhatsApp or Phone.
+              <div className="mt-4 flex gap-2 rounded-[12px] bg-[rgba(217,164,65,0.10)] p-3 text-[12px] leading-snug text-[#7a5a17] dark:text-[color:var(--mm-gold-hi)]">
+                <Info size={15} className="mt-px shrink-0" />
+                <span><b>Preview notice:</b> web enquiries are stored in this browser only. For a confirmed booking, contact us on WhatsApp or phone.</span>
               </div>
 
-              <div className="relative flex py-1 items-center mb-4">
-                <div className="flex-grow border-t border-neutral-200 dark:border-neutral-800" />
-                <span className="flex-shrink mx-3 text-[11px] font-bold text-neutral-400 uppercase tracking-wider">
-                  or log local callback
-                </span>
-                <div className="flex-grow border-t border-neutral-200 dark:border-neutral-800" />
+              <div className="my-5 flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.16em] text-neutral-400">
+                <span className="h-px flex-1 bg-black/[0.08] dark:bg-white/[0.08]" /> or request a callback <span className="h-px flex-1 bg-black/[0.08] dark:bg-white/[0.08]" />
               </div>
 
               {error && (
-                <div className="mb-4 p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-600 dark:text-red-400 text-xs font-medium">
+                <div className="mb-4 rounded-[12px] border border-red-500/30 bg-red-500/10 p-3 text-[13px] font-medium text-red-600 dark:text-red-400" role="alert" data-testid="enquiry-error">
                   {error}
                 </div>
               )}
 
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <form onSubmit={handleSubmit} className="space-y-4" noValidate>
                 <div>
-                  <label className="block text-xs font-bold text-neutral-700 dark:text-neutral-300 mb-1.5">
-                    Your Full Name *
-                  </label>
+                  <label htmlFor="enq-name" className="mm-field-label">Your Full Name *</label>
                   <input
+                    id="enq-name"
                     type="text"
-                    required
+                    autoComplete="name"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder="e.g. Rahul Sharma"
-                    className="w-full px-4 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-sm text-neutral-900 dark:text-white placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                    aria-invalid={Boolean(fieldErrors.name)}
+                    className="mm-input"
+                    data-testid="enquiry-name-input"
                   />
+                  {fieldErrors.name && <p className="mm-field-error" data-testid="enquiry-name-error">{fieldErrors.name}</p>}
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-neutral-700 dark:text-neutral-300 mb-1.5">
-                    Mobile Number (WhatsApp) *
-                  </label>
+                  <label htmlFor="enq-phone" className="mm-field-label">Mobile Number (WhatsApp) *</label>
                   <input
+                    id="enq-phone"
                     type="tel"
-                    required
+                    inputMode="numeric"
+                    autoComplete="tel-national"
                     value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
+                    onChange={(e) => setPhone(e.target.value.replace(/[^\d\s+-]/g, ""))}
                     placeholder="e.g. 9880012345"
-                    maxLength={10}
-                    className="w-full px-4 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-sm text-neutral-900 dark:text-white placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                    maxLength={14}
+                    aria-invalid={Boolean(fieldErrors.phone)}
+                    className="mm-input"
+                    data-testid="enquiry-phone-input"
                   />
+                  {fieldErrors.phone && <p className="mm-field-error" data-testid="enquiry-phone-error">{fieldErrors.phone}</p>}
                 </div>
 
-                <div>
-                  <label className="block text-xs font-bold text-neutral-700 dark:text-neutral-300 mb-1.5">
-                    Preferred Contact Method
-                  </label>
+                <fieldset>
+                  <legend className="mm-field-label">Preferred Contact Method</legend>
                   <div className="grid grid-cols-2 gap-2">
                     {["WhatsApp", "Phone Call"].map((method) => (
                       <button
                         key={method}
                         type="button"
                         onClick={() => setPreferredMethod(method)}
-                        className={`p-2 rounded-xl text-xs font-bold border transition-colors ${
-                          preferredMethod === method
-                            ? "border-amber-500 bg-amber-500/10 text-amber-600 dark:text-amber-400"
-                            : "border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400"
-                        }`}
+                        aria-pressed={preferredMethod === method}
+                        className={`mm-btn mm-btn-sm !min-h-[42px] border ${preferredMethod === method ? "border-[color:var(--mm-gold)] bg-[rgba(217,164,65,0.10)] text-neutral-900 dark:text-white" : "border-black/[0.12] text-neutral-600 dark:border-white/[0.12] dark:text-neutral-400"}`}
+                        data-testid={`enquiry-method-${method.replace(" ", "-").toLowerCase()}`}
                       >
                         {method}
                       </button>
                     ))}
                   </div>
-                </div>
+                </fieldset>
 
                 <div>
-                  <label className="block text-xs font-bold text-neutral-700 dark:text-neutral-300 mb-1.5">
-                    Questions or Test Drive Request (Optional)
-                  </label>
+                  <label htmlFor="enq-msg" className="mm-field-label">Questions or Test Drive Request (Optional)</label>
                   <textarea
-                    rows={2}
+                    id="enq-msg"
+                    rows={3}
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
                     placeholder="e.g. Is it available for inspection this Sunday?"
-                    className="w-full px-4 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-sm text-neutral-900 dark:text-white placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-amber-500 resize-none"
+                    maxLength={500}
+                    className="mm-input"
+                    data-testid="enquiry-message-input"
                   />
                 </div>
 
-                <div className="pt-2 flex items-center justify-between">
-                  <span className="text-[11px] text-neutral-500 flex items-center gap-1">
+                <div className="flex items-center justify-between gap-3 pt-1">
+                  <span className="flex items-center gap-1.5 text-[12px] text-neutral-500">
                     <ShieldCheck size={14} className="text-emerald-500" /> No spam guarantee
                   </span>
-                  <button
-                    type="submit"
-                    disabled={busy}
-                    className="px-6 py-2.5 rounded-xl text-xs font-bold bg-amber-500 hover:bg-amber-600 text-neutral-950 flex items-center gap-2 shadow-md shadow-amber-500/20 disabled:opacity-50 transition-colors"
-                  >
-                    {busy ? "Submitting..." : <><Send size={14} /> Send Enquiry</>}
+                  <button type="submit" disabled={busy} className="mm-btn mm-btn-primary" data-testid="enquiry-submit-button">
+                    {busy ? <><Loader2 size={15} className="animate-spin" /> Submitting…</> : <><Send size={15} /> Send Enquiry</>}
                   </button>
                 </div>
               </form>

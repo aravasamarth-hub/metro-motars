@@ -19,7 +19,6 @@ import { useLanguage } from "@/features/i18n/LanguageContext";
 import { useAuth } from "@/context/AuthContext";
 
 // 1. shadcn/ui components
-import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 // 2. KokonutUI components
@@ -32,7 +31,6 @@ import { MotionCounter } from "@/components/motion/MotionCounter";
 
 // 4. Anime.js v4 components
 import AnimePulseBeacon from "@/components/anime/AnimePulseBeacon";
-import AnimeDealJourney from "@/components/anime/AnimeDealJourney";
 
 // 5. Bklit data visualizations
 import { FleetValuationAreaChart } from "@/components/bklit/FleetValuationAreaChart";
@@ -155,23 +153,14 @@ export default function FunctionalDashboard() {
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4 sm:gap-6">
           <div>
             <div className="flex items-center gap-2 sm:gap-3 mb-2 flex-wrap">
-              {/* 4. Anime.js Live Showroom Pulse Beacon */}
-              <AnimePulseBeacon color="gold" size="md" label="LIVE SHOWROOM ACTIVE" />
-
-              {/* Status Badges */}
-              <Badge variant="outline" className="border-amber-500/30 bg-amber-500/10 text-amber-400 font-mono text-[9px] sm:text-[10px] tracking-wide">
-                ENTERPRISE ATELIER
-              </Badge>
-              <Badge variant="outline" className="border-emerald-500/30 bg-emerald-500/10 text-emerald-400 text-[9px] sm:text-[10px]">
-                Vault Active
-              </Badge>
+              <AnimePulseBeacon color="gold" size="md" label="SHOWROOM CONSOLE" />
             </div>
 
             <h1 data-testid="page-title" className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white font-manrope">
               {t("dashboard.title", "Dashboard")}
             </h1>
             <p className="text-xs sm:text-sm text-neutral-400 mt-1 max-w-xl">
-              Executive Fleet Cockpit · Real-time operational intelligence, deal verification &amp; treasury monitoring
+              Today&apos;s deals, stock on the floor and pending RTO transfers at a glance.
             </p>
           </div>
 
@@ -326,11 +315,6 @@ export default function FunctionalDashboard() {
             {isOwner && <ArrowUpRight size={13} className="text-neutral-400 dark:text-neutral-500 flex-none hidden sm:block" />}
           </div>
         </SpotlightCard>
-      </div>
-
-      {/* ── 4. Anime.js v4 Automotive Lifecycle Deal Pipeline ── */}
-      <div className="mb-6">
-        <AnimeDealJourney currentStage={3} onStageClick={(st) => navigate(`/deals`)} />
       </div>
 
       {/* ── Fleet Segment Horizontal Filter Chips (8 Categories) ── */}

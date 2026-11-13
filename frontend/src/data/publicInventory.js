@@ -92,18 +92,29 @@ export function toPublicVehicleListing(deal) {
   // If no photos attached, provide clean branded fallback
   const primaryPhoto = photos.length > 0 ? photos[0].url : MOTORCYCLE_PLACEHOLDER_SVG;
 
+  // Public-safe fields only. Missing values stay empty (null) instead of being
+  // invented, so customers never see a fabricated price, mileage or engine size.
+  const engineCc = Number(v.engine_cc);
+  const odometerKm = Number(v.odometer);
+  const year = Number(v.year);
+
   return {
     id: deal.id,
-    title: v.vehicle_name || `${v.make || ""} ${v.model || ""}`.trim() || "Pre-Owned Motorcycle",
-    brand: v.make || "Royal Enfield",
+    title: v.vehicle_name || `${v.make || ""} ${v.model || ""}`.trim() || "Pre-Owned Vehicle",
+    brand: (v.make || "").trim() || "Other",
     model: v.model || v.vehicle_name || "",
     variant: v.variant || "",
-    year: Number(v.year) || 2023,
-    engineCc: v.engine_cc ? Number(v.engine_cc) : (v.model?.includes("350") ? 349 : v.model?.includes("450") ? 452 : 399),
-    odometerKm: v.odometer ? Number(v.odometer) : 10000,
-    color: v.color || "Standard",
-    fuelType: v.fuel_type || "Petrol",
-    sellingPrice: price > 0 ? price : 185000,
+    year: year > 0 ? year : null,
+    engineCc: engineCc > 0 ? engineCc : null,
+    odometerKm: Number.isFinite(odometerKm) && String(v.odometer ?? "").trim() !== "" ? odometerKm : null,
+    color: v.color || "",
+    fuelType: v.fuel_type || "",
+    transmission: v.transmission || "",
+    vehicleType: v.vehicle_type || "",
+    ownership: v.ownership || "",
+    vehicleCondition: v.condition || "",
+    listedAt: deal.created_at || deal.updated_at || null,
+    sellingPrice: price > 0 ? price : null,
     status: "Available",
     registrationLocation: maskRegistration(v.registration_number || v.vehicle_number),
     condition: "120-Point Certified",
