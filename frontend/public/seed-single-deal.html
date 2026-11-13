@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head><title>Add Single Demo Deal</title></head>
+<body style="font-family: sans-serif; background: #0f172a; color: #f8fafc; padding: 40px; text-align: center;">
+  <h2>Metro Motors - Initializing Single Demo Vehicle Record...</h2>
+  <div id="status" style="margin-top: 20px; font-size: 16px; color: #38bdf8;">Connecting to browser storage...</div>
+  <script type="module">
+    import { getDemoDeals } from './src/data/demoDeals.js';
+    const STORE = "records";
+    const open = () => new Promise((resolve, reject) => {
+      const req = indexedDB.open("metro-motors-app-v1", 1);
+      req.onupgradeneeded = () => req.result.createObjectStore(STORE, { keyPath: "id" });
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+
+    async function initSingleDeal() {
+      const statusDiv = document.getElementById("status");
+      try {
+        const db = await open();
+        const tx = db.transaction(STORE, "readwrite");
+        const store = tx.objectStore(STORE);
+
+        // Clear existing records
+        store.clear();
+
+        // Get single full demo deal (Royal Enfield Classic 350)
+        const all = getDemoDeals();
+        const singleDeal = all[0]; // Complete Royal Enfield Classic 350 with all vehicle specs, seller, buyer, agent, maintenance, and verified photos
+
+        const prefix = 'MM-' + String(new Date().getFullYear()).slice(-2);
+        store.put({ id: 'sequence:' + prefix, count: 1 });
+        store.put(singleDeal);
+
+        tx.oncomplete = () => {
+          localStorage.removeItem("mm_demo_cleared");
+          statusDiv.innerHTML = '<span style="color: #4ade80; font-weight: bold;">Done! 1 Complete Vehicle Deal added:</span><br><br>' +
+            '<strong>' + singleDeal.vehicle.vehicle_name + '</strong> (' + singleDeal.vehicle.registration_number + ')<br>' +
+            'Redirecting to Deals page in 2 seconds...';
+          setTimeout(() => {
+            window.location.href = '/deals';
+          }, 2000);
+        };
+        tx.onerror = (e) => {
+          statusDiv.innerText = "Error: " + e.target.error;
+        };
+      } catch (err) {
+        statusDiv.innerText = "Error: " + err.message;
+      }
+    }
+    initSingleDeal();
+  </script>
+</body>
+</html>
