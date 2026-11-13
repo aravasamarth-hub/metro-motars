@@ -203,3 +203,11 @@ Base UI-phase directive (subject to the latest changes below):
 1. User reviews name-only deal creation; additional details can be filled later.
 2. Keep all persistence browser-local until expressly authorized otherwise.
 3. Suggested next enhancement: autosave unfinished deal drafts.
+## Premium UI/UX upgrade (Nov 2026)
+- New design system: frontend/src/styles/mm-design-system.css (tokens, buttons, inputs, chips, cards, skeletons, motion, reduced-motion, focus rings)
+- Public marketplace fully redesigned: Navbar, Hero (+quick search), Brands, Categories, Featured/Recently-added rails, Inventory (filters: type/brand/budget/year/fuel/transmission/km/RTO, sort, chips, mobile sheet, load more), Detail modal (gallery, keyboard nav, similar vehicles, mobile sticky bar), Enquiry modal (inline validation), Certification, Process, About, Contact, Footer
+- publicInventory: no fabricated fallbacks (price "Price on request"); added public-safe fields (vehicleType, transmission, ownership, listedAt)
+- Legacy light-theme global overrides in luxury-design.css scoped away from .mm-public
+- customerEnquiry.js reads REACT_APP_* literally (CRA inlining fix)
+- Dashboard: removed hardcoded "Stage 3 of 5" pipeline + decorative badges
+- Known: frontend auth is permissive local demo (any creds -> owner), console routes unguarded; backend CORS blocks preview enquiries (falls back to local)

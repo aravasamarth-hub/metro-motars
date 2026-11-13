@@ -758,119 +758,119 @@ html:not(.dark) .table-heading b {
 }
 
 /* ── 8. Forms, Inputs & Selects Theming ─────────────────────────────────── */
-.theme-light input,
-.theme-light select,
-.theme-light textarea,
-.light input,
-.light select,
-.light textarea,
-html.theme-light input,
-html.theme-light select,
-html.theme-light textarea,
-html.light input,
-html.light select,
-html.light textarea,
-html:not(.dark) input,
-html:not(.dark) select,
-html:not(.dark) textarea {
+.theme-light input:not(.mm-public *),
+.theme-light select:not(.mm-public *),
+.theme-light textarea:not(.mm-public *),
+.light input:not(.mm-public *),
+.light select:not(.mm-public *),
+.light textarea:not(.mm-public *),
+html.theme-light input:not(.mm-public *),
+html.theme-light select:not(.mm-public *),
+html.theme-light textarea:not(.mm-public *),
+html.light input:not(.mm-public *),
+html.light select:not(.mm-public *),
+html.light textarea:not(.mm-public *),
+html:not(.dark) input:not(.mm-public *),
+html:not(.dark) select:not(.mm-public *),
+html:not(.dark) textarea:not(.mm-public *) {
   background: #ffffff !important;
   border-color: #cbd5e1 !important;
   color: #0f172a !important;
 }
 
-.theme-light .deals-luxury-select,
-.light .deals-luxury-select,
-html.theme-light .deals-luxury-select,
-html.light .deals-luxury-select,
-html:not(.dark) .deals-luxury-select {
+.theme-light .deals-luxury-select:not(.mm-public *),
+.light .deals-luxury-select:not(.mm-public *),
+html.theme-light .deals-luxury-select:not(.mm-public *),
+html.light .deals-luxury-select:not(.mm-public *),
+html:not(.dark) .deals-luxury-select:not(.mm-public *) {
   background: #ffffff !important;
   border-color: #cbd5e1 !important;
   color: #0f172a !important;
 }
 
-.theme-light .deals-luxury-select select,
-.light .deals-luxury-select select,
-html.theme-light .deals-luxury-select select,
-html.light .deals-luxury-select select,
-html:not(.dark) .deals-luxury-select select {
+.theme-light .deals-luxury-select select:not(.mm-public *),
+.light .deals-luxury-select select:not(.mm-public *),
+html.theme-light .deals-luxury-select select:not(.mm-public *),
+html.light .deals-luxury-select select:not(.mm-public *),
+html:not(.dark) .deals-luxury-select select:not(.mm-public *) {
   color: #0f172a !important;
 }
 
-.theme-light .deals-luxury-select select option,
-.light .deals-luxury-select select option,
-html.theme-light .deals-luxury-select select option,
-html.light .deals-luxury-select select option,
-html:not(.dark) .deals-luxury-select select option {
+.theme-light .deals-luxury-select select option:not(.mm-public *),
+.light .deals-luxury-select select option:not(.mm-public *),
+html.theme-light .deals-luxury-select select option:not(.mm-public *),
+html.light .deals-luxury-select select option:not(.mm-public *),
+html:not(.dark) .deals-luxury-select select option:not(.mm-public *) {
   background: #ffffff !important;
   color: #0f172a !important;
 }
 
 /* ── 9. Universal Overrides for Light Mode ("Make everything bright / white type") ── */
-.theme-light [class*="bg-neutral-900"],
-.theme-light [class*="bg-neutral-950"],
-.light [class*="bg-neutral-900"],
-.light [class*="bg-neutral-950"],
-html.theme-light [class*="bg-neutral-900"],
-html.theme-light [class*="bg-neutral-950"],
-html.light [class*="bg-neutral-900"],
-html.light [class*="bg-neutral-950"] {
+.theme-light [class*="bg-neutral-900"]:not(.mm-public *),
+.theme-light [class*="bg-neutral-950"]:not(.mm-public *),
+.light [class*="bg-neutral-900"]:not(.mm-public *),
+.light [class*="bg-neutral-950"]:not(.mm-public *),
+html.theme-light [class*="bg-neutral-900"]:not(.mm-public *),
+html.theme-light [class*="bg-neutral-950"]:not(.mm-public *),
+html.light [class*="bg-neutral-900"]:not(.mm-public *),
+html.light [class*="bg-neutral-950"]:not(.mm-public *) {
   background-color: #ffffff !important;
 }
 
-.theme-light [class*="border-neutral-800"],
-.light [class*="border-neutral-800"],
-html.theme-light [class*="border-neutral-800"],
-html.light [class*="border-neutral-800"] {
+.theme-light [class*="border-neutral-800"]:not(.mm-public *),
+.light [class*="border-neutral-800"]:not(.mm-public *),
+html.theme-light [class*="border-neutral-800"]:not(.mm-public *),
+html.light [class*="border-neutral-800"]:not(.mm-public *) {
   border-color: #e2e8f0 !important;
 }
 
-.theme-light [class*="text-white"],
-.light [class*="text-white"],
-html.theme-light [class*="text-white"],
-html.light [class*="text-white"] {
+.theme-light [class*="text-white"]:not(.mm-public *),
+.light [class*="text-white"]:not(.mm-public *),
+html.theme-light [class*="text-white"]:not(.mm-public *),
+html.light [class*="text-white"]:not(.mm-public *) {
   color: #0f172a !important;
 }
 
-.theme-light [class*="text-neutral-400"],
-.light [class*="text-neutral-400"],
-html.theme-light [class*="text-neutral-400"],
-html.light [class*="text-neutral-400"] {
+.theme-light [class*="text-neutral-400"]:not(.mm-public *),
+.light [class*="text-neutral-400"]:not(.mm-public *),
+html.theme-light [class*="text-neutral-400"]:not(.mm-public *),
+html.light [class*="text-neutral-400"]:not(.mm-public *) {
   color: #64748b !important;
 }
 
-.theme-light [class*="text-neutral-300"],
-.light [class*="text-neutral-300"],
-html.theme-light [class*="text-neutral-300"],
-html.light [class*="text-neutral-300"] {
+.theme-light [class*="text-neutral-300"]:not(.mm-public *),
+.light [class*="text-neutral-300"]:not(.mm-public *),
+html.theme-light [class*="text-neutral-300"]:not(.mm-public *),
+html.light [class*="text-neutral-300"]:not(.mm-public *) {
   color: #475569 !important;
 }
 
-.theme-light [class*="text-neutral-500"],
-.light [class*="text-neutral-500"],
-html.theme-light [class*="text-neutral-500"],
-html.light [class*="text-neutral-500"] {
+.theme-light [class*="text-neutral-500"]:not(.mm-public *),
+.light [class*="text-neutral-500"]:not(.mm-public *),
+html.theme-light [class*="text-neutral-500"]:not(.mm-public *),
+html.light [class*="text-neutral-500"]:not(.mm-public *) {
   color: #94a3b8 !important;
 }
 
 /* High contrast accent colors for light mode */
-.theme-light .text-amber-400,
-.light .text-amber-400,
-html.theme-light .text-amber-400,
-html.light .text-amber-400 {
+.theme-light .text-amber-400:not(.mm-public *),
+.light .text-amber-400:not(.mm-public *),
+html.theme-light .text-amber-400:not(.mm-public *),
+html.light .text-amber-400:not(.mm-public *) {
   color: #d97706 !important;
 }
 
-.theme-light .text-emerald-400,
-.light .text-emerald-400,
-html.theme-light .text-emerald-400,
-html.light .text-emerald-400 {
+.theme-light .text-emerald-400:not(.mm-public *),
+.light .text-emerald-400:not(.mm-public *),
+html.theme-light .text-emerald-400:not(.mm-public *),
+html.light .text-emerald-400:not(.mm-public *) {
   color: #059669 !important;
 }
 
-.theme-light .text-sky-400,
-.light .text-sky-400,
-html.theme-light .text-sky-400,
-html.light .text-sky-400 {
+.theme-light .text-sky-400:not(.mm-public *),
+.light .text-sky-400:not(.mm-public *),
+html.theme-light .text-sky-400:not(.mm-public *),
+html.light .text-sky-400:not(.mm-public *) {
   color: #0284c7 !important;
 }
 

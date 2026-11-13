@@ -3,7 +3,17 @@
  */
 
 // Business Contact Configuration: Reads environment variables or falls back to standard demo values
-const env = (typeof process !== "undefined" && process.env) || {};
+// NOTE: CRA/webpack only inlines *literal* `process.env.REACT_APP_*` references, so
+// each variable is read explicitly (reading `process.env` as an object yields {} in the browser).
+const env = {
+  REACT_APP_SHOWROOM_NAME: process.env.REACT_APP_SHOWROOM_NAME,
+  REACT_APP_SHOWROOM_ADDRESS: process.env.REACT_APP_SHOWROOM_ADDRESS,
+  REACT_APP_SHOWROOM_PHONE: process.env.REACT_APP_SHOWROOM_PHONE,
+  REACT_APP_SHOWROOM_RAW_PHONE: process.env.REACT_APP_SHOWROOM_RAW_PHONE,
+  REACT_APP_SHOWROOM_EMAIL: process.env.REACT_APP_SHOWROOM_EMAIL,
+  REACT_APP_SHOWROOM_HOURS: process.env.REACT_APP_SHOWROOM_HOURS,
+  REACT_APP_BACKEND_URL: process.env.REACT_APP_BACKEND_URL,
+};
 
 export const SHOWROOM_CONTACT = {
   name: env.REACT_APP_SHOWROOM_NAME || "Metro Motors Showroom",

@@ -1,0 +1,31 @@
+{
+  "summary": "Frontend-only pass on the Metro Motors public marketplace redesign: one desktop pass at 1920, one mobile pass at 390 and 360, layout checks at 768 and 1366, and a quick sweep of the console routes. Nearly all functional flows pass. Seeding, the 4 in-stock count, every section, nav scroll, hero search, brand chips and category tiles, all filters, all sorts, the empty state, the detail modal (gallery, keys, similar vehicles, WhatsApp and Call links, Contact to Purchase), enquiry validation and success, the mobile menu, filter drawer and sticky bar, and all console routes work, with no page overflow. The main defect is LIGHT THEME on the public page. A legacy global CSS override makes the dark hero, the transparent navbar and the dark footer nearly unreadable.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [
+      {"component": "Public page in light theme (hero, transparent navbar, footer)", "issue": "After the theme toggle switches to light, the hero headline, sub-copy, stats, nav links and hero select labels render dark navy (#0f172a) on the dark hero image. The footer text, Explore and Showroom columns, copyright and Admin Login pill also turn dark on the still-dark footer background. RCA: styles/luxury-design.css lines 827-830 (`.theme-light [class*=\"text-white\"] { color:#0f172a !important }`) plus the sibling text-neutral-* rules leak into the marketplace components. The hero selects also lose their mm-select styling in light mode and show as native white boxes, because of the luxury-design.css 762-771 `.theme-light select` rules. Fix: scope those legacy overrides to the console (for example `.theme-light .console-root ...`), or exempt the marketplace (`:not(.mm-*)` or a wrapper class such as `.mm-public`).", "selector": "[data-testid=public-hero], [data-testid=public-footer], [data-testid=public-navbar]", "priority": "HIGH"}
+    ],
+    "integration_issues": [
+      {"flow": "Enquiry submit", "issue": "POST goes to http://127.0.0.1:8001/api/public/enquiries, which the browser blocks with a CORS loopback error that shows up as a console error. The local fallback success screen does appear. RCA: data/customerEnquiry.js:6 `const env = (typeof process !== 'undefined' && process.env) || {}`. Under CRA/webpack 5, `process` is undefined at runtime, so `env` is {}, REACT_APP_BACKEND_URL is never read, and the code falls back to 127.0.0.1. The same pattern breaks the REACT_APP_SHOWROOM_* overrides. Fix: use `process.env.REACT_APP_BACKEND_URL` literally and remove the 127.0.0.1 fallback, which also appears in apiDealAdapter.js and metroApi.js. This is pre-existing and not caused by the redesign.", "affected_selectors": ["[data-testid=enquiry-success]"]}
+    ],
+    "design_issues": [
+      {"screen": "Public page light theme", "issues": ["Hero and footer contrast are broken (see ui_bugs)", "The theme toggle is in the header, so users can easily reach the broken state"]}
+    ]
+  },
+  "test_report_links": [],
+  "action_items": [
+    "HIGH: Stop luxury-design.css light-theme overrides (.theme-light [class*=text-white], text-neutral-*, select) from applying to marketplace components: hero, navbar over the hero, footer, hero selects. Then re-check / in light mode.",
+    "MEDIUM: In data/customerEnquiry.js, read process.env.REACT_APP_BACKEND_URL directly instead of the `typeof process` alias so enquiries hit the real backend URL. Remove the hardcoded 127.0.0.1 fallbacks."
+  ],
+  "critical_code_review_comments": [
+    "customerEnquiry.js env aliasing (`typeof process`) never works in the CRA browser bundle, so every REACT_APP_* lookup there silently falls back to its default.",
+    "Hardcoded 'http://127.0.0.1:8001' fallbacks in customerEnquiry.js, apiDealAdapter.js and metroApi.js break the env-only URL rule.",
+    "Global attribute-substring selectors with !important in luxury-design.css are fragile and conflict with the new mm-design-system."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "N/A (not requested)", "frontend": "~93% (light-theme contrast on the public page fails; everything else passes)"},
+  "seed_data_creation": "Clicked 'Reload Demo Data' (quick-reload-demo) in each browser context. The data is browser-local IndexedDB only. Submitted one test enquiry ('Test Buyer', 9876543210), stored locally only.",
+  "retest_needed": true,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Seed with [data-testid=quick-reload-demo] on /dashboard in each new context, then open /. Inventory: 4 vehicles (RE x2, Yamaha, Honda); type values are '2 Wheeler with Gear' and '2 Wheeler without Gear'; the cars tile is disabled. The featured rail repeats vehicle cards, so scope card selectors to [data-testid=browse-bikes-section]. The 'Clear all' text in the desktop chip bar only shows when chips are active. The 'purchase' word in the detail modal is the 'Contact to Purchase' label, not confidential data. No purchase price, seller/buyer details or commission found. Retest: light theme on / (hero, footer) and the enquiry POST URL."
+}
