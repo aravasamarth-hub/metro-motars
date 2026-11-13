@@ -96,6 +96,35 @@ html:not(.dark) .theme-switch-btn.active .theme-toggle-icon {
 }
 
 /* ── 1. Sidebar Theming ─────────────────────────────────────────────────── */
+/* Fixed / Sticky Desktop Sidebar on Scroll */
+@media (min-width: 801px) {
+  .sidebar {
+    position: sticky !important;
+    top: 0 !important;
+    height: 100vh !important;
+    max-height: 100vh !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+    z-index: 20 !important;
+  }
+
+  .sidebar::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  .sidebar::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.12);
+    border-radius: 4px;
+  }
+
+  .topbar {
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 15 !important;
+  }
+}
+
 /* Dark Sidebar */
 .theme-dark .sidebar,
 .dark .sidebar,
