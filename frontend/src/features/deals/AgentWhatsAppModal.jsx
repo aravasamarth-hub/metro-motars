@@ -14,6 +14,7 @@ export const generateAgentMessage = ({
   taskAmounts = {},
   otherDoc = "",
   customAssignedAt = "",
+  customDeadline = "",
 }) => {
   const showroomName = "METRO MOTORS";
   const agentName = (agent.name || "").trim() || "Agent";
@@ -39,6 +40,29 @@ export const generateAgentMessage = ({
       }
     } catch {
       timeFormatted = assignedVal;
+    }
+  }
+
+  // Format Deadline Time
+  let deadlineFormatted = "";
+  const deadlineVal = customDeadline || agent.deadline;
+  if (deadlineVal) {
+    try {
+      const dt = new Date(deadlineVal);
+      if (!isNaN(dt.getTime())) {
+        deadlineFormatted = dt.toLocaleString("en-IN", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: true,
+        });
+      } else {
+        deadlineFormatted = deadlineVal;
+      }
+    } catch {
+      deadlineFormatted = deadlineVal;
     }
   }
 
@@ -100,6 +124,9 @@ export const generateAgentMessage = ({
   }
 
   lines.push(`⏰ *Time of Work Assigned:* ${timeFormatted}`);
+  if (deadlineFormatted) {
+    lines.push(`🎯 *Target Deadline:* ${deadlineFormatted}`);
+  }
 
   if (vehicleDesc) {
     lines.push(`🛵 *Vehicle:* ${vehicleDesc}`);
@@ -137,6 +164,7 @@ export const AgentWhatsAppModal = ({
   taskAmounts = {},
   otherDoc = "",
   customAssignedAt = "",
+  customDeadline = "",
   onUpdateAgentPhone,
 }) => {
   const { t } = useLanguage();
@@ -158,11 +186,12 @@ export const AgentWhatsAppModal = ({
         taskAmounts,
         otherDoc,
         customAssignedAt,
+        customDeadline,
       });
       setMessage(generated);
       setCopied(false);
     }
-  }, [isOpen, deal, agent, selectedTasks, taskAmounts, otherDoc, customAssignedAt]);
+  }, [isOpen, deal, agent, selectedTasks, taskAmounts, otherDoc, customAssignedAt, customDeadline]);
 
   // Handle ESC key to close
   useEffect(() => {
@@ -193,6 +222,7 @@ export const AgentWhatsAppModal = ({
       taskAmounts,
       otherDoc,
       customAssignedAt,
+      customDeadline,
     });
     setMessage(generated);
   };

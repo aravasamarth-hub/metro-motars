@@ -52,6 +52,42 @@ export const AgentStep = ({ deal, updateSection, errors = {} }) => {
   // Assigned at: defaults to current local datetime if not set
   const assignedAt = agent.assigned_at || getLocalDatetimeString();
 
+  const isDeadlineOverdue = (deadlineStr) => {
+    if (!deadlineStr) return false;
+    try {
+      const d = new Date(deadlineStr);
+      return !isNaN(d.getTime()) && d.getTime() < Date.now();
+    } catch {
+      return false;
+    }
+  };
+
+  const getDeadlineBadgeText = (deadlineStr) => {
+    if (!deadlineStr) return "";
+    try {
+      const d = new Date(deadlineStr);
+      if (isNaN(d.getTime())) return "";
+      const now = new Date();
+      const diffMs = d.getTime() - now.getTime();
+      const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+      if (diffDays < 0) return `Overdue by ${Math.abs(diffDays)}d`;
+      if (diffDays === 0) return "Due Today";
+      if (diffDays === 1) return "Due Tomorrow";
+      return `Due in ${diffDays}d`;
+    } catch {
+      return "";
+    }
+  };
+
+  const handleSetQuickDeadline = (days) => {
+    const base = agent.assigned_at ? new Date(agent.assigned_at) : new Date();
+    const target = new Date(base.getTime() + days * 24 * 60 * 60 * 1000);
+    target.setHours(17, 0, 0, 0); // 5:00 PM standard showroom close
+    const pad = (n) => String(n).padStart(2, "0");
+    const val = `${target.getFullYear()}-${pad(target.getMonth() + 1)}-${pad(target.getDate())}T${pad(target.getHours())}:${pad(target.getMinutes())}`;
+    handleAgentChange("deadline", val);
+  };
+
   if (!isOwner) {
     return (
       <div className="p-8 text-center bg-neutral-900/60 rounded-2xl border border-neutral-800" data-testid="agent-step-restricted">
@@ -338,6 +374,85 @@ export const AgentStep = ({ deal, updateSection, errors = {} }) => {
               data-testid="agent-assigned-at-input"
             />
           </label>
+
+          <label className="form-field wizard-field" htmlFor="agent-deadline">
+            <span style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <span>{t("agent.deadline", "Deadline for assigned work")}</span>
+              {agent.deadline && (
+                <span
+                  data-testid="agent-deadline-badge"
+                  style={{
+                    fontSize: "10px",
+                    fontWeight: 700,
+                    padding: "1px 6px",
+                    borderRadius: "4px",
+                    background: isDeadlineOverdue(agent.deadline) ? "rgba(239, 68, 68, 0.2)" : "rgba(245, 158, 11, 0.2)",
+                    color: isDeadlineOverdue(agent.deadline) ? "#ef4444" : "#f59e0b",
+                    border: isDeadlineOverdue(agent.deadline) ? "1px solid rgba(239, 68, 68, 0.4)" : "1px solid rgba(245, 158, 11, 0.4)",
+                  }}
+                >
+                  {getDeadlineBadgeText(agent.deadline)}
+                </span>
+              )}
+            </span>
+            <input
+              id="agent-deadline"
+              type="datetime-local"
+              value={agent.deadline || ""}
+              onChange={(e) => handleAgentChange("deadline", e.target.value)}
+              data-testid="agent-deadline-input"
+            />
+          </label>
+
+          <div className="form-field wizard-field" style={{ display: "flex", flexDirection: "column", justifyContent: "flex-end" }}>
+            <span style={{ fontSize: "10px", color: "var(--local-muted)", marginBottom: "6px" }}>
+              Quick deadline presets:
+            </span>
+            <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
+              <button
+                type="button"
+                onClick={() => handleSetQuickDeadline(3)}
+                className="button button-secondary"
+                style={{ padding: "4px 8px", fontSize: "11px", height: "30px", borderRadius: "5px" }}
+                data-testid="deadline-quick-3d"
+                title="Set deadline to 3 days from assignment at 5:00 PM"
+              >
+                +3 Days
+              </button>
+              <button
+                type="button"
+                onClick={() => handleSetQuickDeadline(7)}
+                className="button button-secondary"
+                style={{ padding: "4px 8px", fontSize: "11px", height: "30px", borderRadius: "5px", borderColor: "rgba(245,158,11,0.5)", color: "#f59e0b" }}
+                data-testid="deadline-quick-7d"
+                title="Set deadline to 7 days (standard RTO timeline)"
+              >
+                +7 Days (RTO)
+              </button>
+              <button
+                type="button"
+                onClick={() => handleSetQuickDeadline(15)}
+                className="button button-secondary"
+                style={{ padding: "4px 8px", fontSize: "11px", height: "30px", borderRadius: "5px" }}
+                data-testid="deadline-quick-15d"
+                title="Set deadline to 15 days from assignment"
+              >
+                +15 Days
+              </button>
+              {agent.deadline && (
+                <button
+                  type="button"
+                  onClick={() => handleAgentChange("deadline", "")}
+                  className="button button-secondary"
+                  style={{ padding: "4px 8px", fontSize: "11px", height: "30px", borderRadius: "5px", color: "#94a3b8" }}
+                  data-testid="deadline-clear-btn"
+                  title="Clear deadline"
+                >
+                  Clear
+                </button>
+              )}
+            </div>
+          </div>
         </div>
 
         <div className="agent-tasks-section" data-testid="agent-tasks-section">
@@ -599,6 +714,7 @@ export const AgentStep = ({ deal, updateSection, errors = {} }) => {
         taskAmounts={taskAmounts}
         otherDoc={otherDoc}
         customAssignedAt={assignedAt}
+        customDeadline={agent.deadline}
         onUpdateAgentPhone={(newPhone) => handleAgentChange("phone", newPhone)}
       />
     </div>
