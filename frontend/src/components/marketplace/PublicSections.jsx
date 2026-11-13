@@ -1,6 +1,8 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import {
   ShieldCheck,
+  Shield,
   CheckCircle2,
   Phone,
   MapPin,
@@ -224,6 +226,14 @@ export function PublicFooter() {
           <a href="#contact" className="hover:text-amber-500 transition-colors">
             Contact
           </a>
+          <Link
+            to="/login"
+            className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-amber-500/90 hover:text-amber-400 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 font-semibold transition-all shadow-sm"
+            data-testid="footer-admin-login-link"
+          >
+            <Shield size={12} />
+            <span>Admin Login</span>
+          </Link>
         </div>
 
         <div className="text-[11px] text-neutral-400">

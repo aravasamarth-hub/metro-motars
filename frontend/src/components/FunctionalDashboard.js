@@ -420,10 +420,7 @@ export default function FunctionalDashboard() {
         {/* Tab 1: Overview (Combined Visuals + Recent Table) */}
         <TabsContent value="overview" className="mt-0 space-y-6">
           {/* 5. Bklit Visualizations Row */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2">
-              <FleetValuationAreaChart />
-            </div>
+          <div className="grid grid-cols-1 gap-6">
             <div>
               <InspectionRadialGauge score={98.6} />
             </div>
@@ -453,8 +450,7 @@ export default function FunctionalDashboard() {
 
         {/* Tab 2: Full Bklit Charts Suite */}
         <TabsContent value="charts" className="mt-0 space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <FleetValuationAreaChart />
+          <div className="grid grid-cols-1 gap-6">
             <InventoryDistributionBarChart />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

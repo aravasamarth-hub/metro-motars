@@ -32,34 +32,9 @@ export const browserDealAdapter = {
   list: () => transaction("readwrite", (store, done) => {
     const request = store.getAll();
     request.onsuccess = () => {
-      let deals = request.result.filter(row => row.kind === "deal");
-      // Auto-seed complete demo deals with photos if any are missing and storage is not explicitly cleared
-      if (!localStorage.getItem("mm_demo_cleared")) {
-        const demoDeals = getDemoDeals();
-        let addedNew = false;
-        for (const demoItem of demoDeals) {
-          const existing = deals.find(d => d.id === demoItem.id || d.bill_number === demoItem.bill_number);
-          if (!existing) {
-            store.put(demoItem);
-            deals.push(demoItem);
-            addedNew = true;
-          } else if (demoItem.id === "deal-demo-himalayan-450") {
-            store.put(demoItem);
-            const idx = deals.indexOf(existing);
-            if (idx !== -1) deals[idx] = demoItem;
-          }
-        }
-        if (addedNew) {
-          const sequenceId = `sequence:${prefix()}`;
-          const seqReq = store.get(sequenceId);
-          seqReq.onsuccess = () => {
-            const currentCount = seqReq.result?.count || 0;
-            if (currentCount < deals.length) {
-              store.put({ id: sequenceId, count: deals.length });
-            }
-          };
-        }
-      }
+      const deals = request.result.filter(row => row.kind === "deal");
+      // Demo auto-seeding is DISABLED — app starts as a clean slate.
+      // Use Settings → "Reload Demo Data" to restore demo deals if needed.
       done(deals.sort((a, b) => b.created_at.localeCompare(a.created_at)));
     };
   }),

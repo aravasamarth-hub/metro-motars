@@ -45,12 +45,10 @@ export default function LoginPage() {
   const {
     login,
     register,
-    quickLogin,
     setPassword: authSetPass,
     forgotPassword,
     verifyRecoveryOtp,
     resetPasswordWithToken,
-    personas,
   } = useAuth();
 
   // Mode Switcher: 'login' | 'register'
@@ -312,20 +310,6 @@ export default function LoginPage() {
     }
   };
 
-  const handleQuickPersona = async (personaId) => {
-    if (busy) return;
-    setBusy(true);
-    try {
-      await quickLogin(personaId);
-      const dest = location.state?.from?.pathname || "/dashboard";
-      void navigate(dest, { replace: true });
-    } catch (err) {
-      setErrorMsg(err.message || "Quick persona sign-in failed.");
-    } finally {
-      setBusy(false);
-    }
-  };
-
   // Password Policy Checklist Helpers
   const hasMinLength = regPassword.length >= 8;
   const hasUpperCase = /[A-Z]/.test(regPassword);
@@ -378,29 +362,6 @@ export default function LoginPage() {
               </div>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-              <button
-                type="button"
-                onClick={() => navigate("/showcase")}
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: "6px",
-                  background: "linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(56, 189, 248, 0.15))",
-                  border: "1px solid rgba(245, 158, 11, 0.35)",
-                  color: "#f59e0b",
-                  fontSize: "11.5px",
-                  fontWeight: 600,
-                  padding: "5px 12px",
-                  borderRadius: "9999px",
-                  cursor: "pointer",
-                }}
-                data-testid="login-vip-showcase-pill"
-                title="Explore the VIP Automotive Showcase"
-              >
-                <Sparkles size={13} />
-                <span>VIP Showcase</span>
-                <ArrowRight size={12} />
-              </button>
               <div className="system-live-pill" title="MongoDB Atlas & Security Active">
                 <span className="live-dot" />
                 <span>ONLINE</span>
@@ -471,45 +432,7 @@ export default function LoginPage() {
 
               <div className="auth-divider">or sign in with email</div>
 
-              {/* Showroom Staff Persona Switcher */}
-              <div className="role-segment-selector" role="tablist">
-                {ROLE_OPTIONS.map((role) => (
-                  <button
-                    key={role.id}
-                    type="button"
-                    className={`role-tab-btn ${activeRole === role.id ? "is-active" : ""}`}
-                    onClick={() => handleRoleChange(role.id)}
-                    role="tab"
-                    aria-selected={activeRole === role.id}
-                  >
-                    <span>{role.icon}</span>
-                    <span>{role.label}</span>
-                  </button>
-                ))}
-              </div>
 
-              {/* Role Description Banner */}
-              <div
-                style={{
-                  padding: "10px 14px",
-                  borderRadius: "10px",
-                  background: activeRole === "OWNER" ? "rgba(245, 158, 11, 0.08)" : "rgba(56, 189, 248, 0.08)",
-                  border: `1px solid ${activeRole === "OWNER" ? "rgba(245, 158, 11, 0.25)" : "rgba(56, 189, 248, 0.25)"}`,
-                  marginBottom: "16px",
-                  fontSize: "11px",
-                  color: activeRole === "OWNER" ? "#fcd34d" : "#7dd3fc",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "8px",
-                }}
-              >
-                <ShieldCheck size={14} />
-                <span>
-                  {activeRole === "OWNER"
-                    ? "👑 Owner Account: Full administrative and showroom console access."
-                    : "🛠️ Worker Account: Showroom operations mode."}
-                </span>
-              </div>
 
               {/* Error Message */}
               <AnimatePresence>
@@ -651,31 +574,6 @@ export default function LoginPage() {
                   )}
                 </button>
               </form>
-
-              {/* Quick Demo Personas */}
-              <div className="demo-personas-section">
-                <div className="demo-personas-label">
-                  <span>Quick Demo Personas</span>
-                  <small>1-Click instant access</small>
-                </div>
-                <div className="demo-chips-grid">
-                  {personas.map((p) => (
-                    <button
-                      key={p.id}
-                      type="button"
-                      className="demo-persona-chip"
-                      onClick={() => handleQuickPersona(p.id)}
-                      title={`Sign in as ${p.name} (${p.role})`}
-                    >
-                      <div className="demo-chip-avatar" style={{ backgroundColor: p.badgeColor }}>
-                        {p.avatar}
-                      </div>
-                      <div className="demo-chip-name">{p.name}</div>
-                      <div className="demo-chip-role">{p.role.split(" ")[0]}</div>
-                    </button>
-                  ))}
-                </div>
-              </div>
             </>
           )}
 
@@ -1257,40 +1155,6 @@ export default function LoginPage() {
               </div>
             </div>
           )}
-
-          {/* Security Footer */}
-          <div className="login-vault-footer">
-            <span>
-              <ShieldCheck size={14} color="#10b981" /> 256-Bit Encrypted
-            </span>
-            <span>·</span>
-            <span>MongoDB Atlas Secured</span>
-            <span>·</span>
-            <span>Zero Plaintext Passwords</span>
-          </div>
-
-          <div style={{ marginTop: 14, textAlign: "center", paddingTop: 12, borderTop: "1px solid rgba(255, 255, 255, 0.08)" }}>
-            <span style={{ fontSize: "11.5px", color: "#94a3b8" }}>Looking for the public showroom? </span>
-            <button
-              type="button"
-              onClick={() => navigate("/showcase")}
-              style={{
-                background: "none",
-                border: "none",
-                color: "#f59e0b",
-                fontWeight: 600,
-                fontSize: "11.5px",
-                cursor: "pointer",
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 4,
-                textDecoration: "underline",
-              }}
-              data-testid="login-public-showcase-link"
-            >
-              Explore VIP Showcase <ArrowRight size={11} />
-            </button>
-          </div>
         </motion.div>
       </div>
     </div>

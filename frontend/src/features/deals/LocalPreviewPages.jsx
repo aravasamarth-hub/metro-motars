@@ -653,66 +653,6 @@ export const LocalFinances = () => {
         </SpotlightCard>
       </div>
 
-      {/* ── 4. Anime.js v4 Real-Time Liquidity Trajectory ── */}
-      <div className="mb-6">
-        <AnimeCashflowFlow
-          inflow={receivedFromBuyers}
-          outflow={paidToSellers + maintenanceTotal}
-          margin={totalCommission}
-        />
-      </div>
-
-      {/* ── 5. Bklit Fleet Valuation & Sales Velocity Chart ── */}
-      <div className="mb-6">
-        <FleetValuationAreaChart />
-      </div>
-
-      {/* Cashflow Recovery & Balance Analysis Card */}
-      <div className="finances-cashflow-card">
-        <div className="cashflow-card-header">
-          <div className="cashflow-title">
-            <WalletCards size={16} className="text-amber-400" />
-            <span>Showroom Collection & Liquidity Position</span>
-          </div>
-          <div className="cashflow-stats">
-            <span className="stat-pill stat-cyan">
-              ● Received: {money(receivedFromBuyers)} ({collectionRatio}%)
-            </span>
-            <span className="stat-pill stat-amber">● Buyer Outstanding: {money(outstandingBuyers)}</span>
-            <span className="stat-pill stat-purple">● Seller Payable: {money(outstandingSellers)}</span>
-          </div>
-        </div>
-
-        {/* Segmented Collection Progress */}
-        <div className="cashflow-progress-track">
-          <div
-            className="cashflow-segment segment-collected"
-            style={{ width: `${Math.max(collectionRatio, 6)}%` }}
-            title={`Collected: ${money(receivedFromBuyers)}`}
-          />
-          <div
-            className="cashflow-segment segment-pending"
-            style={{ width: `${Math.max(100 - collectionRatio, 6)}%` }}
-            title={`Pending: ${money(outstandingBuyers)}`}
-          />
-        </div>
-
-        <div className="cashflow-footer-summary">
-          <div className="cashflow-summary-item">
-            <span className="summary-label">Net Pending Balance from Buyers:</span>
-            <strong className="summary-val text-amber-400">{money(outstandingBuyers)}</strong>
-          </div>
-          <div className="cashflow-summary-item">
-            <span className="summary-label">Net Owed to Vehicle Sellers:</span>
-            <strong className="summary-val text-slate-300">{money(outstandingSellers)}</strong>
-          </div>
-          <div className="cashflow-summary-item">
-            <span className="summary-label">Estimated Deal Margin:</span>
-            <strong className="summary-val text-emerald-400">{money(totalCommission)}</strong>
-          </div>
-        </div>
-      </div>
-
       {/* Detailed Ledger Summary List (Preserving all test identifiers) */}
       <div className="finances-ledger-section">
         <div className="section-title">

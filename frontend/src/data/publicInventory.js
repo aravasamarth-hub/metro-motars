@@ -131,15 +131,11 @@ export async function getPublicInventory() {
       .map(toPublicVehicleListing)
       .filter(Boolean);
 
-    // If local storage is empty, fallback to clean demo inventory
-    if (publicListings.length === 0) {
-      return getFallbackPublicBikes();
-    }
-
+    // Return actual active showroom listings. If no inventory exists, returns empty array.
     return publicListings;
   } catch (err) {
     console.error("Failed to load public inventory:", err);
-    return getFallbackPublicBikes();
+    return [];
   }
 }
 
