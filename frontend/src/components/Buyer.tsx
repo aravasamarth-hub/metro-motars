@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { FileDown, Printer, CheckCircle2, AlertCircle } from "lucide-react";
+import { FileDown, Printer, CheckCircle2, AlertCircle, MessageSquare, Sparkles, FileCheck } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { FieldGrid } from "@/features/deals/DealField";
 import { personFields } from "@/features/deals/fieldConfig";
@@ -11,6 +11,7 @@ import { useAuth } from "@/context/AuthContext";
 import { money } from "@/features/deals/dealModel";
 import BillModal from "@/components/BillModal";
 import { useBuyerBill } from "@/hooks/useBuyerBill";
+import CustomerMessageModal from "@/components/CustomerMessageModal";
 
 export interface BuyerProps {
   deal: any;
@@ -47,6 +48,13 @@ export function Buyer({
   const { generateBill, generating, error: billError } = useBuyerBill();
   const [successMessage, setSuccessMessage] = useState<string>("");
   const [previewOpen, setPreviewOpen] = useState<boolean>(false);
+  const [messageModalOpen, setMessageModalOpen] = useState<boolean>(false);
+  const [messageInitialTab, setMessageInitialTab] = useState<"thank_you" | "rc_transfer">("thank_you");
+
+  const handleOpenMessaging = (tab: "thank_you" | "rc_transfer") => {
+    setMessageInitialTab(tab);
+    setMessageModalOpen(true);
+  };
 
   const handleGenerateDirect = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -197,6 +205,44 @@ export function Buyer({
         variant="docs"
       />
 
+      {/* Metro Motors Customer Greetings & RC Notifications banner for Buyer */}
+      <div className="seller-action-strip buyer-action-strip" data-testid="buyer-messaging-strip">
+        <div>
+          <strong className="seller-action-strip-title" style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+            <MessageSquare size={15} />
+            <span>{t("messaging.buyer_title", "Customer Greetings & RC Notifications (Buyer)")}</span>
+          </strong>
+          <span className="seller-action-strip-sub">
+            {t("messaging.buyer_sub", "Send official WhatsApp & Email updates (Thank you note, RC transfer ready to collect)")}
+          </span>
+        </div>
+
+        {/* Messaging action buttons */}
+        <div style={{ display: "flex", gap: "10px", alignItems: "center", flexWrap: "wrap" }}>
+          <button
+            type="button"
+            onClick={() => handleOpenMessaging("thank_you")}
+            className="agreement-toggle-btn"
+            data-testid="buyer-thank-you-msg-btn"
+            title="Send Thank You greeting to buyer via WhatsApp or Email"
+          >
+            <Sparkles size={15} />
+            <span>{t("messaging.thank_you_buyer_btn", "Thank You Greeting")}</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => handleOpenMessaging("rc_transfer")}
+            className="agreement-toggle-btn"
+            data-testid="buyer-rc-transfer-msg-btn"
+            title="Send RC transfer ready notice to buyer via WhatsApp or Email"
+          >
+            <FileCheck size={15} />
+            <span>{t("messaging.rc_transfer_buyer_btn", "RC Transfer Ready (Collect)")}</span>
+          </button>
+        </div>
+      </div>
+
       {/* Metro Motors Legal Documents banner for Buyer Bill */}
       {isOwner && (
         <div className="seller-action-strip buyer-action-strip" data-testid="buyer-action-strip">
@@ -253,6 +299,14 @@ export function Buyer({
         isOpen={previewOpen}
         onClose={() => setPreviewOpen(false)}
         initialDocument="buyer-bill"
+      />
+
+      <CustomerMessageModal
+        isOpen={messageModalOpen}
+        onClose={() => setMessageModalOpen(false)}
+        party="buyer"
+        deal={deal}
+        initialTab={messageInitialTab}
       />
     </div>
   );

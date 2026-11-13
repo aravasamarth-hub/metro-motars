@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { FileDown, CheckCircle2, AlertCircle, Printer, RefreshCw } from "lucide-react";
+import { FileDown, CheckCircle2, AlertCircle, Printer, RefreshCw, MessageSquare, Sparkles, FileCheck } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { FieldGrid } from "@/features/deals/DealField";
 import { personFields } from "@/features/deals/fieldConfig";
@@ -11,6 +11,7 @@ import { useLanguage } from "@/features/i18n/LanguageContext";
 import { useAuth } from "@/context/AuthContext";
 import { money } from "@/features/deals/dealModel";
 import BillModal from "@/components/BillModal";
+import CustomerMessageModal from "@/components/CustomerMessageModal";
 
 export interface SellerProps {
   readonly deal: any;
@@ -56,6 +57,13 @@ export function Seller({
   const { generateAgreement, generating, error: agreementError } = useSellerAgreement();
   const [successMessage, setSuccessMessage] = useState<string>("");
   const [previewOpen, setPreviewOpen] = useState<boolean>(false);
+  const [messageModalOpen, setMessageModalOpen] = useState<boolean>(false);
+  const [messageInitialTab, setMessageInitialTab] = useState<"thank_you" | "rc_transfer">("thank_you");
+
+  const handleOpenMessaging = (tab: "thank_you" | "rc_transfer") => {
+    setMessageInitialTab(tab);
+    setMessageModalOpen(true);
+  };
 
   const handleGenerateAgreement = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -204,6 +212,44 @@ export function Seller({
         variant="docs"
       />
 
+      {/* Metro Motors Customer Greetings & RC Notifications Banner */}
+      <div className="seller-action-strip" data-testid="seller-messaging-strip">
+        <div>
+          <strong className="seller-action-strip-title" style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+            <MessageSquare size={15} />
+            <span>{t("messaging.seller_title", "Customer Greetings & RC Notifications (Seller)")}</span>
+          </strong>
+          <span className="seller-action-strip-sub">
+            {t("messaging.seller_sub", "Send official WhatsApp & Email updates (Thank you note, RC transfer to buyer)")}
+          </span>
+        </div>
+
+        {/* Messaging action buttons */}
+        <div style={{ display: "flex", gap: "10px", alignItems: "center", flexWrap: "wrap" }}>
+          <button
+            type="button"
+            onClick={() => handleOpenMessaging("thank_you")}
+            className="agreement-toggle-btn"
+            data-testid="seller-thank-you-msg-btn"
+            title="Send Thank You greeting to seller via WhatsApp or Email"
+          >
+            <Sparkles size={15} />
+            <span>{t("messaging.thank_you_seller_btn", "Thank You Greeting")}</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => handleOpenMessaging("rc_transfer")}
+            className="agreement-toggle-btn"
+            data-testid="seller-rc-transfer-msg-btn"
+            title="Send RC transfer completed notice to seller via WhatsApp or Email"
+          >
+            <FileCheck size={15} />
+            <span>{t("messaging.rc_transfer_seller_btn", "RC Transfer Completed")}</span>
+          </button>
+        </div>
+      </div>
+
       {/* Metro Motors Legal Documents banner at bottom */}
       {isOwner && (
         <div className="seller-action-strip">
@@ -263,6 +309,14 @@ export function Seller({
       )}
 
       <BillModal deal={deal} isOpen={previewOpen} onClose={() => setPreviewOpen(false)} initialDocument="seller-bill" />
+
+      <CustomerMessageModal
+        isOpen={messageModalOpen}
+        onClose={() => setMessageModalOpen(false)}
+        party="seller"
+        deal={deal}
+        initialTab={messageInitialTab}
+      />
     </div>
   );
 }
