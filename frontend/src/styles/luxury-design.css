@@ -96,6 +96,26 @@ html:not(.dark) .theme-switch-btn.active .theme-toggle-icon {
 }
 
 /* ── 1. Sidebar Theming ─────────────────────────────────────────────────── */
+/* Compact Bar Chart Spacing — keeps graph sticks close together */
+.bar-chart {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: flex-end !important;
+  gap: 8px !important;
+}
+
+.bar-col {
+  flex: 0 1 36px !important;
+  max-width: 44px !important;
+  width: 36px !important;
+}
+
+.bar {
+  width: 22px !important;
+  max-width: 22px !important;
+  margin: 0 auto !important;
+}
+
 /* Fixed / Sticky Desktop Sidebar on Scroll */
 @media (min-width: 801px) {
   .sidebar {

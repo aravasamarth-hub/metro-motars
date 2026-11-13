@@ -79,9 +79,15 @@ export function InventoryDistributionBarChart() {
       </CardHeader>
 
       <CardContent>
-        <div className="h-[280px] w-full">
+        <div className={`h-[280px] w-full transition-all duration-300 ${viewMode === "segment" ? "max-w-md mx-auto" : ""}`}>
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={chartData} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
+            <BarChart
+              data={chartData}
+              barCategoryGap={viewMode === "segment" ? "12%" : "15%"}
+              barGap={4}
+              maxBarSize={44}
+              margin={{ top: 10, right: 10, left: -25, bottom: 0 }}
+            >
               <XAxis
                 dataKey="name"
                 stroke="#64748b"

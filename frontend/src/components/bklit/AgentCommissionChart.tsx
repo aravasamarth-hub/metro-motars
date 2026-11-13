@@ -167,8 +167,9 @@ export function AgentCommissionChart({ data = DEFAULT_AGENT_DATA }: { data?: Age
             <BarChart
               data={normalizedData}
               margin={{ top: 18, right: 28, left: -10, bottom: 25 }}
-              barCategoryGap="28%"
-              barGap={5}
+              barCategoryGap="14%"
+              barGap={4}
+              maxBarSize={38}
             >
               <defs>
                 {/* 1. Green Gradient for Amount Paid */}
