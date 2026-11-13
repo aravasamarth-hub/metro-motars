@@ -83,9 +83,9 @@ export function AgentCommissionChart({ data = DEFAULT_AGENT_DATA }: { data?: Age
     normalizedData.reduce((acc, d) => acc + d.daysTaken, 0) / (normalizedData.length || 1)
   ).toFixed(1);
 
-  // Dynamic bar sizing & spacing so the sticks stay tightly clustered side-by-side
-  const isFewAgents = normalizedData.length <= 2;
-  const barGap = 3;
+  // Dynamic bar sizing & spacing so the sticks stay big, bold, and tightly clustered side-by-side
+  const barWidth = normalizedData.length <= 2 ? 36 : normalizedData.length <= 5 ? 28 : 22;
+  const barGap = 4;
 
   return (
     <Card className="border-neutral-800 bg-neutral-900/90 backdrop-blur-xl shadow-2xl relative overflow-hidden transition-all duration-300">
@@ -166,35 +166,34 @@ export function AgentCommissionChart({ data = DEFAULT_AGENT_DATA }: { data?: Age
       </CardHeader>
 
       <CardContent className="pt-2">
-        <div className={`h-[300px] w-full transition-all duration-300 ${isFewAgents ? "max-w-xl mx-auto" : ""}`}>
+        <div className="h-[420px] sm:h-[450px] w-full transition-all duration-300">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
               data={normalizedData}
-              margin={{ top: 18, right: 28, left: -10, bottom: 25 }}
-              barCategoryGap={isFewAgents ? "32%" : "16%"}
+              margin={{ top: 25, right: 35, left: 5, bottom: 30 }}
               barGap={barGap}
-              maxBarSize={38}
+              barSize={barWidth}
             >
               <defs>
                 {/* 1. Green Gradient for Amount Paid */}
                 <linearGradient id="paidGreenGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#34d399" stopOpacity={0.95} />
-                  <stop offset="60%" stopColor="#10b981" stopOpacity={0.9} />
-                  <stop offset="100%" stopColor="#047857" stopOpacity={0.8} />
+                  <stop offset="0%" stopColor="#34d399" stopOpacity={0.98} />
+                  <stop offset="60%" stopColor="#10b981" stopOpacity={0.92} />
+                  <stop offset="100%" stopColor="#047857" stopOpacity={0.85} />
                 </linearGradient>
 
                 {/* 2. Yellow Gradient for Amount Balance */}
                 <linearGradient id="balanceYellowGrad" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%" stopColor="#fde047" stopOpacity={0.98} />
-                  <stop offset="60%" stopColor="#facc15" stopOpacity={0.9} />
+                  <stop offset="60%" stopColor="#facc15" stopOpacity={0.92} />
                   <stop offset="100%" stopColor="#ca8a04" stopOpacity={0.85} />
                 </linearGradient>
 
                 {/* 3. Blue Gradient for Time Taken in Days */}
                 <linearGradient id="daysBlueGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#67e8f9" stopOpacity={0.95} />
-                  <stop offset="50%" stopColor="#38bdf8" stopOpacity={0.9} />
-                  <stop offset="100%" stopColor="#0284c7" stopOpacity={0.8} />
+                  <stop offset="0%" stopColor="#67e8f9" stopOpacity={0.98} />
+                  <stop offset="50%" stopColor="#38bdf8" stopOpacity={0.92} />
+                  <stop offset="100%" stopColor="#0284c7" stopOpacity={0.85} />
                 </linearGradient>
 
                 {/* Glow Filter for Hover */}
@@ -213,14 +212,14 @@ export function AgentCommissionChart({ data = DEFAULT_AGENT_DATA }: { data?: Age
               <XAxis
                 dataKey="shortName"
                 stroke="#64748b"
-                fontSize={11}
+                fontSize={12}
                 tickLine={false}
                 axisLine={{ stroke: "rgba(255, 255, 255, 0.18)", strokeWidth: 1 }}
-                tick={{ fill: "#94a3b8", fontSize: 11 }}
+                tick={{ fill: "#94a3b8", fontSize: 12, fontWeight: 500 }}
                 interval={0}
-                angle={-10}
-                textAnchor="end"
-                dy={6}
+                angle={normalizedData.length > 3 ? -10 : 0}
+                textAnchor={normalizedData.length > 3 ? "end" : "middle"}
+                dy={normalizedData.length > 3 ? 6 : 10}
               />
 
               {/* Left Y Axis: Currency Amount (₹k) */}
@@ -228,11 +227,11 @@ export function AgentCommissionChart({ data = DEFAULT_AGENT_DATA }: { data?: Age
                 yAxisId="amount"
                 orientation="left"
                 stroke="#64748b"
-                fontSize={11}
+                fontSize={12}
                 tickLine={false}
                 axisLine={false}
-                tick={{ fill: "#94a3b8", fontSize: 10 }}
-                tickFormatter={(val) => `₹${val}k`}
+                tick={{ fill: "#94a3b8", fontSize: 11 }}
+                tickFormatter={(val) => (val >= 1 ? `₹${val}k` : val > 0 ? `₹${Math.round(val * 1000)}` : "₹0")}
               />
 
               {/* Right Y Axis: Turnaround Duration (Days) */}
@@ -240,10 +239,10 @@ export function AgentCommissionChart({ data = DEFAULT_AGENT_DATA }: { data?: Age
                 yAxisId="days"
                 orientation="right"
                 stroke="#38bdf8"
-                fontSize={11}
+                fontSize={12}
                 tickLine={false}
                 axisLine={false}
-                tick={{ fill: "#38bdf8", fontSize: 10 }}
+                tick={{ fill: "#38bdf8", fontSize: 11 }}
                 tickFormatter={(val) => `${Math.round(val)}d`}
                 allowDecimals={false}
                 domain={[0, "auto"]}
@@ -337,9 +336,9 @@ export function AgentCommissionChart({ data = DEFAULT_AGENT_DATA }: { data?: Age
                   dataKey="amountPaid"
                   name="Amount Paid"
                   fill="url(#paidGreenGrad)"
-                  radius={[6, 6, 0, 0]}
-                  maxBarSize={16}
-                  minPointSize={2}
+                  radius={[8, 8, 2, 2]}
+                  barSize={barWidth}
+                  minPointSize={4}
                   animationDuration={700}
                 />
               )}
@@ -351,9 +350,9 @@ export function AgentCommissionChart({ data = DEFAULT_AGENT_DATA }: { data?: Age
                   dataKey="amountBalance"
                   name="Amount Balance"
                   fill="url(#balanceYellowGrad)"
-                  radius={[6, 6, 0, 0]}
-                  maxBarSize={16}
-                  minPointSize={2}
+                  radius={[8, 8, 2, 2]}
+                  barSize={barWidth}
+                  minPointSize={4}
                   animationDuration={850}
                 />
               )}
@@ -365,9 +364,9 @@ export function AgentCommissionChart({ data = DEFAULT_AGENT_DATA }: { data?: Age
                   dataKey="daysTaken"
                   name="Time Taken (Days)"
                   fill="url(#daysBlueGrad)"
-                  radius={[6, 6, 0, 0]}
-                  maxBarSize={16}
-                  minPointSize={2}
+                  radius={[8, 8, 2, 2]}
+                  barSize={barWidth}
+                  minPointSize={4}
                   animationDuration={1000}
                 />
               )}

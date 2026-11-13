@@ -89,14 +89,14 @@ export function InventoryDistributionBarChart() {
       </CardHeader>
 
       <CardContent>
-        <div className={`h-[280px] w-full transition-all duration-300 ${viewMode === "segment" ? "max-w-md mx-auto" : ""}`}>
+        <div className={`h-[340px] w-full transition-all duration-300 ${viewMode === "segment" ? "max-w-lg mx-auto" : ""}`}>
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
               data={chartData}
               barCategoryGap={viewMode === "segment" ? "18%" : "15%"}
-              barGap={3}
-              maxBarSize={38}
-              margin={{ top: 12, right: 12, left: -20, bottom: 5 }}
+              barGap={4}
+              maxBarSize={48}
+              margin={{ top: 16, right: 16, left: -15, bottom: 8 }}
             >
               <defs>
                 <linearGradient id="invGoldGrad" x1="0" y1="0" x2="0" y2="1">
@@ -176,7 +176,7 @@ export function InventoryDistributionBarChart() {
                   return null;
                 }}
               />
-              <Bar dataKey="count" radius={[6, 6, 0, 0]} maxBarSize={36}>
+              <Bar dataKey="count" radius={[8, 8, 2, 2]} maxBarSize={48}>
                 {chartData.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={getGradientId(entry.color)} />
                 ))}
